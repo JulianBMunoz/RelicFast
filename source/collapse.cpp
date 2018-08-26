@@ -465,12 +465,10 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
 
 
 	const double sigma8_0 = getsigma_8(cosmo, k_transfer_array, transfer_matter[0]);
-	int coll_index = index_zi-j_collapse;
-	if(debug_mode>0) printf("coll_index=%d, z_coll = %lf \n", coll_index, zlist_transfer[coll_index]);
+	int coll_index = Nz_transfer-j_collapse-1;
+	if(debug_mode>0) printf("coll_index= %d, z_coll = %lf \n", coll_index, zlist_transfer[coll_index]);
 	const double sigma8_collapse = getsigma_8(cosmo, k_transfer_array, transfer_matter[coll_index]);
 	const double sigma8_i = getsigma_8(cosmo, k_transfer_array, transfer_matter[index_zi]);
-
-
 
 
 
@@ -1476,7 +1474,7 @@ const long Nz_solution, double *R_solution, double *Mnu_solution
 		pnu1_z=interpol_cubic(zmin_EoS, dz_EoS, plist_EoS, Nz_EoS, z_next);
 		wnu1_z2=pnu1_z/rhonu1_z;
 		d_wnu1_z = (wnu1_z2-wnu1_z)/zstep_lin;
-		csq_ad_nu1_z = wnu1_z2 + d_wnu1_z/3.0*(1.0+z_next)/(1.0+wnu1_z2); //adiabatic sound speed squared.
+		csq_ad_nu1_z = wnu1_z2 + d_wnu1_z/3.0/(1.0+wnu1_z2)*(1.0+z_next); //adiabatic sound speed squared.
 
 
 		H2  = cosmo->H0_Mpc * sqrt(OmL + OmM + OmRbar + Omnu1bar_z);// H(z_next)
