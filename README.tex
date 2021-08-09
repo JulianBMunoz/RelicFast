@@ -1,0 +1,77 @@
+
+\documentclass[prd, notitlepage, nofootinbib, 10pt]{revtex4-1}
+\usepackage[]{geometry} % see geometry.pdf on how to lay out the page. There's lots.
+\geometry{} % or letter or a5paper or ... etc
+% \geometry{landscape} % rotated page geometry
+%\usepackage{hyperlink}
+\usepackage{url}
+\usepackage{footnote}
+\usepackage{amssymb}
+
+
+% See the ``Article customise'' template for come common customisations
+
+
+\begin{document}
+
+\title{README}
+\author{Julian B. Mu\~noz}
+\date{May 26, 2018} % delete this line to display the current date
+%%% BEGIN DOCUMENT
+\maketitle
+
+These are the instructions to install and run RelicFast. Details of the code can be found in: \\
+
+\textit{Efficient Computation of Galaxy Bias with Neutrinos and Other Relics}, J. B. Mu\~noz and C. Dvorkin 2018 (\url{http://arxiv.org/abs/1805.11623}) \\
+
+Please consider refering to that work if you use the code in a publication. This code is presented as-is, with noguarantees regarding its accuracy. Please report any bugs to \texttt{julianmunoz@fas.harvard.edu}. 
+
+\section{Installation}
+All the necessary files are in the RelicFast folder, all source files are in the \texttt{source} folder and all headers in the \texttt{include} one. 
+
+The first thing you need is to install \texttt{CLASS}. For that, once you are in the RelicFast directory simply do: \\
+
+\texttt{>> cd CLASS\_Current/}
+
+\texttt{>> make class} \\
+
+and CLASS will be installed in your computer\footnote{Visit \texttt{http://class-code.net/} if you encounter problems with CLASS.}. Note that you can use whatever version of CLASS you desire, by replacing the CLASS Current folder with your preferred version (and copying the explanatory base.ini ﬁle to the new folder). Do check that the columns of the transfer function outputs have NOT changed, since those are read by RelicFast.
+
+If it comes to worst, you can use the code without the \texttt{Makefile}, simply by moving all ﬁles within \texttt{include} and \texttt{source} into the RelicFast folder, and running: \\
+
+\texttt{>> gcc -O4 -ffast-math -lstdc++ -fopenmp RelicFast.cpp bias.cpp collapse.cpp auxiliar.cpp}
+
+\texttt{>> boltzmann\_Calls.cpp pressure.cpp -o relicfast}\\
+
+This is pretty inconvenient, which is why using the \texttt{Makeﬁle} is the preferred option.
+
+\section{Running \texttt{RelicFast}}
+
+Once \texttt{RelicFast} is installed it’s easy to run. If you are in the RelicFast folder you just have to type: \\
+
+\texttt{>> ./relicfast INPUT\_FILE}\\
+
+for whatever inputs you put in \texttt{INPUT\_FILE}. We provide the ﬁle example \texttt{input.ini} as an example, with instructions about the parameters.
+
+Then, \texttt{RelicFast} will calculate the spherical collapse, and output the Lagrangian and Eulerian biases, as well as the matter and halo power spectra, for whatever redshifts $z_{\textrm{coll}}$ of collapse are chosen, halo masses $M$, and wavenumbers $k$. This output will be saved to \texttt{output/result-X}, where \texttt{X} is a variable named \texttt{file\_tag}. In the current version of \texttt{RelicFast} this variable is set simply by the characteristics of the light relic chosen, but this is easy to change (in the function prepare cosmology within \texttt{boltzmann\_Calls.cpp}). Additionally, RelicFast will save an info ﬁle in the \texttt{result-X} folder, with the halo masses and redshifts you have ran, and will also copy the input ﬁle there.
+
+Even though you probably do already, please refer to \texttt{CLASS} (1104.2933) or \texttt{CAMB} (astro-ph/9911177).
+
+\section{Additional Comments} 
+
+There are some parameters that are not in the input ﬁle but you might want to vary (albeit not every run). Those would be in the \texttt{common.h} header, and would require recompiling the code.
+In particular, if the code spits out a warning that the initial conditions are too narrow, you might have to change the initial conditions, for instance making \texttt{boost\_initial\_conditions} larger.
+If you change the \texttt{CLASS}/\texttt{CAMB} version, you may have to adjust the \texttt{length\_transfer} variable. (In addition, remember to copy the \texttt{explanatory\_base.ini} to the new \texttt{CLASS} folder).
+For large $N_\textrm{eﬀ}$ (ruled out by data), \texttt{CLASS} might not be able to solve for $Y_\textrm{He}$ for BBN, so you would have to manually set $Y_\textrm{He}$ in the \texttt{CLASS} input ﬁle.
+There are two important precision parameters, precision scale controls how precisely the scale-dependence of$b_1^L (k)$ is calculated. \texttt{precision\_normalization} controls the accuracy on the overall value of $b_1^L$, and is this less important.
+
+\end{document}
+
+
+
+
+
+
+
+
+
