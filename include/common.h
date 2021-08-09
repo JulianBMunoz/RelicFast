@@ -200,7 +200,7 @@
 	#define zf 0.0 //haloes should collapse by today--at the latest.
 
 
-	#define length_transfer_camb 700 //Number of elements in the transfer function output from CAMB
+	#define length_transfer_camb 595 //Number of elements in the transfer function output from CAMB
 	#define length_transfer_class 122 //Number of elements in the transfer function output from CLASS
 
 	#define length_transfer  ( (boltzmann_tag == _CLASS_)*length_transfer_class + (boltzmann_tag == _CAMB_)*length_transfer_camb )
