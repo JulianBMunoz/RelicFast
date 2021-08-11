@@ -1,0 +1,3 @@
+[submodule "axionCAMB"]
+	path = axionCAMB
+	url = git@github.com:dgrin1/axionCAMB.git
