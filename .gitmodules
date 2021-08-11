@@ -1,0 +1,4 @@
+[submodule "axionCAMB"]
+	path = axionCAMB
+	url = git@github.com:ndeporzio/axionCAMB.git
+        branch = RelicFast
