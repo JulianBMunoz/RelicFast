@@ -168,9 +168,10 @@ int gettransfer_matter(Cosmology *cosmo, char *filename,  double *kgrid, double 
 	}
 	else if(boltzmann_tag==_CAMB_){ //CAMB
 
-		Ncolum=13; //number of columns in CAMB output file
-
-		for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", &koverh[j], temp ,temp,temp,temp,temp,temp, &TF_grid_b[j],temp,temp,temp,temp,temp)==Ncolum;++j)
+		//Ncolum=13; //number of columns in CAMB output file
+                Ncolum=9;
+		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", &koverh[j], temp ,temp,temp,temp,temp,temp, &TF_grid_b[j],temp,temp,temp,temp,temp)==Ncolum;++j)
+                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", &koverh[j], &TF_grid_c[j], &TF_grid_b[j],temp,temp,temp,temp,temp,temp)==Ncolum;++j)
 			;//CAMB files have Ncolum columns
 
 		fclose(fp2);
@@ -179,7 +180,8 @@ int gettransfer_matter(Cosmology *cosmo, char *filename,  double *kgrid, double 
 	//	We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
 		for(j=0;j<length_transfer;++j){
 			kgrid[j] = cosmo->h * koverh[j];
-			TF[j] = kgrid[j]*kgrid[j]*TF_grid_b[j]; //for CAMB we have total matter (c+b) directly.
+			//TF[j] = kgrid[j]*kgrid[j]*TF_grid_b[j]; //for CAMB we have total matter (c+b) directly.
+                        TF[j] = kgrid[j]*kgrid[j]*(TF_grid_c[j]+TF_grid_b[j]);
 		}
 
 
@@ -251,9 +253,10 @@ int gettransfer_gamma(Cosmology *cosmo, char *filename,  double *kgrid, double *
 	}
 	else if(boltzmann_tag==1){ //CAMB
 
-		Ncolum=13; //number of columns in CAMB output file
-
-		for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+		//Ncolum=13; //number of columns in CAMB output file
+                Ncolum=9;
+		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, &TF_grid[j],temp,temp,temp,temp,temp)==Ncolum;++j)
 		;//CAMB files have Ncolum columns
 
 		fclose(fp2);
@@ -333,9 +336,11 @@ int gettransfer_nu_massless(Cosmology *cosmo, char *filename,  double *kgrid, do
 	}
 	else if(boltzmann_tag==1){ //CAMB
 
-		Ncolum=13; //number of columns in CAMB output file
+		//Ncolum=13; //number of columns in CAMB output file
+                Ncolum=9;                
 
-		for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,&TF_grid[j],temp,temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,&TF_grid[j],temp,temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp, &TF_grid[j],temp,temp,temp,temp)==Ncolum;++j)
 		;//CAMB files have Ncolum columns
 
 		fclose(fp2);
@@ -413,9 +418,11 @@ int gettransfer_nu1(Cosmology *cosmo, char *filename, double *kgrid, double *TF)
 	}
 	else if(boltzmann_tag==1){ //CAMB
 
-		Ncolum=13; //number of columns in CAMB output file
+		//Ncolum=13; //number of columns in CAMB output file
+                Ncolum=9;
 
-		for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp, temp, &TF_grid[j],temp,temp,temp)==Ncolum;++j)
 		;//CAMB files have Ncolum columns
 
 		fclose(fp2);
@@ -500,9 +507,11 @@ int gettransfer_nu2(Cosmology *cosmo, char *filename, double *kgrid, double *TF)
 	}
 	else if(boltzmann_tag==1){ //CAMB. WE JUST COPY NEUTRINO 1
 
-		Ncolum=13; //number of columns in CAMB output file
+		//Ncolum=13; //number of columns in CAMB output file
+                Ncolum=9;
 
-		for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp, temp, temp, temp, &TF_grid[j], temp, temp, temp)==Ncolum;++j)
 		;//CAMB files have Ncolum columns
 
 		fclose(fp2);
@@ -582,9 +591,10 @@ int gettransfer_extra(Cosmology *cosmo, char *filename, double *kgrid, double *T
 	}
 	else if(boltzmann_tag==1){ //CAMB
 
-		Ncolum=13; //number of columns in CAMB output file
-
-		for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+		//Ncolum=13; //number of columns in CAMB output file
+                Ncolum=9; 
+		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
+                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp, temp, temp, temp, &TF_grid[j], temp, temp, temp)==Ncolum;++j)
 		;//CAMB files have Ncolum columns
 
 		fclose(fp2);
@@ -1207,8 +1217,11 @@ cosmo->klong_list_input = allocate_1D_array(cosmo->N_klong);
 	if((cosmo->N_klong) > 1){
 	logstep_klong=log(cosmo->ktop/cosmo->kbot)/(cosmo->N_klong-1.);
 	}
+        printf("\n N_klong: %d \n", cosmo->N_klong);
+        printf("\n KLONGS: \n"); 
 	for(ik=0;ik<cosmo->N_klong;ik++){//we populate the z_collapse_array
-			cosmo->klong_list_input[ik] = cosmo->kbot * exp(logstep_klong*ik);
+	    cosmo->klong_list_input[ik] = cosmo->kbot * exp(logstep_klong*ik);
+            printf("-----> %f ", cosmo->klong_list_input[ik]);
 }
 
 
