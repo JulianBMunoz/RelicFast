@@ -14,6 +14,7 @@ new_file_content = ""
 for line in reading_file:
   stripped_line = line.strip()
   new_line = stripped_line.replace("length_transfer_camb 700", "length_transfer_camb 595")
+  new_line = stripped_line.replace("boltzmann_tag  _CLASS_", "boltzmann_tag  _CAMB_")
   new_file_content += new_line +"\n"
 reading_file.close()
 os.system('rm ./include/common.h') 
