@@ -747,9 +747,19 @@ int run_camb(Cosmology *cosmo, double zlist_transfer[]){
 
 	fprintf(fp, "ombh2 = %.4f \n",cosmo->omegab);
 	fprintf(fp, "omch2 = %.4f \n",cosmo->omegac);
-	fprintf(fp, "omnuh2 = %.4f \n",cosmo->omeganu1);
+	//fprintf(fp, "omnuh2 = %.4f \n",cosmo->omeganu1);
+        fprintf(fp, "omnuh2 = %.4f \n",3.*cosmo->omeganu1);
 	fprintf(fp, "hubble = %.4f \n",100.*cosmo->h);
-	fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
+	//fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
+        if(cosmo->omeganu1==0.){
+            fprintf(fp, "massless_neutrinos = %.4f \n", 3.045);
+            fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
+            fprintf(fp, "massive_neutrinos  = %d \n", 0);
+        }else{
+            fprintf(fp, "massless_neutrinos = %.4f \n", 0.045);
+            fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
+            fprintf(fp, "massive_neutrinos  = %d \n", 3);
+        }
 	fprintf(fp, "scalar_amp(1) = %.2le \n", cosmo->As);
 	fprintf(fp, "scalar_spectral_index(1) = %.4f \n", cosmo->ns);
 	fprintf(fp, "transfer_num_redshifts = %ld \n", (long) Nz_transfer);
@@ -759,10 +769,8 @@ int run_camb(Cosmology *cosmo, double zlist_transfer[]){
 	}
 	fprintf(fp, "output_root = Boltzmann_%d/transfer_files_%d/ \n", boltzmann_tag, cosmo->file_tag);
 
-	fprintf(fp, "nu_mass_eigenstates = %d \n", cosmo->counter_massive_nus);
-	fprintf(fp, "massive_neutrinos  = %d \n", cosmo->counter_massive_nus);
-
-
+	//fprintf(fp, "nu_mass_eigenstates = %d \n", cosmo->counter_massive_nus);
+	//fprintf(fp, "massive_neutrinos  = %d \n", cosmo->counter_massive_nus);
 
 	fclose(fp);
 
@@ -1217,11 +1225,8 @@ cosmo->klong_list_input = allocate_1D_array(cosmo->N_klong);
 	if((cosmo->N_klong) > 1){
 	logstep_klong=log(cosmo->ktop/cosmo->kbot)/(cosmo->N_klong-1.);
 	}
-        printf("\n N_klong: %d \n", cosmo->N_klong);
-        printf("\n KLONGS: \n"); 
 	for(ik=0;ik<cosmo->N_klong;ik++){//we populate the z_collapse_array
 	    cosmo->klong_list_input[ik] = cosmo->kbot * exp(logstep_klong*ik);
-            printf("-----> %f ", cosmo->klong_list_input[ik]);
 }
 
 
