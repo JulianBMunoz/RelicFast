@@ -168,24 +168,32 @@ int gettransfer_matter(Cosmology *cosmo, char *filename,  double *kgrid, double 
 	}
 	else if(boltzmann_tag==_CAMB_){ //CAMB
 
-		//Ncolum=13; //number of columns in CAMB output file
-                Ncolum=9;
-		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", &koverh[j], temp ,temp,temp,temp,temp,temp, &TF_grid_b[j],temp,temp,temp,temp,temp)==Ncolum;++j)
-                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", &koverh[j], &TF_grid_c[j], &TF_grid_b[j],temp,temp,temp,temp,temp,temp)==Ncolum;++j)
-			;//CAMB files have Ncolum columns
+	    Ncolum=13; //number of columns in CAMB output file
 
-		fclose(fp2);
+	    for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", &koverh[j], temp ,temp,temp,temp,temp,temp, &TF_grid_b[j],temp,temp,temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
+
+	    fclose(fp2);
 
 
 	//	We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
 		for(j=0;j<length_transfer;++j){
 			kgrid[j] = cosmo->h * koverh[j];
-			//TF[j] = kgrid[j]*kgrid[j]*TF_grid_b[j]; //for CAMB we have total matter (c+b) directly.
-                        TF[j] = kgrid[j]*kgrid[j]*(TF_grid_c[j]+TF_grid_b[j]);
+			TF[j] = kgrid[j]*kgrid[j]*TF_grid_b[j]; //for CAMB we have total matter (c+b) directly.
 		}
 
 
 	}
+        else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
+
+            Ncolum=9;
+            for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", &koverh[j], &TF_grid_c[j], &TF_grid_b[j],temp,temp,temp,temp,temp,temp)==Ncolum;++j); 
+            fclose(fp2);
+            for(j=0;j<length_transfer;++j){
+                    kgrid[j] = cosmo->h * koverh[j];
+                    TF[j] = kgrid[j]*kgrid[j]*(TF_grid_c[j]+TF_grid_b[j]);
+            }
+
+        }
 	else{
 		printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
 		return -1;
@@ -223,7 +231,7 @@ int gettransfer_gamma(Cosmology *cosmo, char *filename,  double *kgrid, double *
  	int length_temp=20;
  	transfer_temp = allocate_1D_array(length_temp); //less than 20 columns always
 
-	if(boltzmann_tag==0){ //CLASS
+	if(boltzmann_tag==_CLASS_){ //CLASS
 
 
 		Ncolum = 8 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0); //number of columns in CLASS output file
@@ -251,26 +259,36 @@ int gettransfer_gamma(Cosmology *cosmo, char *filename,  double *kgrid, double *
 
 
 	}
-	else if(boltzmann_tag==1){ //CAMB
+	else if(boltzmann_tag==_CAMB_){ //CAMB
 
-		//Ncolum=13; //number of columns in CAMB output file
-                Ncolum=9;
-		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
-                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, &TF_grid[j],temp,temp,temp,temp,temp)==Ncolum;++j)
-		;//CAMB files have Ncolum columns
+	    Ncolum=13; //number of columns in CAMB output file
 
-		fclose(fp2);
+	    for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
+
+	    fclose(fp2);
 
 
-		//We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-		for(j=0;j<length_transfer;++j){
-			TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-		}
-
-
+	    //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+	    for(j=0;j<length_transfer;++j){
+		    TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+	    }
 	}
+        else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
+
+            Ncolum=9;
+            
+            for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, &TF_grid[j],temp,temp,temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
+
+            fclose(fp2);
+
+
+            //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+            for(j=0;j<length_transfer;++j){
+                    TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+            }
+        }
 	else{
-		printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
+		printf("Error in gettransfer, boltzmann_tag has to be either 0, 1, or 2 \n");
 		return -1;
 	}
 
@@ -307,52 +325,53 @@ int gettransfer_nu_massless(Cosmology *cosmo, char *filename,  double *kgrid, do
  	transfer_temp = allocate_1D_array(length_temp); //less than 20 columns always
 
 
-	if(boltzmann_tag==0){ //CLASS
+	if(boltzmann_tag==_CLASS_){ //CLASS
 
-		Ncolum = 8 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0); //number of columns in CLASS output file
+	    Ncolum = 8 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0); //number of columns in CLASS output file
+	    fgets(buffer, length_buffer, fp2); //reads length_buffer characters in first line. To get rid of headers from CLASS
 
+	    for(j=0; j<length_transfer_class; j++){
+		    for (i=0;i<Ncolum;i++){
+			    fscanf(fp2, "%le" , &transfer_temp[i]);
+		    }
+		    TF_grid[j] = transfer_temp[4];
+	    }
 
-		fgets(buffer, length_buffer, fp2); //reads length_buffer characters in first line. To get rid of headers from CLASS
+	    fclose(fp2);
 
-		for(j=0; j<length_transfer_class; j++){
-			for (i=0;i<Ncolum;i++){
-				fscanf(fp2, "%le" , &transfer_temp[i]);
-			}
-			TF_grid[j] = transfer_temp[4];
-		}
-
-
-
-		fclose(fp2);
-
-
-	//	We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-		for(j=0;j<length_transfer;++j){
-			TF[j] = TF_grid[j];//in class it's not over k^2
-		}
-
-
-
+	    //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+	    for(j=0;j<length_transfer;++j){
+		    TF[j] = TF_grid[j];//in class it's not over k^2
+	    }
 	}
-	else if(boltzmann_tag==1){ //CAMB
+	else if(boltzmann_tag==_CAMB_){ //CAMB
 
-		//Ncolum=13; //number of columns in CAMB output file
-                Ncolum=9;                
+	    Ncolum=13; //number of columns in CAMB output file
 
-		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,&TF_grid[j],temp,temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
-                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp, &TF_grid[j],temp,temp,temp,temp)==Ncolum;++j)
-		;//CAMB files have Ncolum columns
+	    for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,&TF_grid[j],temp,temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
 
-		fclose(fp2);
+	    fclose(fp2);
 
 
-		//We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-		for(j=0;j<length_transfer;++j){
-			TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-		}
-
-
+	    //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+	    for(j=0;j<length_transfer;++j){
+		    TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+	    }
 	}
+        else if(boltzmann_tag==_AXIONCAMB_){ //CAMB
+
+            Ncolum=9;
+
+            for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp, &TF_grid[j],temp,temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
+
+            fclose(fp2);
+
+
+            //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+            for(j=0;j<length_transfer;++j){
+                    TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+            }
+        }
 	else{
 		printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
 		return -1;
@@ -389,52 +408,51 @@ int gettransfer_nu1(Cosmology *cosmo, char *filename, double *kgrid, double *TF)
  	int length_temp=20;
  	transfer_temp = allocate_1D_array(length_temp); //less than 20 columns always
 
-	if(boltzmann_tag==0){ //CLASS
+	if(boltzmann_tag==_CLASS_){ //CLASS
 
-		Ncolum = 8 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0); //number of columns in CLASS output file
+            Ncolum = 8 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0); //number of columns in CLASS output file
+            fgets(buffer, length_buffer, fp2); //reads length_buffer characters in first line. To get rid of headers from CLASS
 
-
-		fgets(buffer, length_buffer, fp2); //reads length_buffer characters in first line. To get rid of headers from CLASS
-
-		for(j=0; j<length_transfer_class; j++){
-			for (i=0;i<Ncolum;i++){
-				fscanf(fp2, "%le" , &transfer_temp[i]);
-			}
-			TF_grid[j] = transfer_temp[colum_extract];
-		}
-
-
+            for(j=0; j<length_transfer_class; j++){
+                for (i=0;i<Ncolum;i++){
+                    fscanf(fp2, "%le" , &transfer_temp[i]);
+                }
+                TF_grid[j] = transfer_temp[colum_extract];
+            }
 
 		fclose(fp2);
 
-
-	//	We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-		for(j=0;j<length_transfer;++j){
-			TF[j] = TF_grid[j];//in class it's not over k^2
-		}
-
-
-
+            // We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+            for(j=0;j<length_transfer;++j){
+                TF[j] = TF_grid[j];//in class it's not over k^2
+            }
 	}
-	else if(boltzmann_tag==1){ //CAMB
+	else if(boltzmann_tag==_CAMB_){ //CAMB
 
-		//Ncolum=13; //number of columns in CAMB output file
-                Ncolum=9;
+	    Ncolum=13; //number of columns in CAMB output file
 
-		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
-                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp, temp, &TF_grid[j],temp,temp,temp)==Ncolum;++j)
-		;//CAMB files have Ncolum columns
+	    for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
 
-		fclose(fp2);
+	    fclose(fp2);
 
-
-		//We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-		for(j=0;j<length_transfer;++j){
-			TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-		}
-
-
+	    //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+	    for(j=0;j<length_transfer;++j){
+	        TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+	    }
 	}
+        else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
+
+            Ncolum=9;
+
+            for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp, temp, &TF_grid[j],temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
+
+            fclose(fp2);
+
+            //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+            for(j=0;j<length_transfer;++j){
+                    TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+            }
+        }
 	else{
 		printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
 		return -1;
@@ -443,13 +461,8 @@ int gettransfer_nu1(Cosmology *cosmo, char *filename, double *kgrid, double *TF)
 	free(buffer);
 	free(transfer_temp);
 
-
 	return 1;
 }
-
-
-
-
 
 int gettransfer_nu2(Cosmology *cosmo, char *filename, double *kgrid, double *TF){
 //this function extracts the transfer function of 2nd neutrino, make sure that the column is right if you use a different CLASS/CAMB version.
@@ -479,51 +492,50 @@ int gettransfer_nu2(Cosmology *cosmo, char *filename, double *kgrid, double *TF)
  	transfer_temp = allocate_1D_array(length_temp); //less than 20 columns always
 
 
-	if(boltzmann_tag==0){ //CLASS
+	if(boltzmann_tag==_CLASS_){ //CLASS
 
-		Ncolum = 8 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0); //number of columns in CLASS output file
-
-
-		fgets(buffer, length_buffer, fp2); //reads length_buffer characters in first line. To get rid of headers from CLASS
-
-		for(j=0; j<length_transfer_class; j++){
-			for (i=0;i<Ncolum;i++){
-				fscanf(fp2, "%le" , &transfer_temp[i]);
-			}
-			TF_grid[j] = transfer_temp[colum_extract];
+	    Ncolum = 8 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0); //number of columns in CLASS output file
+	    fgets(buffer, length_buffer, fp2); //reads length_buffer characters in first line. To get rid of headers from CLASS
+	    for(j=0; j<length_transfer_class; j++){
+		for (i=0;i<Ncolum;i++){
+		    fscanf(fp2, "%le" , &transfer_temp[i]);
 		}
+		TF_grid[j] = transfer_temp[colum_extract];
+	    }
 
+	    fclose(fp2);
 
-		fclose(fp2);
-
-
-	//	We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-		for(j=0;j<length_transfer;++j){
-			TF[j] = TF_grid[j];//in class it's not over k^2
-		}
-
-
-
+	    //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+	    for(j=0;j<length_transfer;++j){
+		TF[j] = TF_grid[j];//in class it's not over k^2
+	    }
 	}
-	else if(boltzmann_tag==1){ //CAMB. WE JUST COPY NEUTRINO 1
+	else if(boltzmann_tag==_CAMB_){ //CAMB. WE JUST COPY NEUTRINO 1
 
-		//Ncolum=13; //number of columns in CAMB output file
-                Ncolum=9;
+	    Ncolum=13; //number of columns in CAMB output file
 
-		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
-                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp, temp, temp, temp, &TF_grid[j], temp, temp, temp)==Ncolum;++j)
-		;//CAMB files have Ncolum columns
+	    for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
 
-		fclose(fp2);
+	    fclose(fp2);
 
-
-		//We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-		for(j=0;j<length_transfer;++j){
-			TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-		}
-
-
+	    //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+	    for(j=0;j<length_transfer;++j){
+		TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+	    }
 	}
+        else if(boltzmann_tag==_AXIONCAMB_){ //CAMB. WE JUST COPY NEUTRINO 1
+
+            Ncolum=9;
+
+            for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp, temp, temp, temp, &TF_grid[j], temp, temp, temp)==Ncolum;++j);//CAMB files have Ncolum columns
+
+            fclose(fp2);
+
+            //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+            for(j=0;j<length_transfer;++j){
+                TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+            }
+        }
 	else{
 		printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
 		return -1;
@@ -531,7 +543,6 @@ int gettransfer_nu2(Cosmology *cosmo, char *filename, double *kgrid, double *TF)
 
 	free(buffer);
 	free(transfer_temp);
-
 
 	return 1;
 }
@@ -562,68 +573,61 @@ int gettransfer_extra(Cosmology *cosmo, char *filename, double *kgrid, double *T
  	int length_temp=20;
  	transfer_temp = allocate_1D_array(length_temp); //less than 20 columns always
 
-	if(boltzmann_tag==0){ //CLASS
+	if(boltzmann_tag==_CLASS_){ //CLASS
 
-		Ncolum = 8 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0); //number of columns in CLASS output file
+	    Ncolum = 8 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0); //number of columns in CLASS output file
+	    index_extra = 6 + (cosmo->mnu1>0) + (cosmo->mnu2>0) - 1; //7 or 8 depending on whether nu2 are massless (nu1 acts as massless neutrinos anyway)
 
-		index_extra = 6 + (cosmo->mnu1>0) + (cosmo->mnu2>0) - 1; //7 or 8 depending on whether nu2 are massless (nu1 acts as massless neutrinos anyway)
+	    fgets(buffer, length_buffer, fp2); //reads length_buffer characters in first line. To get rid of headers from CLASS
 
-		fgets(buffer, length_buffer, fp2); //reads length_buffer characters in first line. To get rid of headers from CLASS
-
-		for(j=0; j<length_transfer_class; j++){
-			for (i=0;i<Ncolum;i++){
-				fscanf(fp2, "%le" , &transfer_temp[i]);
-			}
-			TF_grid[j] = transfer_temp[index_extra];
+    	    for(j=0; j<length_transfer_class; j++){
+		for (i=0;i<Ncolum;i++){
+		    fscanf(fp2, "%le" , &transfer_temp[i]);
 		}
+		TF_grid[j] = transfer_temp[index_extra];
+	    }
 
+            fclose(fp2);
 
-		fclose(fp2);
-
-
-	//	We need to give the right values to TF, evaluated over k and not. We get k_grid from the rest of files to avoid issues with Ncolum.
-		for(j=0;j<length_transfer;++j){
-			TF[j] = TF_grid[j];//in class it's not over k^2
-		}
-
-
-
+	    //We need to give the right values to TF, evaluated over k and not. We get k_grid from the rest of files to avoid issues with Ncolum.
+	    for(j=0;j<length_transfer;++j){
+		TF[j] = TF_grid[j];//in class it's not over k^2
+	    }
 	}
-	else if(boltzmann_tag==1){ //CAMB
+	else if(boltzmann_tag==_CAMB_){ //CAMB
 
-		//Ncolum=13; //number of columns in CAMB output file
-                Ncolum=9; 
-		//for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j)
-                for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp, temp, temp, temp, &TF_grid[j], temp, temp, temp)==Ncolum;++j)
-		;//CAMB files have Ncolum columns
+	    Ncolum=13; //number of columns in CAMB output file
+	    for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp,temp, &TF_grid[j],temp,temp,temp,temp,temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
 
-		fclose(fp2);
+	    fclose(fp2);
 
-
-		//We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-		for(j=0;j<length_transfer;++j){
-			TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-		}
-
-
+	    //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+	    for(j=0;j<length_transfer;++j){
+		TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+	    }
 	}
+        else if(boltzmann_tag==_AXIONCAMB_){ //CAMB
 
+            Ncolum=9; 
+            for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp, temp, temp, temp, &TF_grid[j], temp, temp, temp)==Ncolum;++j);//CAMB files have Ncolum columns
+
+            fclose(fp2);
+
+            //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
+            for(j=0;j<length_transfer;++j){
+                TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+            }   
+        }
 	else{
 		printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
 		return -1;
 	}
-
 
 	free(buffer);
 	free(transfer_temp);
 
 	return 1;
 }
-
-
-
-
-
 
 
 
