@@ -118,6 +118,8 @@
     double Neff_input;    //N_effective read, we will subtract 1 per each 
                           //massive neutrino to get Neff.
     
+    double omega_ax;    //Axion abundance. Small omega. omega_ax = h^2 Omega_ax
+    double m_ax;    //Axion mass in units of eV.
     
     //derived parameters:
     
@@ -139,6 +141,8 @@
     
     double omeganu2;    //energy density in nu2
     double Omeganu2;
+
+    double Omega_ax;    //energy density in axion
     
     double OmegaM;    //CMB+b energy density (NOT INCLUDING RELICS/NUs!). Used 
                       //for halo masses
@@ -204,10 +208,19 @@
                                  //for higher precision.
     };
     
-    
-    #define Ninput 22    //how many inputs the code takes
-    #define Ninput_int 5    //how many of the inputs are integers instead of 
-                            //doubles.
+    #if boltzmann_tag==0
+        #define Ninput 22    //how many inputs the code takes
+        #define Ninput_int 5    //how many of the inputs are integers instead of
+        //doubles.
+    #elif boltzmann_tag==1
+        #define Ninput 22    //how many inputs the code takes
+        #define Ninput_int 5    //how many of the inputs are integers instead of
+        //doubles.
+    #elif boltzmann_tag==2
+        #define Ninput 24    //how many inputs the code takes
+        #define Ninput_int 5    //how many of the inputs are integers instead of
+        //doubles.
+    #endif    
     
     //other cosmological constants that do not change:
     #define omega_constant  4.4806e-7    //Boltzmann factor divided by 
@@ -248,14 +261,20 @@
 
     #define zf 0.0    //haloes should collapse by today--at the latest.
     
-    #define length_transfer_camb 595    //Number of elements in the transfer
-                                        //function output from CAMB
+    #define length_transfer_camb 597    //Number of elements in the transfer
+    //function output from CAMB
+
+    #define length_transfer_axioncamb 597    //Number of elements in the transfer
+    //function output from axionCAMB
 
     #define length_transfer_class 122    //Number of elements in the transfer
-                                         //function output from CLASS
-    
-    #define length_transfer ((boltzmann_tag==_CLASS_)*length_transfer_class\
-    +(boltzmann_tag==_CAMB_)*length_transfer_camb)
+    //function output from CLASS
+
+    #define length_transfer ( \
+        (boltzmann_tag==_CLASS_)*length_transfer_class \
+        + (boltzmann_tag==_CAMB_)*length_transfer_camb \
+        + (boltzmann_tag==_AXIONCAMB_)*length_transfer_axioncamb \
+    )
     
     #define Nz_transfer 100    //how many redshifts we take for transfer
                                //functions. For more than ~115 need to skip

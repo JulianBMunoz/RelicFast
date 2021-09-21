@@ -188,25 +188,38 @@ int gettransfer_matter(Cosmology *cosmo, char *filename,  double *kgrid, double 
             //for CAMB we have total matter (c+b) directly.
         }
     }
-//.-.//        else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
-//.-.//
-//.-.//            Ncolum=9;
-//.-.//            for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", &koverh[j], &TF_grid_c[j], &TF_grid_b[j],temp,temp,temp,temp,temp,temp)==Ncolum;++j); 
-//.-.//            fclose(fp2);
-//.-.//            for(j=0;j<length_transfer;++j){
-//.-.//                    kgrid[j] = cosmo->h * koverh[j];
-//.-.//                    TF[j] = kgrid[j]*kgrid[j]*(TF_grid_c[j]+TF_grid_b[j]);
-//.-.//            }
+    else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
+        Ncolum=9;
+        for(
+            j=0;
+            fscanf(
+                fp2,
+                "%le %le %le %le %le %le %le %le %le", 
+                &koverh[j], 
+                &TF_grid_c[j], 
+                &TF_grid_b[j],
+                temp,
+                temp,
+                temp,
+                temp,
+                temp,
+                temp
+            )==Ncolum;
+            ++j
+        ){};
 
-//.-.//        }
+        fclose(fp2);
+        for(j=0;j<length_transfer;++j){
+            kgrid[j] = cosmo->h * koverh[j];
+            TF[j] = kgrid[j]*kgrid[j]*(TF_grid_c[j]+TF_grid_b[j]);
+        }
+    }
     else{
         printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
         return -1;
     }
-
     free(buffer);
     free(transfer_temp);
-
     return 1;
 }
 
@@ -290,20 +303,36 @@ int gettransfer_gamma(Cosmology *cosmo, char *filename, double *kgrid,
             TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
         }
     }
-//.-.//        else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
-//.-.//
-//.-.//            Ncolum=9;
-//.-.//            
-//.-.//            for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, &TF_grid[j],temp,temp,temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
-//.-.//
-//.-.//            fclose(fp2);
-//.-.//
-//.-.//
-//.-.//            //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-//.-.//            for(j=0;j<length_transfer;++j){
-//.-.//                    TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-//.-.//            }
-//.-.//        }
+    else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
+
+        Ncolum=9;
+            
+        for(
+            j=0;
+            fscanf(
+                fp2,
+                "%le %le %le %le %le %le %le %le %le", 
+                temp, 
+                temp,
+                temp, 
+                &TF_grid[j],
+                temp,
+                temp,
+                temp,
+                temp,
+                temp
+            )==Ncolum;
+            ++j
+        );//CAMB files have Ncolum columns
+
+        fclose(fp2);
+
+        //We need to give the right values to TF, evaluated over k and not k/h,
+        //we define kgrid for that //
+        for(j=0;j<length_transfer;++j){
+                TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+        }
+    }
     else{
         printf("Error in gettransfer, boltzmann_tag has to be either 0, 1, or 2 \n");
         return -1;
@@ -392,36 +421,36 @@ int gettransfer_nu_massless(Cosmology *cosmo, char *filename,  double *kgrid,
             TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
         }
     }
-//.-.//    else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
-//.-.//        Ncolum=9;
-//.-.//        for(
-//.-.//            j=0;
-//.-.//            fscanf(
-//.-.//                fp2,
-//.-.//                "%le %le %le %le %le %le %le %le %le", 
-//.-.//                temp, 
-//.-.//                temp,
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                &TF_grid[j],
-//.-.//                temp,
-//.-.//                temp,
-//.-.//                temp,
-//.-.//                temp
-//.-.//            )==Ncolum;
-//.-.//            ++j
-//.-.//        );
-//.-.//        //CAMB files have Ncolum columns
-//.-.//
-//.-.//        fclose(fp2);
-//.-.//
-//.-.//        //We need to give the right values to TF, evaluated over k and not k/h,
-//.-.//        //we define kgrid for that 
-//.-.//
-//.-.//        for(j=0;j<length_transfer;++j){
-//.-.//            TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-//.-.//        }
-//.-.//    }
+    else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
+        Ncolum=9;
+        for(
+            j=0;
+            fscanf(
+                fp2,
+                "%le %le %le %le %le %le %le %le %le", 
+                temp, 
+                temp,
+                temp, 
+                temp, 
+                &TF_grid[j],
+                temp,
+                temp,
+                temp,
+                temp
+            )==Ncolum;
+            ++j
+        );
+        //CAMB files have Ncolum columns
+
+        fclose(fp2);
+
+        //We need to give the right values to TF, evaluated over k and not k/h,
+        //we define kgrid for that 
+
+        for(j=0;j<length_transfer;++j){
+            TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+        }
+    }
     else{
         printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
         return -1;
@@ -511,21 +540,39 @@ int gettransfer_nu1(Cosmology *cosmo, char *filename, double *kgrid,
             TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
         }
     }
-//.-.//        else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
-//.-.//
-//.-.//            Ncolum=9;
-//.-.//
-//.-.//            for(j=0;fscanf(fp2,"%le %le %le %le %le %le %le %le %le", temp, temp ,temp, temp, temp, &TF_grid[j],temp,temp,temp)==Ncolum;++j);//CAMB files have Ncolum columns
-//.-.//
-//.-.//            fclose(fp2);
-//.-.//
-//.-.//            //We need to give the right values to TF, evaluated over k and not k/h, we define kgrid for that //
-//.-.//            for(j=0;j<length_transfer;++j){
-//.-.//                    TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-//.-.//            }
-//.-.//        }
+    else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
+        Ncolum=9;
+
+        for(
+            j=0;
+            fscanf(
+                fp2,
+                "%le %le %le %le %le %le %le %le %le", 
+                temp, 
+                temp,
+                temp, 
+                temp,   
+                temp, 
+                &TF_grid[j],
+                temp,
+                temp,
+                temp
+            )==Ncolum;
+            ++j
+        );//CAMB files have Ncolum columns
+
+        fclose(fp2);
+
+        //We need to give the right values to TF, evaluated over k and not k/h,
+        //we define kgrid for that //
+        for(j=0;j<length_transfer;++j){
+                TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+        }
+    }
     else{
-        printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
+        printf(
+            "Error in gettransfer, boltzmann_tag has to be either 0, 1, or 2 \n"
+        );
         return -1;
     }
 
@@ -619,37 +666,36 @@ int gettransfer_nu2(Cosmology *cosmo, char *filename, double *kgrid,
             TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
         }
     }
-//.-.//    else if(boltzmann_tag==_AXIONCAMB_){ //CAMB. WE JUST COPY NEUTRINO 1
-//.-.//        Ncolum=9;
-//.-.//
-//.-.//        for(
-//.-.//            j=0;
-//.-.//            fscanf(
-//.-.//                fp2,
-//.-.//                "%le %le %le %le %le %le %le %le %le", 
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                &TF_grid[j], 
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                temp
-//.-.//            )==Ncolum;
-//.-.//            ++j
-//.-.//        );
-//.-.//        //CAMB files have Ncolum columns
-//.-.//
-//.-.//        fclose(fp2);
-//.-.//
-//.-.//        //We need to give the right values to TF, evaluated over k and not k/h,
-//.-.//        //we define kgrid for that 
-//.-.//
-//.-.//        for(j=0;j<length_transfer;++j){
-//.-.//            TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-//.-.//        }
-//.-.//    }
+    else if(boltzmann_tag==_AXIONCAMB_){ //CAMB. WE JUST COPY NEUTRINO 1
+        Ncolum=9;
+        for(
+            j=0;
+            fscanf(
+                fp2,
+                "%le %le %le %le %le %le %le %le %le", 
+                temp, 
+                temp, 
+                temp, 
+                temp, 
+                temp, 
+                &TF_grid[j], 
+                temp, 
+                temp, 
+                temp
+            )==Ncolum;
+            ++j
+        );
+        //CAMB files have Ncolum columns
+
+        fclose(fp2);
+
+        //We need to give the right values to TF, evaluated over k and not k/h,
+        //we define kgrid for that 
+
+        for(j=0;j<length_transfer;++j){
+            TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+        }
+    }
     else{
         printf("Error in gettransfer, boltzmann_tag has to be \
             either 0 or 1 \n");
@@ -746,36 +792,36 @@ int gettransfer_extra(Cosmology *cosmo, char *filename, double *kgrid,
             TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
         }
     }
-//.-.//    else if(boltzmann_tag==_AXIONCAMB_){ //CAMB
-//.-.//        Ncolum=9; 
-//.-.//        for(
-//.-.//            j=0;
-//.-.//            fscanf(
-//.-.//                fp2,
-//.-.//                "%le %le %le %le %le %le %le %le %le",
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                &TF_grid[j], 
-//.-.//                temp, 
-//.-.//                temp, 
-//.-.//                temp
-//.-.//            )==Ncolum;
-//.-.//            ++j
-//.-.//        );
-//.-.//        //CAMB files have Ncolum columns
-//.-.//
-//.-.//        fclose(fp2);
-//.-.//
-//.-.//        //We need to give the right values to TF, evaluated over k and not k/h,
-//.-.//        //we define kgrid for that 
-//.-.//
-//.-.//        for(j=0;j<length_transfer;++j){
-//.-.//            TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
-//.-.//        }   
-//.-.//    }
+    else if(boltzmann_tag==_AXIONCAMB_){ //CAMB
+        Ncolum=9; 
+        for(
+            j=0;
+            fscanf(
+                fp2,
+                "%le %le %le %le %le %le %le %le %le",
+                temp, 
+                temp, 
+                temp, 
+                temp, 
+                temp, 
+                &TF_grid[j], 
+                temp, 
+                temp, 
+                temp
+            )==Ncolum;
+            ++j
+        );
+        //CAMB files have Ncolum columns
+
+        fclose(fp2);
+
+        //We need to give the right values to TF, evaluated over k and not k/h,
+        //we define kgrid for that 
+
+        for(j=0;j<length_transfer;++j){
+            TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+        }   
+    }
     else{
         printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
         return -1;
@@ -802,7 +848,7 @@ int save_transfers_camb(
     double **TFnu_mass, 
     double **TFnu2, 
     double **TFextra
-){
+    ){
     //we will save the TF from CAMB
     //nu2 and extra are set to be identical to nu1 if all are active.
 
@@ -842,6 +888,58 @@ int save_transfers_camb(
     return 1;
 }
 
+int save_transfers_axioncamb(
+    Cosmology *cosmo,
+    double zlist_transfer[],
+    double *kgrid,
+    double **TFm,
+    double **TFgamma,
+    double **TFnu,
+    double **TFnu_mass,
+    double **TFnu2,
+    double **TFextra
+    ){
+    //we will save the TF from axionCAMB
+    //nu2 and extra are set to be identical to nu1 if all are active.
+
+    int lengthname=200, jz;
+    char *filename; //To open files.
+    filename=(char *)malloc((lengthname+1)*sizeof(char));
+    FILE *fp;
+    int checkm, checknu, checknu_mass, checkgamma;
+    
+    for(jz=0;jz<Nz_transfer;jz++){
+        lengthname=sprintf(
+            filename,
+            "Boltzmann_%d/transfer_files_%d/_transfer_out_z%.3f",
+            boltzmann_tag,
+            cosmo->file_tag,
+            zlist_transfer[jz]
+        );
+
+        fp=fopen(filename, "r");
+        checkm=gettransfer_matter(cosmo, filename, kgrid, TFm[jz]);
+        do_check(checkm);
+        checkgamma=gettransfer_gamma(cosmo, filename, kgrid, TFgamma[jz]);
+        do_check(checkgamma);
+        checknu=gettransfer_nu_massless(cosmo, filename,  kgrid, TFnu[jz]);
+        do_check(checknu);
+        checknu_mass=gettransfer_nu1(cosmo, filename, kgrid, TFnu_mass[jz]);
+        do_check(checknu_mass);
+        checknu_mass=gettransfer_nu2(cosmo, filename,  kgrid, TFnu2[jz]);
+        do_check(checknu_mass);
+        checknu_mass=gettransfer_extra(cosmo, filename, kgrid, TFextra[jz]);
+        do_check(checknu_mass);
+        fclose(fp);
+    
+    }
+
+    free(filename);
+
+    return 1;
+}
+
+
 
 int save_transfers_class(
     Cosmology *cosmo, 
@@ -853,7 +951,7 @@ int save_transfers_class(
     double **TFnu1, 
     double **TFnu2, 
     double **TFextra
-){
+    ){
     //we will save the TF from CLASS
 
     int lengthname=200, jz;
@@ -991,81 +1089,81 @@ int run_camb(Cosmology *cosmo, double zlist_transfer[]){
 }
 
 
-//.-.//int run_axioncamb(Cosmology *cosmo, double zlist_transfer[]){
-//.-.//
-//.-.//    //We will copy a version of params_base.ini and modify it
-//.-.//    system("cp axionCAMB_Current/params_base.ini params_collapse.ini");
-//.-.//
-//.-.//    //create appropriate folder for CAMB output
-//.-.//    int lengthfilename=200;
-//.-.//    char *folder_name;
-//.-.//    folder_name=(char *)malloc((lengthfilename+1)*sizeof(char));
-//.-.//
-//.-.//    //lengthfilename=sprintf(folder_name,"transfer_files_%d/test", file_tag);
-//.-.//    //fp=fopen(folder_name, "w");
-//.-.//    //fclose(fp);
-//.-.//
-//.-.//    lengthfilename=sprintf(folder_name,"mkdir Boltzmann_%d", boltzmann_tag);
-//.-.//    system(folder_name);
-//.-.//    lengthfilename=sprintf(
-//.-.//        folder_name,
-//.-.//        "mkdir Boltzmann_%d/transfer_files_%d",
-//.-.//        boltzmann_tag,
-//.-.//        cosmo->file_tag
-//.-.//    );
-//.-.//
-//.-.//    system(folder_name);
-//.-.//
-//.-.//    int lengthname=200, jz;
-//.-.//    char *filename; //To open files.
-//.-.//    filename=(char *)malloc((lengthname+1)*sizeof(char));
-//.-.//    FILE *fp;
-//.-.//
-//.-.//    lengthname=sprintf(filename,"params_collapse.ini");
-//.-.//    fp=fopen(filename, "a+");
-//.-.//
-//.-.//    fprintf(fp, "ombh2 = %.4f \n",cosmo->omegab);
-//.-.//    fprintf(fp, "omch2 = %.4f \n",cosmo->omegac);
-//.-.//    //fprintf(fp, "omnuh2 = %.4f \n",cosmo->omeganu1);
-//.-.//    fprintf(fp, "omnuh2 = %.4f \n",3.*cosmo->omeganu1);
-//.-.//    fprintf(fp, "hubble = %.4f \n",100.*cosmo->h);
-//.-.//    //fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
-//.-.//    if(cosmo->omeganu1==0.){
-//.-.//        fprintf(fp, "massless_neutrinos = %.4f \n", 3.045);
-//.-.//        fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
-//.-.//        fprintf(fp, "massive_neutrinos  = %d \n", 0);
-//.-.//    }
-//.-.//    else{
-//.-.//        fprintf(fp, "massless_neutrinos = %.4f \n", 0.045);
-//.-.//        fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
-//.-.//        fprintf(fp, "massive_neutrinos  = %d \n", 3);
-//.-.//    }
-//.-.//
-//.-.//    fprintf(fp, "scalar_amp(1) = %.2le \n", cosmo->As);
-//.-.//    fprintf(fp, "scalar_spectral_index(1) = %.4f \n", cosmo->ns);
-//.-.//    fprintf(fp, "transfer_num_redshifts = %ld \n", (long) Nz_transfer);
-//.-.//    for(jz=0;jz<Nz_transfer;jz++){
-//.-.//        fprintf(fp, "transfer_filename(%d) = transfer_out_z%.3f \n", jz+1, zlist_transfer[jz]);
-//.-.//        fprintf(fp, "transfer_redshift(%d) = %.3f \n", jz+1, zlist_transfer[jz]);
-//.-.//    }
-//.-.//    fprintf(fp, "output_root = Boltzmann_%d/transfer_files_%d/ \n", boltzmann_tag, cosmo->file_tag);
-//.-.//
-//.-.//    //fprintf(fp, "nu_mass_eigenstates = %d \n", cosmo->counter_massive_nus);
-//.-.//    //fprintf(fp, "massive_neutrinos  = %d \n", cosmo->counter_massive_nus);
-//.-.//
-//.-.//    fclose(fp);
-//.-.//
-//.-.//    //system("make clean");
-//.-.//    //system("make");
-//.-.//
-//.-.//    system("mv params_collapse.ini axionCAMB_Current/params_collapse.ini");
-//.-.//    system("axionCAMB_Current/./camb axionCAMB_Current/params_collapse.ini > output_cmd.txt");
-//.-.//    system("rm output_cmd.txt");
-//.-.//
-//.-.//    free(filename);
-//.-.//
-//.-.//    return 1;
-//.-.//}
+int run_axioncamb(Cosmology *cosmo, double zlist_transfer[]){
+
+    //We will copy a version of params_base.ini and modify it
+    system("cp axionCAMB_Current/params_base.ini params_collapse.ini");
+
+    //create appropriate folder for CAMB output
+    int lengthfilename=200;
+    char *folder_name;
+    folder_name=(char *)malloc((lengthfilename+1)*sizeof(char));
+
+    //lengthfilename=sprintf(folder_name,"transfer_files_%d/test", file_tag);
+    //fp=fopen(folder_name, "w");
+    //fclose(fp);
+
+    lengthfilename=sprintf(folder_name,"mkdir Boltzmann_%d", boltzmann_tag);
+    system(folder_name);
+    lengthfilename=sprintf(
+        folder_name,
+        "mkdir Boltzmann_%d/transfer_files_%d",
+        boltzmann_tag,
+        cosmo->file_tag
+    );
+
+    system(folder_name);
+
+    int lengthname=200, jz;
+    char *filename; //To open files.
+    filename=(char *)malloc((lengthname+1)*sizeof(char));
+    FILE *fp;
+
+    lengthname=sprintf(filename,"params_collapse.ini");
+    fp=fopen(filename, "a+");
+
+    fprintf(fp, "ombh2 = %.4f \n",cosmo->omegab);
+    fprintf(fp, "omch2 = %.4f \n",cosmo->omegac);
+    //fprintf(fp, "omnuh2 = %.4f \n",cosmo->omeganu1);
+    fprintf(fp, "omnuh2 = %.4f \n",3.*cosmo->omeganu1);
+    fprintf(fp, "hubble = %.4f \n",100.*cosmo->h);
+    //fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
+    if(cosmo->omeganu1==0.){
+        fprintf(fp, "massless_neutrinos = %.4f \n", 3.045);
+        fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
+        fprintf(fp, "massive_neutrinos  = %d \n", 0);
+    }
+    else{
+        fprintf(fp, "massless_neutrinos = %.4f \n", 0.045);
+        fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
+        fprintf(fp, "massive_neutrinos  = %d \n", 3);
+    }
+
+    fprintf(fp, "scalar_amp(1) = %.2le \n", cosmo->As);
+    fprintf(fp, "scalar_spectral_index(1) = %.4f \n", cosmo->ns);
+    fprintf(fp, "transfer_num_redshifts = %ld \n", (long) Nz_transfer);
+    for(jz=0;jz<Nz_transfer;jz++){
+        fprintf(fp, "transfer_filename(%d) = transfer_out_z%.3f \n", jz+1, zlist_transfer[jz]);
+        fprintf(fp, "transfer_redshift(%d) = %.3f \n", jz+1, zlist_transfer[jz]);
+    }
+    fprintf(fp, "output_root = Boltzmann_%d/transfer_files_%d/ \n", boltzmann_tag, cosmo->file_tag);
+
+    //fprintf(fp, "nu_mass_eigenstates = %d \n", cosmo->counter_massive_nus);
+    //fprintf(fp, "massive_neutrinos  = %d \n", cosmo->counter_massive_nus);
+
+    fclose(fp);
+
+    //system("make clean");
+    //system("make");
+
+    system("mv params_collapse.ini axionCAMB_Current/params_collapse.ini");
+    system("axionCAMB_Current/./camb axionCAMB_Current/params_collapse.ini > output_cmd.txt");
+    system("rm output_cmd.txt");
+
+    free(filename);
+
+    return 1;
+}
 
 
 int run_class(Cosmology *cosmo, double zlist_transfer[]){
@@ -1290,11 +1388,11 @@ int boltzmann(Cosmology *cosmo, double *zlist_transfer){
             boltzmann_check=run_camb(cosmo, zlist_transfer_code);
         }
     }
-//.-.//    else if (boltzmann_tag == _AXIONCAMB_){//axionCAMB
-//.-.//        if(run_boltzmann_option!=0){//whether to run it
-//.-.//            boltzmann_check=run_axioncamb(cosmo, zlist_transfer_code);
-//.-.//        }
-//.-.//    }
+    else if (boltzmann_tag == _AXIONCAMB_){//axionCAMB
+        if(run_boltzmann_option!=0){//whether to run it
+            boltzmann_check=run_axioncamb(cosmo, zlist_transfer_code);
+        }
+    }
     else {
         printf("Choose either CLASS, CAMB, or axionCAMB \n");
         return -1;
@@ -1354,9 +1452,9 @@ int read_input_file (char *filename, double parameter_values[Ninput]){
     // close file
 
     //to check it has read it:
-    //cout << buffer << "\n";
+    //std::cout << buffer << "\n";
 
-    std::string parameter_lookup[24] = {
+    std::string parameter_lookup[] = {
             "N_Mhalo",
             "N_zcoll",
             "N_klong",
@@ -1378,20 +1476,17 @@ int read_input_file (char *filename, double parameter_values[Ninput]){
             "n_s",
             "mnu1",
             "mnu2",
-            "N_eff_input"//.-.//,
-//.-.//            "omega_ax", //only loaded for axioncamb
-//.-.//            "m_ax" //only loaded for axioncamb
+            "N_eff_input",
+            "omega_ax", 
+            "m_ax" 
     };
 
     std::string parameter_names[Ninput] = {};
-
     for(i=0; i<Ninput; i++){
         parameter_names[i]=parameter_lookup[i];
     } 
-
     std::string param_name;
     double param_value;
-
     for (i=0;i<Ninput;i++){
         param_name = parameter_names[i];
         param_value = read_param(buffer, param_name);
@@ -1401,6 +1496,7 @@ int read_input_file (char *filename, double parameter_values[Ninput]){
         else{
             parameter_values[i] = param_value;
         }
+        std::cout << param_name << " = " << param_value << "\n";
     }
     return 1;
 }
@@ -1416,14 +1512,12 @@ double read_param (std::string buffer, std::string parameter_name){
     int length_line = 50;
     char line[length_line];    //temporary variable, to store the line where the 
                                //variable name appears
-
     std::size_t position = buffer.find(parameter_name);    //we find
-                                                           //parameter_name
                                                            //in buffer
 
     for(i=0;i<length_line;i++){
         line[i]    = buffer.at(position+i);     //we save the parameter name and  
-                                             //its value in temporary line
+                                                //its value in temporary line
     }
 
     if (debug_mode > 1){
@@ -1432,7 +1526,6 @@ double read_param (std::string buffer, std::string parameter_name){
 
     sscanf(line, "%*[^=]= %le ", &parameter_value);    //save the number after
                                                        //the equal sign
-
     //to check it's working:
     if (debug_mode > 0){
         std::cout << parameter_name;
@@ -1469,10 +1562,10 @@ int prepare_cosmology(Cosmology *cosmo, double *parameter_values){
     cosmo->mnu2 = parameter_values[20];
     cosmo->Neff_input = parameter_values[21];
 
-//.-.//    if (boltzmann_tag==_AXIONCAMB_){ 
-//.-.//        cosmo->omega_ax = parameter_values[22]; 
-//.-.//        cosmo->m_ax = parameter_values[23]; 
-//.-.//    }
+    if (boltzmann_tag==_AXIONCAMB_){ 
+        cosmo->omega_ax = parameter_values[22]; 
+        cosmo->m_ax = parameter_values[23]; 
+    }
 
     cosmo->counter_massive_nus = (cosmo->mnu1>0) + (cosmo->mnu2>0); 
     //we subtract one from Neff per neutrino, and we use it for 
@@ -1517,7 +1610,7 @@ int prepare_cosmology(Cosmology *cosmo, double *parameter_values){
 
     cosmo->Omeganu2=cosmo->omeganu2/cosmo->h/cosmo->h;
 
-//.-.//    cosmo->Omega_ax = cosmo->omega_ax/cosmo->h/cosmo->h; //for axion
+    cosmo->Omega_ax = cosmo->omega_ax/cosmo->h/cosmo->h; //for axion
 
     cosmo->OmegaM=(cosmo->omegab+cosmo->omegac)/cosmo->h/cosmo->h; 
     //b+c energy density, this is what haloes are made of (and what enters R_M)

@@ -92,8 +92,21 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
             transfer_extra
         );
     }
+    else if(boltzmann_tag == _AXIONCAMB_){ //AXIONCAMB
+        transfer_check=save_transfers_axioncamb(
+            cosmo,
+            zlist_transfer,
+            k_transfer_array,
+            transfer_matter,
+            transfer_gamma,
+            transfer_nu_massless,
+            transfer_nu1,
+            transfer_nu2,
+            transfer_extra
+        );
+    }
     else{
-        printf("ERROR: Select CLASS or CAMB \n");
+        printf("ERROR: Select CLASS, CAMB, or AXIONCAMB \n");
         return 0;
     }
     do_check(transfer_check);
@@ -128,7 +141,6 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     //we save zs before and after zi
 
     const double zip2=zlist_transfer[index_zip2];
-
 
     for(j=0;j<length_transfer;j++){
         d_transfer_array_zi[j] = (
@@ -1700,7 +1712,6 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         ////////////////////////////////////////////
         ////and we save the results to files.    /////
         //////////////////////////////////////////
-
         lengthname=sprintf(
             filename,
             "output/result-%d/delta_initial_z%.2f_M%.2f_Nk%d.dat",
@@ -1767,7 +1778,6 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     //////////////////////////////////////////
     //// we free the allocated memory    /////
     ////////////////////////////////////////
-
     free(transfer_array_z0);
     free(k_transfer_array);
 

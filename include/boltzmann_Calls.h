@@ -42,6 +42,18 @@ int save_transfers_camb(
     double **TFextra
 );
 
+int save_transfers_axioncamb(
+    Cosmology *cosmo,
+    double zlist_transfer[],
+    double *kgrid,
+    double **TFm,
+    double **TFgamma,
+    double **TFnu_massless,
+    double **TFnu1,
+    double **TFnu2,
+    double **TFextra
+);
+
 int save_transfers_class(
     Cosmology *cosmo, 
     double zlist_transfer[], 
@@ -59,7 +71,7 @@ int save_transfers_class(
 //// Run Boltzmann over the redshift list zlist_transfer
 int run_camb(Cosmology *cosmo, double zlist_transfer[]);
 
-//.-.//int run_axioncamb(Cosmology *cosmo, double zlist_transfer[]);
+int run_axioncamb(Cosmology *cosmo, double zlist_transfer[]);
 
 int run_class(Cosmology *cosmo, double zlist_transfer[]);
 
