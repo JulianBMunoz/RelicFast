@@ -1036,12 +1036,12 @@ int run_camb(Cosmology *cosmo, double zlist_transfer[]){
     fprintf(fp, "hubble = %.4f \n",100.*cosmo->h);
     //fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
     if(cosmo->omeganu1==0.){
-        fprintf(fp, "massless_neutrinos = %.4f \n", 3.045);
+        fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
         fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
         fprintf(fp, "massive_neutrinos  = %d \n", 0);
     }
     else{
-        fprintf(fp, "massless_neutrinos = %.4f \n", 0.045);
+        fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
         fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
         fprintf(fp, "massive_neutrinos  = %d \n", 3);
     }
@@ -1129,12 +1129,12 @@ int run_axioncamb(Cosmology *cosmo, double zlist_transfer[]){
     fprintf(fp, "hubble = %.4f \n",100.*cosmo->h);
     //fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
     if(cosmo->omeganu1==0.){
-        fprintf(fp, "massless_neutrinos = %.4f \n", 3.045);
+        fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
         fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
         fprintf(fp, "massive_neutrinos  = %d \n", 0);
     }
     else{
-        fprintf(fp, "massless_neutrinos = %.4f \n", 0.045);
+        fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
         fprintf(fp, "nu_mass_eigenstates = %d \n", 1);
         fprintf(fp, "massive_neutrinos  = %d \n", 3);
     }
@@ -1270,8 +1270,7 @@ int run_class(Cosmology *cosmo, double zlist_transfer[]){
         CLASS_Current/explanatory_collapse.ini");
     lengthfilename=sprintf(
         folder_name,
-        "CLASS_Current/./class CLASS_Current/explanatory_collapse.ini >    Bo\
-            ltzmann_%d/transfer_files_%d/output_cmd.txt", 
+        "CLASS_Current/./class CLASS_Current/explanatory_collapse.ini > Boltzmann_%d/transfer_files_%d/output_cmd.txt", 
         boltzmann_tag, 
         cosmo->file_tag
     );
@@ -1584,7 +1583,8 @@ int prepare_cosmology(Cosmology *cosmo, double *parameter_values){
         (cosmo->tag_thermal_relic>0) 
         * (int)(1000.*cosmo->omega_TR + 1000*cosmo->m_TR + 0.5f)
         + (cosmo->tag_sterile_nu>0) * (int)(100*cosmo->m_SN + 0.5f)
-    ); 
+    );
+    cosmo->file_tag = (0);  
     //some placeholder for what to use as filetag. + 0.5f so it rounds
 
     cosmo->omega_SN = cosmo->m_SN/mass_constant_nu; 
