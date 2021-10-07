@@ -211,7 +211,11 @@ int gettransfer_matter(Cosmology *cosmo, char *filename,  double *kgrid, double 
         fclose(fp2);
         for(j=0;j<length_transfer;++j){
             kgrid[j] = cosmo->h * koverh[j];
-            TF[j] = kgrid[j]*kgrid[j]*(TF_grid_c[j]+TF_grid_b[j]);
+            TF[j] = kgrid[j]*kgrid[j]*(
+                (cosmo->omegac/(cosmo->omegab+cosmo->omegac))*TF_grid_c[j]
+                + (cosmo->omegab/(cosmo->omegab+cosmo->omegac))*TF_grid_b[j]
+            );
+            printf("om_c = %le \n",(cosmo->omegac/(cosmo->omegab+cosmo->omegac)));  
         }
     }
     else{
