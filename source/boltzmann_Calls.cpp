@@ -160,13 +160,13 @@ int gettransfer_matter(Cosmology *cosmo, char *filename,  double *kgrid, double 
                 fp2,
                 "%le %le %le %le %le %le %le %le %le %le %le %le %le", 
                 &koverh[j], 
-                temp,
-                temp,
+                &TF_grid_c[j],
+                &TF_grid_b[j],
                 temp,
                 temp,
                 temp,
                 temp, 
-                &TF_grid_b[j],
+                temp,
                 temp,
                 temp,
                 temp,
@@ -184,8 +184,11 @@ int gettransfer_matter(Cosmology *cosmo, char *filename,  double *kgrid, double 
 
         for(j=0;j<length_transfer;++j){
             kgrid[j] = cosmo->h * koverh[j];
-            TF[j] = kgrid[j]*kgrid[j]*TF_grid_b[j]; 
-            //for CAMB we have total matter (c+b) directly.
+            TF[j] = kgrid[j]*kgrid[j]*(
+                (cosmo->omegac/(cosmo->omegab+cosmo->omegac))*TF_grid_c[j]
+                + (cosmo->omegab/(cosmo->omegab+cosmo->omegac))*TF_grid_b[j]
+            );; 
+            //for CAMB we compute total matter (c+b).
         }
     }
     else if(boltzmann_tag==_AXIONCAMB_){ //axionCAMB
