@@ -42,6 +42,7 @@ writing_file = open("./Makefile", "w")
 writing_file.write(new_file_content)
 writing_file.close()
 os.system('make all')
+os.chdir('../')
 
 print('Compiling CAMB Boltzmann solver...')
 os.system('cp -r ./CAMB ./CAMB_Current') 
@@ -61,6 +62,7 @@ writing_file = open("./Makefile", "w")
 writing_file.write(new_file_content)
 writing_file.close()
 os.system('make all') 
+os.chdir('../') 
 
 print('Compiling axionCAMB Boltzmann solver...')
 os.system('cp -r ./axionCAMB ./axionCAMB_Current') 
@@ -78,9 +80,9 @@ writing_file = open("./Makefile", "w")
 writing_file.write(new_file_content)
 writing_file.close()
 os.system('make all') 
+os.chdir('../')
 
 print('Removing openmp flag from RelicFast compilation...') 
-os.chdir('..') 
 reading_file = open("./Makefile", "r")
 new_file_content = ""
 for line in reading_file:
