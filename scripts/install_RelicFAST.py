@@ -11,7 +11,11 @@ reading_file = open("./include/common.h", "r")
 new_file_content = ""
 for line in reading_file:
   stripped_line = line.strip()
-  new_line = stripped_line.replace("boltzmann_tag  _CLASS_", "boltzmann_tag  _CAMB_")
+  new_line = stripped_line.replace(
+        "boltzmann_tag  _CLASS_", "boltzmann_tag  _AXIONCAMB_"
+    ).replace(
+        "boltzmann_tag  _CAMB_", "boltzmann_tag  _AXIONCAMB_"
+    )
   new_file_content += new_line +"\n"
 reading_file.close()
 os.system('rm ./include/common.h') 
@@ -22,6 +26,21 @@ writing_file.close()
 print('Compiling CLASS Boltzmann solver...')
 os.system('cp -r ./CLASS ./CLASS_Current')          
 os.chdir('./CLASS_Current')
+reading_file = open("./Makefile", "r")
+new_file_content = ""
+for line in reading_file:
+  stripped_line = line.strip()
+  new_line = stripped_line.replace(
+    "CC       = gcc", "CC       = gcc-10"
+  ).replace(
+    "OMPFLAG   = -openmp", ""
+  )
+  new_file_content += new_line +"\n"
+reading_file.close()
+os.system('rm ./Makefile')
+writing_file = open("./Makefile", "w")
+writing_file.write(new_file_content)
+writing_file.close()
 os.system('make all')
 
 print('Compiling CAMB Boltzmann solver...')
@@ -34,8 +53,6 @@ for line in reading_file:
   stripped_line = line.strip()
   new_line = stripped_line.replace(
     "F90C     = ifort", "F90C     = gfortran"
-  ).replace(
-    "OMPFLAG   = -openmp", ""
   )
   new_file_content += new_line +"\n"
 reading_file.close()
@@ -67,7 +84,11 @@ os.chdir('..')
 reading_file = open("./Makefile", "r")
 new_file_content = ""
 for line in reading_file:
-    new_line = line.replace("parallel = -fopenmp", "")
+    new_line = line.replace(
+        "parallel = -fopenmp", ""
+    ).replace(
+        "CC=gcc", "CC=gcc-10"
+    )
     new_file_content += new_line +"\n"
 reading_file.close()
 os.system('rm ./Makefile') 
