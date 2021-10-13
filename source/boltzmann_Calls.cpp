@@ -218,7 +218,7 @@ int gettransfer_matter(Cosmology *cosmo, char *filename,  double *kgrid, double 
                 (cosmo->omegac/(cosmo->omegab+cosmo->omegac))*TF_grid_c[j]
                 + (cosmo->omegab/(cosmo->omegab+cosmo->omegac))*TF_grid_b[j]
             );
-            printf("om_c = %le \n",(cosmo->omegac/(cosmo->omegab+cosmo->omegac)));  
+            //printf("om_c = %le \n",(cosmo->omegac/(cosmo->omegab+cosmo->omegac)));  
         }
     }
     else{
