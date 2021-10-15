@@ -65,11 +65,10 @@ f_b_LCDM = omega_b_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
 
 omega_nu = neutrino_masses/93.2
 
-h = np.sqrt((omega_b_LCDM+omega_cdm_LCDM+omega_nu)/Omega_M_LCDM)
+h = (0.701)*np.sqrt((omega_b_LCDM+omega_cdm_LCDM+omega_nu)/(omega_b_LCDM+omega_cdm_LCDM))
 
-omega_cdm = omega_cdm_LCDM - omega_nu
-f_cdm = omega_cdm/(omega_cdm + omega_b_LCDM)
-f_b = omega_b_LCDM/(omega_cdm + omega_b_LCDM)
+f_cdm = omega_cdm_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
+f_b = omega_b_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
 
 os.chdir(rfpath)
 
@@ -82,7 +81,7 @@ for mnu_idx, mnu_val in enumerate(neutrino_masses):
     os.system('rm -r '+'Boltzmann_2')
     os.system('rm ./run.ini')
     
-    # RUN RelicFast + axionCAMB for each neutrino mass choice 
+    # RUN RelicFast + solver for each neutrino mass choice 
     reading_file = open("2006.09395.ini", "r")
     new_file_content = ""
     for line in reading_file:
@@ -95,6 +94,10 @@ for mnu_idx, mnu_val in enumerate(neutrino_masses):
             "m_SN = 0.02", "m_SN = "+f'{mnu_val/3.:.2e}'
         ).replace(
             "z_collapse_bot = 0.7", "z_collapse_bot = 0.65"
+        ).replace(
+            "z_collapse_top = 1.4", "z_collapse_top = 1.65"
+        ).replace(
+            "N_zcoll = 1", "N_zcoll = 11"
         ).replace(
             "hubble = 0.701", "hubble = "+f'{h[mnu_idx]:.5f}'
         )
@@ -173,19 +176,29 @@ for idx in range(len(data_tf)):
     m_idx = idx//len(redshifts)
     m = neutrino_masses[m_idx]
     
-    kvals = data_tf[idx][:, 0]
-    tcvals = data_tf[idx][:, 1]
-    tbvals = data_tf[idx][:, 2]
-    
+    if (solver=='_CLASS_'):
+        kvals = data_tf[idx][:, 0]#*h[m_idx]
+        tcvals = data_tf[idx][:, 3]
+        tbvals = data_tf[idx][:, 2]
+    else:
+        kvals = data_tf[idx][:, 0]#*h[m_idx]
+        tcvals = data_tf[idx][:, 1]
+        tbvals = data_tf[idx][:, 2]
+        
     tcinterp = scipy.interpolate.interp1d(kvals, tcvals)
     tbinterp = scipy.interpolate.interp1d(kvals, tbvals)
     
     tcplot = tcinterp(kplot)
     tbplot = tbinterp(kplot)
-    
-    LCDM_kvals = data_tf[z_idx][:, 0]
-    LCDM_tcvals = data_tf[z_idx][:, 1]
-    LCDM_tbvals = data_tf[z_idx][:, 2]
+
+    if (solver=='_CLASS_'):
+        LCDM_kvals = data_tf[z_idx][:, 0]#*h[z_idx]
+        LCDM_tcvals = data_tf[z_idx][:, 3]
+        LCDM_tbvals = data_tf[z_idx][:, 2]
+    else:
+        LCDM_kvals = data_tf[z_idx][:, 0]#*h[z_idx]
+        LCDM_tcvals = data_tf[z_idx][:, 1]
+        LCDM_tbvals = data_tf[z_idx][:, 2]
     
     LCDM_tcinterp = scipy.interpolate.interp1d(LCDM_kvals, LCDM_tcvals)
     LCDM_tbinterp = scipy.interpolate.interp1d(LCDM_kvals, LCDM_tbvals)
@@ -193,10 +206,28 @@ for idx in range(len(data_tf)):
     LCDM_tcplot = LCDM_tcinterp(kplot)
     LCDM_tbplot = LCDM_tbinterp(kplot)
     
-    pcbtf = np.power(f_b[m_idx]*tbplot + f_cdm[m_idx]*tcplot, 2.)
-    pcbtf_LCDM = np.power(f_b_LCDM*LCDM_tbplot + f_cdm_LCDM*LCDM_tcplot, 2.)
+    pcbtf = (f_b_LCDM*tbplot + f_cdm_LCDM*tcplot)
+    pcbtf_LCDM = (f_b_LCDM*LCDM_tbplot + f_cdm_LCDM*LCDM_tcplot)
     
-    tf_ratio_plot = (pcbtf - pcbtf_LCDM)/pcbtf_LCDM
+    #p_primordial = (
+    #        2.
+    #        *(2.2321e-9)
+    #        *np.power(np.pi, 2.)
+    #        *np.power(kplot*h[m_idx], -3)
+    #        *np.power(kplot/0.05, 0.967-1.0)
+    #) 
+    p_primordial_LCDM = (
+            2.
+            *(2.2321e-9)
+            *np.power(np.pi, 2.)
+            *np.power(kplot*h[0], -3)
+            *np.power(kplot*h[0]/0.05, 0.967-1.0)
+    ) 
+    
+    pcb = p_primordial_LCDM*np.power(pcbtf, 2.)
+    pcb_LCDM = p_primordial_LCDM*np.power(pcbtf_LCDM, 2.)
+    
+    tf_ratio_plot = (pcb - pcb_LCDM)/pcb_LCDM
     
     ref1 = np.loadtxt(reference_datapath+'2006.09395_Fig1_m_60mev_z_0.65.csv', delimiter=',')
     ref2 = np.loadtxt(reference_datapath+'2006.09395_Fig1_m_90mev_z_0.65.csv', delimiter=',')
@@ -246,11 +277,11 @@ for idx in range(len(data_tf)):
         r'2009.09393, z=0.65'
     ]
     
-    plt.xlabel(r'$k$', fontsize=15)
+    plt.xlabel(r'$k [Mpc^{-1}]$', fontsize=15)
     plt.ylabel(r'$(P_{cb} - P_{cb, \Lambda} )/P_{cb, \Lambda}$', fontsize=15)
     plt.legend(lines, labels, fontsize=15)
     plt.title(solver, fontsize=15)
     plt.grid(True, which='both', axis='both')
-    plt.savefig("2006.09395_FIG1.png") 
+    
     
     

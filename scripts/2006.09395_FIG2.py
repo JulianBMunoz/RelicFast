@@ -35,7 +35,7 @@ f_b_LCDM = omega_b_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
 
 omega_nu = Mnu/93.2
 
-h = (0.701)*((omega_b_LCDM+omega_cdm_LCDM+omega_nu)/(omega_b_LCDM+omega_cdm_LCDM))
+h = (0.701)*np.sqrt((omega_b_LCDM+omega_cdm_LCDM+omega_nu)/(omega_b_LCDM+omega_cdm_LCDM))
 
 f_cdm = omega_cdm_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
 f_b = omega_b_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
