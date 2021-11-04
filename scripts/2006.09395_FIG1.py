@@ -14,12 +14,14 @@ sns.set()
 neutrino_masses = np.array([0.0e-3, 60.0e-3, 90.0e-3, 120.0e-3]) # Units: eV
 redshifts = np.array([0.65, 1.15, 1.65])
 
-omega_cdm_LCDM = 0.1127
+omega_cdm_LCDM = 0.11271 #0.1127
 omega_b_LCDM = 0.02226
-Omega_M_LCDM = 0.27464
+f_cdm_LCDM = omega_cdm_LCDM/(omega_cdm_LCDM + omega_b_LCDM) #optional
+f_b_LCDM = omega_b_LCDM/(omega_cdm_LCDM + omega_b_LCDM) #optional
+
+Omega_M_LCDM = 0.27464 #optional
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
-
 rfpath_outputsuffix = "output/result-0/"
 outpath = "/Users/nicholasdeporzio/Desktop/"
 reference_datapath = "/Users/nicholasdeporzio/Downloads/"
@@ -30,6 +32,8 @@ solver = "_CLASS_"
 ####         INTERNAL 
 ######################################################
 
+
+# Re-compiling RelicFast with solver of choice 
 if solver=="_CLASS_":
     rfpath_boltzmannsuffix = "Boltzmann_0/transfer_files_0/"
 elif solver=="_CAMB_":
@@ -60,21 +64,17 @@ writing_file.close()
 os.chdir(rfpath)
 os.system('make')
 
-f_cdm_LCDM = omega_cdm_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
-f_b_LCDM = omega_b_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
-
+# Computing background cosmology quantities 
 omega_nu = neutrino_masses/93.2
-
-h = (0.701)*np.sqrt((omega_b_LCDM+omega_cdm_LCDM+omega_nu)/(omega_b_LCDM+omega_cdm_LCDM))
-
-f_cdm = omega_cdm_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
-f_b = omega_b_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
+h = (0.70148)*np.sqrt((omega_b_LCDM+omega_cdm_LCDM+omega_nu)/(omega_b_LCDM+omega_cdm_LCDM))
 
 os.chdir(rfpath)
 
+# Run RelicFast for each neutrino mass 
 for mnu_idx, mnu_val in enumerate(neutrino_masses): 
     print("Running RelicFast + ", solver, " for m_nu = ", mnu_val)
     
+    # Clear old data 
     os.system('rm -r '+rfpath_outputsuffix)
     os.system('rm -r '+'Boltzmann_0')
     os.system('rm -r '+'Boltzmann_1')
@@ -99,7 +99,7 @@ for mnu_idx, mnu_val in enumerate(neutrino_masses):
         ).replace(
             "N_zcoll = 1", "N_zcoll = 11"
         ).replace(
-            "hubble = 0.701", "hubble = "+f'{h[mnu_idx]:.5f}'
+            "hubble = 0.701", "hubble = "+f'{h[mnu_idx]:.6f}'
         )
         
         if (mnu_val!=0.): 
@@ -164,7 +164,15 @@ for mnu_idx, mnu_val in enumerate(neutrino_masses):
             )
 
     os.system('mv ./run.ini ./run_'+str(mnu_idx)+'.ini')
+    os.system('mv ./CAMB_Current/params_collapse.ini ./CAMB_Current/params_collapse_'+str(mnu_idx)+'.ini')
+    os.system('mv ./axionCAMB_Current/params_collapse.ini ./axionCAMB_Current/params_collapse_'+str(mnu_idx)+'.ini')
+    os.system('mv ./CLASS_Current/explanatory_collapse.ini ./CLASS_Current/explanatory_collapse_'+str(mnu_idx)+'.ini')
     
+## In theory, shouldn't need any of the quantities in this block... 
+#omega_M = Omega_M_LCDM*np.power(h, 2.) #optional
+#f_cdm = omega_cdm_LCDM/omega_M #optional
+#f_b = omega_b_LCDM/omega_M #optional
+f_nu = omega_nu/(omega_cdm_LCDM + omega_b_LCDM) #optional
 
 kplot = np.logspace(-4, 0, 41)
 
@@ -177,62 +185,82 @@ for idx in range(len(data_tf)):
     m = neutrino_masses[m_idx]
     
     if (solver=='_CLASS_'):
-        kvals = data_tf[idx][:, 0]#*h[m_idx]
+        kvals = data_tf[idx][:, 0]*h[m_idx]
         tcvals = data_tf[idx][:, 3]
         tbvals = data_tf[idx][:, 2]
+        tnuvals = data_tf[idx][:, 5]# Careful factor of 3
     else:
         kvals = data_tf[idx][:, 0]#*h[m_idx]
         tcvals = data_tf[idx][:, 1]
         tbvals = data_tf[idx][:, 2]
         
-    tcinterp = scipy.interpolate.interp1d(kvals, tcvals)
-    tbinterp = scipy.interpolate.interp1d(kvals, tbvals)
+    tcinterp = scipy.interpolate.interp1d(np.log10(kvals), tcvals)
+    tbinterp = scipy.interpolate.interp1d(np.log10(kvals), tbvals)
+    if (solver=='_CLASS_'):
+        tnuinterp = scipy.interpolate.interp1d(np.log10(kvals), tnuvals)
     
-    tcplot = tcinterp(kplot)
-    tbplot = tbinterp(kplot)
+    tcplot = tcinterp(np.log10(kplot))
+    tbplot = tbinterp(np.log10(kplot))
+    if (solver=='_CLASS_'):
+        tnuplot = tnuinterp(np.log10(kplot))
 
     if (solver=='_CLASS_'):
-        LCDM_kvals = data_tf[z_idx][:, 0]#*h[z_idx]
+        LCDM_kvals = data_tf[z_idx][:, 0]*h[0]
         LCDM_tcvals = data_tf[z_idx][:, 3]
         LCDM_tbvals = data_tf[z_idx][:, 2]
+        #LCDM_tnuvals = np.zeros(np.shape(data_tf[z_idx][:, 0]))
     else:
         LCDM_kvals = data_tf[z_idx][:, 0]#*h[z_idx]
         LCDM_tcvals = data_tf[z_idx][:, 1]
         LCDM_tbvals = data_tf[z_idx][:, 2]
+        #LCDM_tnuvals = np.zeros(np.shape(data_tf[z_idx][:, 0]))
     
-    LCDM_tcinterp = scipy.interpolate.interp1d(LCDM_kvals, LCDM_tcvals)
-    LCDM_tbinterp = scipy.interpolate.interp1d(LCDM_kvals, LCDM_tbvals)
+    LCDM_tcinterp = scipy.interpolate.interp1d(np.log10(LCDM_kvals), LCDM_tcvals)
+    LCDM_tbinterp = scipy.interpolate.interp1d(np.log10(LCDM_kvals), LCDM_tbvals)
     
-    LCDM_tcplot = LCDM_tcinterp(kplot)
-    LCDM_tbplot = LCDM_tbinterp(kplot)
+    LCDM_tcplot = LCDM_tcinterp(np.log10(kplot))
+    LCDM_tbplot = LCDM_tbinterp(np.log10(kplot))
     
-    pcbtf = (f_b_LCDM*tbplot + f_cdm_LCDM*tcplot)
-    pcbtf_LCDM = (f_b_LCDM*LCDM_tbplot + f_cdm_LCDM*LCDM_tcplot)
+    # PROBLEM ZONE
+    if (solver=='_CLASS_'):
+        #pcbtf = (f_b[m_idx]*tbplot + f_cdm[m_idx]*tcplot - f_nu[m_idx]*tnuplot)
+        #pcbtf = (f_b_LCDM*tbplot + f_cdm_LCDM*tcplot)
+        tcb = (f_b_LCDM*tbplot + f_cdm_LCDM*tcplot)
+        #pcbtf = (0.99955*(f_b_LCDM*tbplot + f_cdm_LCDM*tcplot) - 0.982*f_nu[m_idx]*tnuplot)
+        #pcbtf = (0.99967*(f_b_LCDM*tbplot + f_cdm_LCDM*tcplot) - 1.0*f_nu[m_idx]*tnuplot)
+    else: 
+        tcb = (f_b_LCDM*tbplot + f_cdm_LCDM*tcplot)
     
-    #p_primordial = (
-    #        2.
-    #        *(2.2321e-9)
-    #        *np.power(np.pi, 2.)
-    #        *np.power(kplot*h[m_idx], -3)
-    #        *np.power(kplot/0.05, 0.967-1.0)
-    #) 
+    tcb_LCDM = (f_b_LCDM*LCDM_tbplot + f_cdm_LCDM*LCDM_tcplot)
+    
+    #Doesn't matter if there is problem in how I definied
+    #P_primordial because it cancels out in the quantity 
+    #I plot 
     p_primordial_LCDM = (
-            2.
+            1. 
+            #*2.
             *(2.2321e-9)
-            *np.power(np.pi, 2.)
-            *np.power(kplot*h[0], -3)
-            *np.power(kplot*h[0]/0.05, 0.967-1.0)
+            #*np.power(np.pi, 2.)
+            #*np.power(kplot, -3)
+            *np.power(kplot/0.05, 0.967-1.0)
+    ) 
+    p_primordial = (
+            1.
+            #* 2.
+            *(2.2321e-9)
+            #*np.power(np.pi, 2.)
+            #*np.power(kplot, -3)
+            *np.power(kplot/0.05, 0.967-1.0)
     ) 
     
-    pcb = p_primordial_LCDM*np.power(pcbtf, 2.)
-    pcb_LCDM = p_primordial_LCDM*np.power(pcbtf_LCDM, 2.)
+    pcb = p_primordial*np.power(tcb, 2.)
+    pcb_LCDM = p_primordial_LCDM*np.power(tcb_LCDM, 2.)
     
-    tf_ratio_plot = (pcb - pcb_LCDM)/pcb_LCDM
+    ratio_plot = (pcb - pcb_LCDM)/pcb_LCDM
     
     ref1 = np.loadtxt(reference_datapath+'2006.09395_Fig1_m_60mev_z_0.65.csv', delimiter=',')
     ref2 = np.loadtxt(reference_datapath+'2006.09395_Fig1_m_90mev_z_0.65.csv', delimiter=',')
     ref3 = np.loadtxt(reference_datapath+'2006.09395_Fig1_m_120mev_z_0.65.csv', delimiter=',')
-    
     
     if m_idx==0: 
         col = 'black'
@@ -251,11 +279,11 @@ for idx in range(len(data_tf)):
         ls='dashdot'
         
     if idx>=len(redshifts):   
-        plt.plot(kplot, tf_ratio_plot, color=col, linestyle=ls)
+        plt.plot(kplot, ratio_plot*100., color=col, linestyle=ls)
         
-    plt.plot(ref1[:,0], ref1[:,1], color='black', linestyle='solid', linewidth=0.5)
-    plt.plot(ref2[:,0], ref2[:,1], color='black', linestyle='solid', linewidth=0.5)
-    plt.plot(ref3[:,0], ref3[:,1], color='black', linestyle='solid', linewidth=0.5)
+    plt.plot(ref1[:,0]*0.70148, ref1[:,1]*100., color='black', linestyle='solid', linewidth=0.5)
+    plt.plot(ref2[:,0]*0.70148, ref2[:,1]*100., color='black', linestyle='solid', linewidth=0.5)
+    plt.plot(ref3[:,0]*0.70148, ref3[:,1]*100., color='black', linestyle='solid', linewidth=0.5)
     
     lines = [
         Line2D([0], [0], color='red', linewidth=3, linestyle='-'),
@@ -277,11 +305,13 @@ for idx in range(len(data_tf)):
         r'2009.09393, z=0.65'
     ]
     
-    plt.xlabel(r'$k [Mpc^{-1}]$', fontsize=15)
-    plt.ylabel(r'$(P_{cb} - P_{cb, \Lambda} )/P_{cb, \Lambda}$', fontsize=15)
+    plt.xlabel(r'$k ~[Mpc^{-1}]$', fontsize=15)
+    plt.ylabel(r'$100\times(P_{cb} - P_{cb, \Lambda} )/P_{cb, \Lambda}$', fontsize=15)
     plt.legend(lines, labels, fontsize=15)
     plt.title(solver, fontsize=15)
     plt.grid(True, which='both', axis='both')
-    
+    plt.xlim(0.0001, 0.2)
+    plt.ylim(-4., 1.)
+    plt.savefig('2006.09395_FIG1.png')
     
     
