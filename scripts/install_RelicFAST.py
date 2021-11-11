@@ -33,7 +33,7 @@ for line in reading_file:
   new_line = stripped_line.replace(
     "CC       = gcc", "CC       = gcc-10"
   ).replace(
-    "OMPFLAG   = -openmp", ""
+    "OMPFLAG   = -openmp", "#OMPFLAG   = -openmp"
   )
   new_file_content += new_line +"\n"
 reading_file.close()
