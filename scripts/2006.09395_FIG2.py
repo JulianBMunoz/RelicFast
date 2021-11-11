@@ -312,7 +312,7 @@ plt.ylabel(r'$b_1(k)/b_1(k_{\rm ref})$', fontsize=15)
 plt.title(r'CAMB, $ \Sigma m_\nu = $'+f'{Mnu:.2f}'+'meV', fontsize=15)
 plt.legend(lines, labels, fontsize=15)
 plt.grid(True, which='both', axis='both')
-plt.saveplt('2006.09395_FIG2_CAMB.png')
+plt.savefig('2006.09395_FIG2_CAMB.png')
 
 kplot = np.geomspace(10**-3.9, 0.1, 32)
 
@@ -353,7 +353,7 @@ plt.title(r'CLASS, $\Sigma m_\nu = $'+f'{Mnu:.1f}'+'meV', fontsize=15)
 plt.legend(lines, labels, fontsize=15)
 plt.grid(True, which='both', axis='both')
 #plt.ylim((0.999, 1.010))
-plt.saveplt('2006.09395_FIG2_CLASS.png')
+plt.savefig('2006.09395_FIG2_CLASS.png')
 
 kplot = np.geomspace(10**-3.9, 0.1, 32)
 
@@ -393,7 +393,7 @@ plt.ylabel(r'$b_1(k)/b_1(k_{\rm ref})$', fontsize=15)
 plt.title(r'axionCAMB, $ \Sigma m_\nu = $'+f'{Mnu:.2f}'+'meV', fontsize=15)
 plt.legend(lines, labels, fontsize=15)
 plt.grid(True, which='both', axis='both')
-plt.saveplt('2006.09395_FIG2_AXIONCAMB.png')    
+plt.savefig('2006.09395_FIG2_AXIONCAMB.png')    
     
         
     
