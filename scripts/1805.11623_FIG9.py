@@ -22,7 +22,7 @@ kmin = 9.0e-5
 kmax = 1.0
 Nk = 50
 
-h_lcdm = 0.72
+h_lcdm = 0.67
 omega_nu = Mnu/93.14
 omega_cdm_LCDM = 0.12
 omega_b_LCDM = 0.022
@@ -121,6 +121,8 @@ kfs = np.array([0.08*(mval/3./0.1)*h[m_idx]/np.sqrt(1+redshift)
 plt.figure(figsize=(15, 7.5))
 plt.xscale('log')
 
+colors = sns.color_palette("seismic", len(Mnu))
+
 for m_idx, m_val in enumerate(Mnu): 
     ref = np.loadtxt(rfpath+"/scripts/1805.11623_FIG9_REF_"+str(int(1000.*m_val))+"meV.csv", delimiter=',')
 
@@ -130,10 +132,22 @@ for m_idx, m_val in enumerate(Mnu):
     eulbiasinterp = scipy.interpolate.interp1d(kvals, eulbiasvals)
     eulbiasplot = eulbiasinterp(kplot)
     
-    plt.plot(kplot, eulbiasplot/eulbiasplot[0], label=r'$\Sigma m_\nu$ = '+f'{Mnu[m_idx]:.2f}')
-    if (m_idx!=0):
-        plt.plot([kfs[m_idx], kfs[m_idx]], [1.00, 1.01])
-    plt.scatter(ref[:,0], ref[:, 1], color="black", marker="o")
+    plt.plot(
+        kplot, 
+        eulbiasplot/eulbiasplot[0], 
+        label=r'$\Sigma m_\nu$ = '+f'{Mnu[m_idx]:.2f}', 
+        color=colors[m_idx]
+    )
+
+#    if (m_idx!=0):
+#        plt.plot([kfs[m_idx], kfs[m_idx]], [1.00, 1.01])
+
+    plt.scatter(
+        ref[:,0]*h_lcdm, 
+        ref[:, 1], 
+        color=colors[m_idx], 
+        marker="o"
+    )
     
 plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=15)
 plt.ylabel(r'$b^L_1(k)/b^L_1(k_{\rm ref})$', fontsize=15)
