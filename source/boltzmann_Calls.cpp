@@ -1134,6 +1134,8 @@ int run_axioncamb(Cosmology *cosmo, double zlist_transfer[]){
     //fprintf(fp, "omnuh2 = %.4f \n",cosmo->omeganu1);
     fprintf(fp, "omnuh2 = %.4f \n",3.*cosmo->omeganu1);
     fprintf(fp, "hubble = %.4f \n",100.*cosmo->h);
+    fprintf(fp, "omaxh2 = %.4le \n",cosmo->omega_ax);
+    fprintf(fp, "m_ax = %.4le \n",cosmo->m_ax);
     //fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
     if(cosmo->omeganu1==0.){
         fprintf(fp, "massless_neutrinos = %.4f \n", cosmo->Neff);
