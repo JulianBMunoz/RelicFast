@@ -10,6 +10,7 @@ from matplotlib.lines import Line2D
 sns.set()
 
 axioncamb_data_eulbias = []
+axioncamb_data_lagbias = []
 axioncamb_data_tf = []
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
@@ -19,7 +20,7 @@ outpath = "/Users/nicholasdeporzio/Desktop/"
 Mnu = np.array([0.0, 90.0e-3]) # Units: eV
 redshift = 0.7
 kmin = 9.0e-5
-kmax = 1.0
+kmax = 1.5
 Nk = 50
 
 h_lcdm = 0.67
@@ -104,8 +105,11 @@ for m_idx, m_val in enumerate(Mnu):
     
     os.system('./relicfast run.ini')
     
-    # Collect Eulerian bias for requested redshift 
+    # Collect bias for requested redshift 
     axioncamb_data_eulbias.append(
+        np.loadtxt(rfpath_outputsuffix+'bias_Euler_z'+f'{redshift:.2f}'+'_M13.00_Nk50.dat', skiprows=1)
+    )
+    axioncamb_data_lagbias.append(
         np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{redshift:.2f}'+'_M13.00_Nk50.dat', skiprows=1)
     )
     axioncamb_data_tf.append(
@@ -126,15 +130,15 @@ colors = sns.color_palette("seismic", len(Mnu))
 for m_idx, m_val in enumerate(Mnu): 
     ref = np.loadtxt(rfpath+"/scripts/1805.11623_FIG9_REF_"+str(int(1000.*m_val))+"meV.csv", delimiter=',')
 
-    kvals = axioncamb_data_eulbias[m_idx][:, 0]
-    eulbiasvals = axioncamb_data_eulbias[m_idx][:, 1]
+    kvals = axioncamb_data_lagbias[m_idx][:, 0]
+    lagbiasvals = axioncamb_data_lagbias[m_idx][:, 1]
 
-    eulbiasinterp = scipy.interpolate.interp1d(kvals, eulbiasvals)
-    eulbiasplot = eulbiasinterp(kplot)
+    lagbiasinterp = scipy.interpolate.interp1d(kvals, lagbiasvals)
+    lagbiasplot = lagbiasinterp(kplot)
     
     plt.plot(
         kplot, 
-        eulbiasplot/eulbiasplot[0], 
+        lagbiasplot/lagbiasplot[0], 
         label=r'$\Sigma m_\nu$ = '+f'{Mnu[m_idx]:.2f}', 
         color=colors[m_idx]
     )

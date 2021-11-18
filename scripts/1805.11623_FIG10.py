@@ -10,6 +10,7 @@ from matplotlib.lines import Line2D
 sns.set()
 
 axioncamb_data_eulbias = []
+axioncamb_data_lagbias = []
 axioncamb_data_tf = []
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
@@ -19,10 +20,10 @@ outpath = "/Users/nicholasdeporzio/Desktop/"
 Mnu = np.array([0.0, 90.0e-3]) # Units: eV
 redshift = 0.7
 kmin = 9.0e-5
-kmax = 1.0
+kmax = 1.5
 Nk = 50
 
-h_lcdm = 0.72
+h_lcdm = 0.67
 omega_nu = Mnu/93.14
 omega_cdm_LCDM = 0.12
 omega_b_LCDM = 0.022
@@ -104,9 +105,12 @@ for m_idx, m_val in enumerate(Mnu):
     
     os.system('./relicfast run.ini')
     
-    # Collect Eulerian bias for requested redshift 
+    # Collect bias for requested redshift 
     axioncamb_data_eulbias.append(
         np.loadtxt(rfpath_outputsuffix+'bias_Euler_z'+f'{redshift:.2f}'+'_M13.00_Nk50.dat', skiprows=1)
+    )
+    axioncamb_data_lagbias.append(
+        np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{redshift:.2f}'+'_M13.00_Nk50.dat', skiprows=1)
     )
     axioncamb_data_tf.append(
         np.loadtxt(rfpath_outputsuffix+'z'+f'{redshift:.2f}'+'TF_CAMB.dat', skiprows=1)
