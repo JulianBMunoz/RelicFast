@@ -19,7 +19,7 @@ outpath = "/Users/nicholasdeporzio/Desktop/"
 
 Mnu = np.array([0.0, 90.0e-3]) # Units: eV
 redshift = 0.7
-kmin = 9.0e-5
+kmin = 5.0e-5
 kmax = 1.5
 Nk = 50
 
@@ -112,9 +112,9 @@ for m_idx, m_val in enumerate(Mnu):
     axioncamb_data_lagbias.append(
         np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{redshift:.2f}'+'_M13.00_Nk50.dat', skiprows=1)
     )
-    axioncamb_data_tf.append(
-        np.loadtxt(rfpath_outputsuffix+'z'+f'{redshift:.2f}'+'TF_CAMB.dat', skiprows=1)
-    )
+#    axioncamb_data_tf.append(
+#        np.loadtxt(rfpath_outputsuffix+'z'+f'{redshift:.2f}'+'TF_CAMB.dat', skiprows=1)
+#    )
     
     os.system('mv ./run.ini ./run_axioncamb_'+str(m_idx)+'.ini')
 
@@ -138,7 +138,7 @@ for m_idx, m_val in enumerate(Mnu):
     
     plt.plot(
         kplot, 
-        lagbiasplot/lagbiasplot[0], 
+        lagbiasplot/eulbiasinterp(h_lcdm * 10**-4), 
         label=r'$\Sigma m_\nu$ = '+f'{Mnu[m_idx]:.2f}', 
         color=colors[m_idx]
     )
