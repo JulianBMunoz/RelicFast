@@ -24,7 +24,7 @@ kmax = 1.5
 Nk = 50
 
 h_lcdm = 0.67
-omega_nu = Mnu/93.14
+omega_nu = Mnu/93.2
 omega_cdm_LCDM = 0.12
 omega_b_LCDM = 0.022
 #Omega_M_LCDM = 0.27464
@@ -92,6 +92,8 @@ for m_idx, m_val in enumerate(Mnu):
             "omegab = 0.02226", "omegab = "+f'{omega_b_LCDM:.3f}'
         ).replace(
             "omegac = 0.11271", "omegac = "+f'{omega_cdm_LCDM:.3f}'
+        ).replace(
+            "Mhalo_min = 1e13", "Mhalo_min = "+f'{1e13/h_lcdm:.3e}'
         )
         if (m_val!=0.0): 
             new_line = new_line.replace(
@@ -106,19 +108,29 @@ for m_idx, m_val in enumerate(Mnu):
     os.system('./relicfast run.ini')
     
     # Collect bias for requested redshift 
+#    axioncamb_data_eulbias.append(
+#        np.loadtxt(rfpath_outputsuffix+'bias_Euler_z'+f'{redshift:.2f}'+'_M13.48_Nk50.dat', skiprows=1)
+#    )
+#    axioncamb_data_lagbias.append(
+#        np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{redshift:.2f}'+'_M13.48_Nk50.dat', skiprows=1)
+#    )
     axioncamb_data_eulbias.append(
-        np.loadtxt(rfpath_outputsuffix+'bias_Euler_z'+f'{redshift:.2f}'+'_M13.00_Nk50.dat', skiprows=1)
+        np.loadtxt(rfpath_outputsuffix+'bias_Euler_z'+f'{redshift:.2f}'+'_M'
+                   +f'{13-np.log10(h_lcdm):.2f}'
+                   +'_Nk50.dat', skiprows=1)
     )
     axioncamb_data_lagbias.append(
-        np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{redshift:.2f}'+'_M13.00_Nk50.dat', skiprows=1)
+        np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{redshift:.2f}'+'_M'
+                   +f'{13-np.log10(h_lcdm):.2f}'
+                   +'_Nk50.dat', skiprows=1)
     )
-#    axioncamb_data_tf.append(
-#        np.loadtxt(rfpath_outputsuffix+'z'+f'{redshift:.2f}'+'TF_CAMB.dat', skiprows=1)
-#    )
+    axioncamb_data_tf.append(
+        np.loadtxt(rfpath_outputsuffix+'z'+f'{redshift:.2f}'+'TF_CAMB.dat', skiprows=1)
+    )
     
     os.system('mv ./run.ini ./run_axioncamb_'+str(m_idx)+'.ini')
 
-kplot = np.geomspace(10**-4, 10**0, 41)
+kplot = np.geomspace(10**-4, 10**0, 41) #Units: h Mpc^-1
 kfs = np.array([0.08*(mval/3./0.1)*h[m_idx]/np.sqrt(1+redshift) 
     for midx, mval in enumerate(Mnu)])
 
@@ -130,34 +142,67 @@ plt.xscale('log')
 for m_idx, m_val in enumerate(Mnu): 
     ref = np.loadtxt(rfpath+"/scripts/1805.11623_FIG10_REF_"+str(int(1000.*m_val))+"meV.csv", delimiter=',')
 
-    kvals = axioncamb_data_eulbias[m_idx][:, 0]
+    kvals = axioncamb_data_eulbias[m_idx][:, 0]/h_lcdm # h/Mpc
     eulbiasvals = axioncamb_data_eulbias[m_idx][:, 1]
 
     eulbiasinterp = scipy.interpolate.interp1d(kvals, eulbiasvals)
-    eulbiasplot = eulbiasinterp(kplot)
+    eulbiasplot = eulbiasinterp(kplot) 
+    
+    #################
+    ref2 = np.loadtxt(rfpath+"/scripts/1805.11623_FIG9_REF_"+str(int(1000.*m_val))+"meV.csv", delimiter=',')
+    refinterp = scipy.interpolate.interp1d(ref2[:,0], ref2[:,1])
+    ref_refactor = refinterp(10**-4)
+    
+    kvals = axioncamb_data_lagbias[m_idx][:, 0]/h_lcdm
+    lagbiasvals = axioncamb_data_lagbias[m_idx][:, 1]
+
+    lagbiasinterp = scipy.interpolate.interp1d(kvals, lagbiasvals)
+    #lagbiasplot = lagbiasinterp(kplot)/lagbiasinterp(10**-4)
+    lagbiasplot = lagbiasinterp(kplot)
+    
+    kvals = axioncamb_data_tf[m_idx][:, 0]*h_lcdm
+    tc = axioncamb_data_tf[m_idx][:, 1]*np.power(kvals, 2.)
+    tb = axioncamb_data_tf[m_idx][:, 2]*np.power(kvals, 2.)
+    tnu = axioncamb_data_tf[m_idx][:, 5]*np.power(kvals, 2.)
+    tcb  = (
+        (omega_cdm_LCDM/(omega_cdm_LCDM+omega_b_LCDM))*tc 
+        + (omega_b_LCDM/(omega_cdm_LCDM+omega_b_LCDM))*tb
+    ) 
+    tm = (
+        (omega_cdm_LCDM/(omega_cdm_LCDM+omega_b_LCDM+omega_nu[m_idx]))*tc 
+        + (omega_b_LCDM/(omega_cdm_LCDM+omega_b_LCDM+omega_nu[m_idx]))*tb
+        + (omega_nu[m_idx]/(omega_cdm_LCDM+omega_b_LCDM+omega_nu[m_idx]))*tnu
+    ) 
+    tcplot = scipy.interpolate.interp1d(kvals/h_lcdm, tc)(kplot)
+    tbplot = scipy.interpolate.interp1d(kvals/h_lcdm, tb)(kplot)
+    tcbplot = scipy.interpolate.interp1d(kvals/h_lcdm, tcb)(kplot)
+    tmplot = scipy.interpolate.interp1d(kvals/h_lcdm, tm)(kplot)
+    
+    reco_eulbiasinterp = scipy.interpolate.interp1d(kplot, (1. + lagbiasplot)*(tcbplot/tmplot))
+    reco_eulbiasplot = reco_eulbiasinterp(kplot)
+    
+    #################
     
     plt.plot(
         kplot, 
-        eulbiasplot/eulbiasinterp(h_lcdm * 10**-4), 
-        label=r'$\Sigma m_\nu$ = '+f'{Mnu[m_idx]:.2f}', 
+        eulbiasplot/eulbiasinterp(10**-4), 
+        #reco_eulbiasplot/reco_eulbiasinterp(10**-4), 
+        #reco_eulbiasplot, 
+        label=r'Nick Data, $\Sigma m_\nu$ = '+f'{Mnu[m_idx]:.2f}', 
         color=colors[m_idx]
     )
 
-#    if (m_idx!=0):
-#        plt.plot([kfs[m_idx], kfs[m_idx]], [1.00, 1.01])
-
-    plt.scatter(
-        ref[:,0]*h_lcdm, 
-        ref[:, 1], 
+    plt.plot(
+        ref[:,0], 
+        ref[:, 1],#/ref_refactor, 
         color=colors[m_idx],  
-        marker="o"
+        marker="o",
+        linestyle="dashed"
     )
     
-plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=15)
+plt.xlabel(r'$k ~[h ~{\rm Mpc}^{-1}]$', fontsize=15)
 plt.ylabel(r'$b_1(k)/b_1(k_{\rm ref})$', fontsize=15)
 plt.title(r'1805.11623 Fig 10, axionCAMB', fontsize=15)
 plt.legend(fontsize=15)
 plt.grid(True, which='both', axis='both')
 plt.savefig("1805.11623_FIG10.png")    
-    
-    
