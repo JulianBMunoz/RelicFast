@@ -959,6 +959,15 @@ Params%grhoax_table=dlog10(dexp(Params%grhoax_table))
 
 !close(983)
 !!! RH
+
+
+open(unit=983, file="/Users/nicholasdeporzio/Downloads/axion_background.dat", action="write", status="replace")
+do i=1,ntable
+   write(983,*) dexp(Params%loga_table(i)), Params%wax_table(i), Params%cs2_table(i), Params%grhoax_table(i) 
+end do
+
+close(983)
+
 Params%loga_table=dlog10(dexp(Params%loga_table))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!create spline buffer arrays for all quatntities of interest as a function of time in code, this will allow camb to calculate via interpolation any of the quantities of interest at any time
