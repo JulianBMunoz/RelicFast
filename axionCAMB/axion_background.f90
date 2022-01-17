@@ -965,8 +965,12 @@ open(unit=983, file="/Users/nicholasdeporzio/Downloads/axion_background.dat", ac
 do i=1,ntable
    write(983,*) dexp(Params%loga_table(i)), Params%wax_table(i), Params%cs2_table(i), Params%grhoax_table(i) 
 end do
-
 close(983)
+
+open(unit=46, file="/Users/nicholasdeporzio/Downloads/axion_aosc.dat", action="write", status="replace")
+write(46,*) Params%a_osc
+close(46)
+
 
 Params%loga_table=dlog10(dexp(Params%loga_table))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
