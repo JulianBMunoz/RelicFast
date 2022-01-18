@@ -521,6 +521,20 @@ a_final=1.0d0
    end forall
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
 
+open(unit=40, file="/Users/nicholasdeporzio/Downloads/axion_dloga.dat", action="write", status="replace")
+write(40,*) dloga
+close(40)
+
+open(unit=39, file="/Users/nicholasdeporzio/Downloads/axion_a.dat", action="write", status="replace")
+write(39,*) "log(a)", "a"
+do i=1,ntable
+   write(39,*) Params%loga_table(i), a_arr(i)
+end do
+close(39)
+
+open(unit=38, file="/Users/nicholasdeporzio/Downloads/axion_rhocrit.dat", action="write", status="replace")
+write(38,*) rhocrit
+close(38)
 
 !!!!!!!
 !assuming axion acts like cosmological constant then matter, 
@@ -941,6 +955,11 @@ call spline_out(eq_arr(1:ntable),Params%loga_table(1:ntable),&
 	endif
 !!!!!!!
 
+open(unit=36, file="/Users/nicholasdeporzio/Downloads/axion_grhoax_2.dat", action="write", status="replace")
+do i=1,ntable
+   write(36,*) dexp(Params%loga_table(i)), Params%grhoax_table(i)
+end do
+close(36)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!put axion energy density in units used in camb time integrations
@@ -971,6 +990,27 @@ open(unit=46, file="/Users/nicholasdeporzio/Downloads/axion_aosc.dat", action="w
 write(46,*) Params%a_osc
 close(46)
 
+open(unit=45, file="/Users/nicholasdeporzio/Downloads/axion_ainit.dat", action="write", status="replace")
+write(45,*) Params%ainit
+close(45)
+
+open(unit=44, file="/Users/nicholasdeporzio/Downloads/axion_aeq.dat", action="write", status="replace")
+write(44,*) Params%aeq
+close(44)
+
+open(unit=43, file="/Users/nicholasdeporzio/Downloads/axion_badflag.dat", action="write", status="replace")
+write(43,*) badflag
+close(43)
+
+open(unit=42, file="/Users/nicholasdeporzio/Downloads/axion_ntable.dat", action="write", status="replace")
+write(42,*) ntable
+close(42)
+
+open(unit=41, file="/Users/nicholasdeporzio/Downloads/axion_grhoax_internal.dat", action="write", status="replace")
+do i=1,ntable
+   write(41,*) dexp(Params%loga_table(i)), grhoax_table_internal(i) 
+end do
+close(41)
 
 Params%loga_table=dlog10(dexp(Params%loga_table))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
