@@ -934,6 +934,12 @@ endif
 enddo
 !!!!!!!!!
 
+open(unit=33, file="/Users/nicholasdeporzio/Downloads/axion_cad2.dat", action="write", status="replace")
+do i=1,ntable
+   write(33,*) a_arr(i), Params%cs2_table(i), littlehfunc(i), v_vec(1, i), v_vec(2, i) 
+end do
+close(33)
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!
 !use same spline method used in rest of subroutine to find new aeq value in this cosmological history (will be needed in initial condition code to normalize, time, scale factor, etc, in particular for isocurvature mode
