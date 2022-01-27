@@ -841,6 +841,68 @@ int gettransfer_extra(Cosmology *cosmo, char *filename, double *kgrid,
 }
 
 
+
+int gettransfer_axion(Cosmology *cosmo, char *filename, double *kgrid, 
+    double *TF){
+    //this function extracts the transfer function of axion species.
+    //It only works if using the axionCAMB solver.
+
+    int j;
+    double temp[length_transfer];
+    double TF_grid[length_transfer];
+    FILE *fp2=fopen(filename,"r");
+    int Ncolum;
+    int length_buffer=1000;
+    char *buffer; //To save header and throw out
+    buffer=(char *)malloc((length_buffer+1)*sizeof(char));
+    int index_extra;
+    int i;
+    double *transfer_temp; //to save values of transfer
+    int length_temp=20;
+    transfer_temp = allocate_1D_array(length_temp); 
+    //less than 20 columns always
+
+    if(boltzmann_tag==_AXIONCAMB_){
+        Ncolum=9; 
+        for(
+            j=0;
+            fscanf(
+                fp2,
+                "%le %le %le %le %le %le %le %le %le",
+                temp, 
+                temp, 
+                temp, 
+                temp, 
+                temp,
+                temp, 
+                &TF_grid[j], 
+                temp, 
+                temp
+            )==Ncolum;
+            ++j
+        );
+        //AXIONCAMB files have Ncolum columns
+
+        fclose(fp2);
+
+        //We need to give the right values to TF, evaluated over k and not k/h,
+        //we define kgrid for that 
+
+        for(j=0;j<length_transfer;++j){
+            TF[j] = kgrid[j]*kgrid[j]*TF_grid[j];
+        }   
+    }
+    else{
+        printf("Error in gettransfer, boltzmann_tag has to be either 0, 1, or 2 \n");
+        return -1;
+    }
+
+    free(buffer);
+    free(transfer_temp);
+
+    return 1;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 //        This function reads a bunch of transfer files in transfer_files/ and saves them ///
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -904,7 +966,8 @@ int save_transfers_axioncamb(
     double **TFnu,
     double **TFnu_mass,
     double **TFnu2,
-    double **TFextra
+    double **TFextra,
+    double **TFaxion
     ){
     //we will save the TF from axionCAMB
     //nu2 and extra are set to be identical to nu1 if all are active.
@@ -937,6 +1000,8 @@ int save_transfers_axioncamb(
         do_check(checknu_mass);
         checknu_mass=gettransfer_extra(cosmo, filename, kgrid, TFextra[jz]);
         do_check(checknu_mass);
+        checkaxion=gettransfer_axion(cosmo, filename, kgrid, TFaxion[jz]);
+        do_check(checkaxion);
         fclose(fp);
     
     }
@@ -1301,13 +1366,13 @@ int run_class(Cosmology *cosmo, double zlist_transfer[]){
 ////////////////////////////////////////////////////////////////////////////////
 
 int boltzmann(Cosmology *cosmo, double *zlist_transfer){
-    //this function runs Boltzmann code (CLASS, CAMB), given z_collapse_array as
+    //this function runs Boltzmann code (CLASS, CAMB, AXIONCAMB), given z_collapse_array as
     //input, and stores in j_collapse_array the numbers of those z_collapses 
     //(since CLASS does not save z in output) and saves the list of zs in 
     //zlist_transfer.
 
     double *zlist_transfer_code;
-    //same a zlist_transfer but reversed so it goes upwards. Because of CAMB...
+    //same as zlist_transfer but reversed so it goes upwards. Because of CAMB...
     zlist_transfer_code=allocate_1D_array(Nz_transfer);
 
     int lengthname=200;
@@ -1396,7 +1461,7 @@ int boltzmann(Cosmology *cosmo, double *zlist_transfer){
             boltzmann_check=run_camb(cosmo, zlist_transfer_code);
         }
     }
-    else if (boltzmann_tag == _AXIONCAMB_){//axionCAMB
+    else if (boltzmann_tag == _AXIONCAMB_){//AXIONCAMB
         if(run_boltzmann_option!=0){//whether to run it
             boltzmann_check=run_axioncamb(cosmo, zlist_transfer_code);
         }

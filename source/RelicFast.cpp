@@ -78,6 +78,36 @@ int main(int argc, char** filenameinput){
     int iM, iz;
 
 
+    //we now import the axion background equation of state
+    int j;
+    int axion_N=5000; 
+
+    cosmo->axion_a = allocate_1D_array(axion_N);
+    cosmo->axion_w = allocate_1D_array(axion_N);
+
+    double axion_a[axion_N];
+    double axion_w[axion_N];
+    double temp;    
+ 
+    FILE *fp2=fopen("/Users/nicholasdeporzio/Downloads/axion_background.dat", "r"); 
+
+    for(
+        j=0; 
+        fscanf(
+            fp2, 
+            "%le %le %le %le",
+            &axion_a[j], 
+            &axion_w[j], 
+            temp, 
+            temp
+        )==4; 
+        ++j
+    ){
+        printf("%le \t %le \n", axion_a[j], axion_w[j]);
+        cosmo->axion_a[j]=axion_a[j]; 
+        cosmo->axion_w[j]=axion_w[j]; 
+    }; 
+
     //we now solve for the collapse and calculate the biases at each z
     for(iz=0;iz<cosmo->N_zcoll;iz++){
         cosmo->z_collapse = cosmo->z_collapse_array[iz];

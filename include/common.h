@@ -206,6 +206,10 @@
     double *klong_list_input;    //for which k_longs we calculate. We use
     //slightly different values to match CLASS/CAMB
     //for higher precision.
+
+    double *axion_a; 
+    double *adion_w; 
+
     };
     
     #if boltzmann_tag==0

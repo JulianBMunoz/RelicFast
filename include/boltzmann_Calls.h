@@ -28,6 +28,7 @@ int gettransfer_nu2(Cosmology *cosmo, char *filename, double *kgrid, double *TF)
 
 int gettransfer_extra(Cosmology *cosmo, char *filename, double *kgrid, double *TF);
 
+int gettransfer_axion(Cosmology *cosmo, char *filename, double *kgrid, double *TF);
 
 //save the transfer functions to then read them:
 int save_transfers_camb(
@@ -51,7 +52,8 @@ int save_transfers_axioncamb(
     double **TFnu_massless,
     double **TFnu1,
     double **TFnu2,
-    double **TFextra
+    double **TFextra,
+    double **TFaxion
 );
 
 int save_transfers_class(
