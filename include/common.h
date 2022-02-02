@@ -207,8 +207,13 @@
     //slightly different values to match CLASS/CAMB
     //for higher precision.
 
-    double *axion_a; 
-    double *adion_w; 
+    double *axion_a;
+    double *axion_z;  
+    double *axion_w;
+    double *axion_rho;
+    double *axion_p;  
+    double *axion_osc;  
+    int *axion_N; 
 
     };
     

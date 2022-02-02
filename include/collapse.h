@@ -107,6 +107,39 @@ double find_z_collapse_3nu(
     double *Mnu3_solution
 );
 
+//for 2 massive neutrinos + extra + axion
+double find_z_collapse_3nu_axion(
+    Cosmology *cosmo, 
+    double Ri, 
+    double Rpi, 
+    double delta_long, 
+    double *zlist_transfer,
+    double Tfm_klong, 
+    double *transfer_gamma_klong, 
+    double *transfer_nu_klong, 
+    double *transfer_nu1_klong, 
+    double *transfer_nu2_klong, 
+    double *transfer_extra_klong,
+    double *transfer_axion_klong,
+    double zmin_EoS, 
+    double dz_EoS, 
+    long Nz_EoS, 
+    double *rholist1_EoS, 
+    double *plist1_EoS, 
+    double *rholist2_EoS, 
+    double *plist2_EoS, 
+    double *rholist_extra_EoS, 
+    double *plist_extra_EoS,
+    double *rholist_axion_EoS,  
+    double *plist_axion_EoS,
+    long Nz_solution, 
+    double *R_solution, 
+    double *Mnu1_solution, 
+    double *Mnu2_solution, 
+    double *Mnu3_solution,
+    double *axion_solution
+);
+
 //this gets the solution for R(t) and finds the Mnu(t) within Rhalo. One for
 //each species (could be made more efficient by solving together, but it is 
 //irrelevant for neutrinos, so we leave it as is)

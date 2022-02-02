@@ -925,7 +925,7 @@ int save_transfers_camb(
     char *filename; //To open files.
     filename=(char *)malloc((lengthname+1)*sizeof(char));
     FILE *fp;
-    int checkm, checknu, checknu_mass, checkgamma;
+    int checkm, checknu, checknu_mass, checkgamma, checkaxion;
 
     for(jz=0;jz<Nz_transfer;jz++){
         lengthname=sprintf(
@@ -976,7 +976,7 @@ int save_transfers_axioncamb(
     char *filename; //To open files.
     filename=(char *)malloc((lengthname+1)*sizeof(char));
     FILE *fp;
-    int checkm, checknu, checknu_mass, checkgamma;
+    int checkm, checknu, checknu_mass, checkgamma, checkaxion;
     
     for(jz=0;jz<Nz_transfer;jz++){
         lengthname=sprintf(
@@ -1726,7 +1726,7 @@ int prepare_cosmology(Cosmology *cosmo, double *parameter_values){
 
     cosmo->OmegaL = (
         1.0 - cosmo->OmegaM - cosmo->Omeganu1 - cosmo->Omeganu2 
-        - cosmo->OmegaR - cosmo->Omega_extra
+        - cosmo->OmegaR - cosmo->Omega_extra - cosmo->Omega_ax
     ); 
     //close the Friedmann eq., no curvature.
 

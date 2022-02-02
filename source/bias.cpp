@@ -69,6 +69,11 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
     transfer_array_nu2_z_coll = allocate_1D_array(length_transfer);
     transfer_array_extra_z_coll = allocate_1D_array(length_transfer);
 
+    double *transfer_array_axion_z_coll;
+    //for axion
+    transfer_array_axion_z_coll = allocate_1D_array(length_transfer);
+
+
     int transfer_check;
 
     if(boltzmann_tag == 0){//CLASS
@@ -81,7 +86,7 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
         ); 
         //zlist reversed, starts at 1
     }
-    else { //CAMB
+    else { //CAMB or AXIONCAMB
         lengthname=sprintf(
             filename,
             "Boltzmann_%d/transfer_files_%d/_transfer_out_z%.3f",
@@ -141,6 +146,16 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
         );
         do_check(transfer_check);
     }
+    //and for axion
+    if(cosmo->Omega_ax > 0){
+        transfer_check=gettransfer_axion(
+            cosmo, 
+            filename, 
+            k_transfer_array, 
+            transfer_array_axion_z_coll
+        );
+        do_check(transfer_check);
+    }
 
     //we also save the transfer function from CLASS/CAMB at z_collapse in the 
     //output folder.
@@ -156,7 +171,7 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
             cosmo->z_collapse
         ); //zlist reversed, starts at 1
     }
-    else { //CAMB
+    else { //CAMB or AXIONCAMB
         lengthname=sprintf(
             filename,
             "cp Boltzmann_%d/transfer_files_%d/_transfer_out_z%.3f \
@@ -242,19 +257,19 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
     int counter; //to get average of delta_crit.
 
     const int N_species = (
-        1 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0)
+        1 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0) + (cosmo->Omega_ax>0)
     );
     //how many species (cdm+b) + others
 
     int species_counter=0;
 
     const double Omegatot = (
-        cosmo->OmegaM + cosmo->Omeganu1 + cosmo->Omeganu2 + cosmo->Omega_extra
+        cosmo->OmegaM + cosmo->Omeganu1 + cosmo->Omeganu2 + cosmo->Omega_extra + cosmo->Omega_ax
     ); 
     //remember we call OmegaM=Omegab+Omegac
 
     double *fraction_species; //fractions of matter today in each species.
-    fraction_species=allocate_1D_array(N_species); // cdm, nu1, nu2, extra.
+    fraction_species=allocate_1D_array(N_species); // cdm, nu1, nu2, extra, axion
 
     fraction_species[0] = cosmo->OmegaM/Omegatot;//CDM+b
     if(cosmo->mnu1>0){
@@ -269,6 +284,10 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
         species_counter++;
         fraction_species[species_counter] = cosmo->Omega_extra/Omegatot;
     }
+    if(cosmo->Omega_ax>0){
+        species_counter++;
+        fraction_species[species_counter] = cosmo->Omega_ax/Omegatot;
+    }
     for(species_counter=0;species_counter<N_species;species_counter++){
         if (debug_mode>0) printf(
             "fraction_%d=%.3le \n\n\n",
@@ -279,12 +298,12 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
     species_counter=0; //we reset the counter.
 
     double *tf_species;
-    tf_species=allocate_1D_array(N_species); // cdm, nu1, nu2, extra.
+    tf_species=allocate_1D_array(N_species); // cdm, nu1, nu2, extra, axion
 
     double **Power_spectra; //P_ij, for i and j species. At fixed k_long
 
     Power_spectra=allocate_2D_array(N_species,N_species); 
-    // cdm, nu1, nu2, extra.
+    // cdm, nu1, nu2, extra, axion
 
     double *Pmm, *Pmh, *Phh; //Power spectra at different k_longs
     Pmm=allocate_1D_array(cosmo->N_klong);
@@ -465,6 +484,15 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
                     k_long
                 );
             }
+            if(cosmo->Omega_ax>0){
+                species_counter++;
+                tf_species[species_counter] = interpol(
+                    transfer_array_axion_z_coll,
+                    k_transfer_array,
+                    length_transfer,
+                    k_long
+                );
+            }
             species_counter=0; //we reset the counter.
 
             for(i=0;i<N_species;i++){
@@ -613,6 +641,7 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
     free(transfer_array_nu2_z_coll);
     free(transfer_array_extra_z_coll);
 
+    free(transfer_array_axion_z_coll); 
 
     free(Pmm);
     free(Phh);

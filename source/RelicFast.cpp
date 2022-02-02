@@ -82,12 +82,23 @@ int main(int argc, char** filenameinput){
     int j;
     int axion_N=5000; 
 
+    cosmo->axion_N = &axion_N; 
+
     cosmo->axion_a = allocate_1D_array(axion_N);
+    cosmo->axion_z = allocate_1D_array(axion_N);
     cosmo->axion_w = allocate_1D_array(axion_N);
+    cosmo->axion_rho = allocate_1D_array(axion_N);
+    cosmo->axion_p = allocate_1D_array(axion_N);
 
     double axion_a[axion_N];
     double axion_w[axion_N];
+    double axion_rho[axion_N]; 
     double temp;    
+    double axion_osc; 
+
+    FILE *fp3=fopen("/Users/nicholasdeporzio/Downloads/axion_osc.dat", "r"); 
+    fscanf(fp3, "%le", axion_osc); 
+    cosmo->axion_osc = &axion_osc; 
  
     FILE *fp2=fopen("/Users/nicholasdeporzio/Downloads/axion_background.dat", "r"); 
 
@@ -99,13 +110,16 @@ int main(int argc, char** filenameinput){
             &axion_a[j], 
             &axion_w[j], 
             temp, 
-            temp
+            &axion_rho[j]
         )==4; 
         ++j
     ){
-        printf("%le \t %le \n", axion_a[j], axion_w[j]);
+        printf("%le \t %le \t %le \n", axion_a[j], axion_w[j], axion_rho[j]);
         cosmo->axion_a[j]=axion_a[j]; 
+        cosmo->axion_z[j]=((1./axion_a[j])-1.); 
         cosmo->axion_w[j]=axion_w[j]; 
+        cosmo->axion_rho[j]=(axion_rho[j]*pow(0.70148, 2.0))/(0.45069*pow(10.0, 23.)*pow(axion_osc, 3.));
+        cosmo->axion_p[j]=(cosmo->axion_w[j])*(cosmo->axion_rho[j]);  
     }; 
 
     //we now solve for the collapse and calculate the biases at each z

@@ -64,6 +64,9 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     double **transfer_extra;
     transfer_extra = allocate_2D_array(Nz_transfer,length_transfer);
 
+    double **transfer_axion;
+    transfer_axion = allocate_2D_array(Nz_transfer,length_transfer);
+
     int transfer_check;
 
     if(boltzmann_tag == _CLASS_){ //CLASS
@@ -102,7 +105,8 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
             transfer_nu_massless,
             transfer_nu1,
             transfer_nu2,
-            transfer_extra
+            transfer_extra,
+            transfer_axion
         );
     }
     else{
@@ -167,7 +171,7 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         ); 
         //zlist reversed, starts at 1
     }
-    else {
+    else { //CAMB, AXIONCAMB
         lengthname=sprintf(
             filename,
             "Boltzmann_%d/transfer_files_%d/_transfer_out_z%.3f",
@@ -202,10 +206,14 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     transfer_array_nu_massless_zi = allocate_1D_array(length_transfer);
     transfer_array_nu1_zi = allocate_1D_array(length_transfer);
 
-    double *transfer_array_nu2_zi, *transfer_array_extra_zi; 
-    //for mnu2 and extra species
+    double *transfer_array_nu2_zi; 
+    double *transfer_array_extra_zi; 
+    double *transfer_array_axion_zi;
+ 
+    //for mnu2, extra, axion species
     transfer_array_nu2_zi = allocate_1D_array(length_transfer);
     transfer_array_extra_zi = allocate_1D_array(length_transfer);
+    transfer_array_axion_zi = allocate_1D_array(length_transfer);
 
     transfer_array_zip1 = allocate_1D_array(length_transfer);
     transfer_array_zip2 = allocate_1D_array(length_transfer);
@@ -220,7 +228,7 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         ); 
         //zlist reversed, starts at 1
     }
-    else { //CAMB
+    else { //CAMB, AXIONCAMB
         lengthname=sprintf(
             filename,
             "Boltzmann_%d/transfer_files_%d/_transfer_out_z%.3f",
@@ -292,6 +300,15 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         do_check(transfer_check);
     }
 
+    //and for axion
+    transfer_check=gettransfer_axion(
+        cosmo, 
+        filename,  
+        k_transfer_array, 
+        transfer_array_axion_zi
+    );
+    do_check(transfer_check);
+
     //for zip1 and zip2, to take a better derivative
     if(boltzmann_tag == _CLASS_){//CLASS
         lengthname=sprintf(
@@ -303,7 +320,7 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         ); 
         //zlist reversed, starts at 1
     }
-    else { //CAMB
+    else { //CAMB, AXIONCAMB
         lengthname=sprintf(
             filename,
             "Boltzmann_%d/transfer_files_%d/_transfer_out_z%.3f",
@@ -332,7 +349,7 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         ); 
         //zlist reversed, starts at 1
     }
-    else { //CAMB
+    else { //CAMB, AXIONCAMB
         lengthname=sprintf(
             filename,
             "Boltzmann_%d/transfer_files_%d/_transfer_out_z%.3f",
@@ -382,7 +399,7 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         ); 
         //zlist reversed, starts at 1
     }
-    else {
+    else {//CAMB, AXIONCAMB
         lengthname=sprintf(
             filename,
             "Boltzmann_%d/transfer_files_%d/_transfer_out_z%.3f",
@@ -578,40 +595,74 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     }
     if(debug_mode > 0) fclose(fp);
 
+
+    //and for the axion
+
+    double *plist_axion_EoS, *rholist_axion_EoS;
+    double rho_axion_zi,rho_axion_z0,rho_axion_ratio_zi=0;
+
+    plist_axion_EoS=allocate_1D_array(Nz_EoS);
+    rholist_axion_EoS=allocate_1D_array(Nz_EoS);
+
+    for(i=0;i<Nz_EoS;i++){
+        zlist_EoS[i]=zmin_EoS+i*dz_EoS; 
+        //z linearly from 0 to z_collapse EQUALLY SPACED! 
+        //Since we will use interpol_cubic.
+
+        rholist_axion_EoS[i] = interpol(cosmo->axion_rho, cosmo->axion_z, *cosmo->axion_N, zlist_EoS[i]);
+        plist_axion_EoS[i] = interpol(cosmo->axion_p, cosmo->axion_z, *cosmo->axion_N, zlist_EoS[i]);
+        //printf("z=%.1le,  w=%.1le, Tnu/mnu=%.1le \n",zlist_EoS[i],plist_EoS[i]/rholist_EoS[i],Temp_nu*KtoeV/(mnu1));
+
+        if(debug_mode > 0){
+            fprintf(
+                fp, 
+                "%le %le %le \n",
+                zlist_EoS[i], 
+                rholist_axion_EoS[i]/rholist_axion_EoS[0], 
+                plist_axion_EoS[i]/rholist_axion_EoS[i]
+            );
+        }
+    }
+
+    rho_extra_zi=interpol(cosmo->axion_rho, cosmo->axion_z, *cosmo->axion_N, zi);
+    rho_extra_z0=interpol(cosmo->axion_rho, cosmo->axion_z, *cosmo->axion_N, zf);
+    rho_extra_ratio_zi=rho_extra_zi/rho_extra_z0;
+
+    if(debug_mode > 0) fclose(fp);
     //if we ask for clustering do it only if at least one of the species is 
     //heavy enough to matter.
 
-    if(do_clustering_tag>0){
-        if(
-            cosmo->mnu1 > (
-                mnu_min_clustering*sqrt(Mhalo_min_clustering/cosmo->Mhalo)
-            )){
-            do_clustering=1;
-        }
-        else if(
-            cosmo->m_extra > (
-                cosmo->T0_extra/cosmo->T0_nu 
-                * mnu_min_clustering*sqrt(Mhalo_min_clustering/cosmo->Mhalo)
-            )){
-            do_clustering=1;
-        }
-        else{
-            do_clustering=0;
-        }
-    }
-    else{
-        do_clustering=0;
-    }
+    //if(do_clustering_tag>0){
+    //    if(
+    //        cosmo->mnu1 > (
+    //            mnu_min_clustering*sqrt(Mhalo_min_clustering/cosmo->Mhalo)
+    //        )){
+    //        do_clustering=1;
+    //    }
+    //    else if(
+    //        cosmo->m_extra > (
+    //            cosmo->T0_extra/cosmo->T0_nu 
+    //            * mnu_min_clustering*sqrt(Mhalo_min_clustering/cosmo->Mhalo)
+    //        )){
+    //        do_clustering=1;
+    //    }
+    //    else{
+    //        do_clustering=0;
+    //    }
+    //}
+    //else{
+    //    do_clustering=0;
+    //}
 
-    //we find the superconformal time eta for clustering. If required.
+    ////we find the superconformal time eta for clustering. If required.
     double *etalist;
     etalist=allocate_1D_array(Nz_EoS); 
-    //we find eta in the same z range we find EoS, where it matters.
+    ////we find eta in the same z range we find EoS, where it matters.
 
-    if(do_clustering_tag>0){
-        findeta(cosmo, etalist, zmin_EoS, dz_EoS, Nz_EoS,
-                    rholist_nu1_EoS, rholist_nu2_EoS, rholist_extra_EoS);
-    }//creates a cubic interpolator for eta at z_EoS list.
+    //if(do_clustering_tag>0){
+    //    findeta(cosmo, etalist, zmin_EoS, dz_EoS, Nz_EoS,
+    //                rholist_nu1_EoS, rholist_nu2_EoS, rholist_extra_EoS);
+    //}//creates a cubic interpolator for eta at z_EoS list.
 
 
 
@@ -643,7 +694,9 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     double *Mextra_solution; 
     //neutrino 1 mass within R_halo, needed to find collapse.
     Mextra_solution=allocate_1D_array(Nz_solution);
-
+    double *Maxion_solution; 
+    //axion mass within R_halo, needed to find collapse.
+    Maxion_solution=allocate_1D_array(Nz_solution);
     //z array logspaced between zi and zcollapse/2, to match collapse code.
 
     //////////////////////////////////////////////////////
@@ -651,22 +704,23 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     /////////////////////////////////////////////////////
 
 
-    double OmL_i, OmM_i, OmR_i, Omnu1_i, Omnu2_i, Omextra_i;
+    double OmL_i, OmM_i, OmR_i, Omnu1_i, Omnu2_i, Omextra_i, Omaxion_i;
     OmL_i=cosmo->OmegaL;
     OmM_i=cosmo->OmegaM*pow(1.+zi,3.);
     OmR_i=cosmo->OmegaR*pow(1.+zi,4.);
     Omnu1_i=cosmo->Omeganu1*rho_nu1_ratio_zi;
     Omnu2_i=cosmo->Omeganu2*rho_nu2_ratio_zi;
     Omextra_i=cosmo->Omega_extra*rho_extra_ratio_zi;
+    Omaxion_i=cosmo->Omega_ax*rho_axion_ratio_zi; 
     const double Hi=cosmo->H0_Mpc*sqrt(OmL_i + OmM_i + OmR_i +
-                Omnu1_i + Omnu2_i + Omextra_i);//H(zi) in Mpc-1
+                Omnu1_i + Omnu2_i + Omextra_i + Omaxion_i);//H(zi) in Mpc-1
 
     if(debug_mode>0){
         printf("Hi=%.2le \n",Hi);
         printf("OmM_i=%.2le, OmR_i=%.2le, Omnu1=%.2le \n",OmM_i,OmR_i,Omnu1_i);
         printf("Omnu2_i=%.2le, Omextra=%.2le \n",Omnu2_i,Omextra_i);
+        printf("Omaxion_i=%.2le \n", Omaxion_i); 
     }
-
 
     const double sigma8_0 = getsigma_8(cosmo, k_transfer_array, transfer_matter[0]);
     int coll_index = Nz_transfer-j_collapse-1;
@@ -808,8 +862,10 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     // and for extra species. No need to add clause: if(mnu2>0), since it will just be zeroes if so.
     double **transfer_nu2_klong;
     double **transfer_extra_klong;
+    double **transfer_axion_klong; 
     transfer_nu2_klong = allocate_2D_array(cosmo->N_klong,Nz_transfer);
     transfer_extra_klong = allocate_2D_array(cosmo->N_klong,Nz_transfer);
+    transfer_axion_klong = allocate_2D_array(cosmo->N_klong,Nz_transfer); 
 
     for(int i_klong=0;i_klong<cosmo->N_klong;i_klong++){
         double k_long = klong_list[i_klong];
@@ -827,6 +883,16 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
             //printf("i_klong=%d, i=%ld, z=%.3le, Tf_gamma=%.1le, Tf_nu=%.1le \n",i_klong, i, z,transfer_gamma_klong[i_klong][i],transfer_nu1_klong[i_klong][i]);
             transfer_extra_klong[i_klong][i]=interpol_2D(
                 transfer_extra, 
+                zlist_transfer, 
+                Nz_transfer, 
+                k_transfer_array, 
+                length_transfer, 
+                z, 
+                k_long
+            );    
+
+            transfer_axion_klong[i_klong][i]=interpol_2D(
+                transfer_axion, 
                 zlist_transfer, 
                 Nz_transfer, 
                 k_transfer_array, 
@@ -1046,160 +1112,195 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
 
 //we now call the collapse routine relevant for each case:
 
-                    if(cosmo->Omega_extra+cosmo->Omeganu2+cosmo->Omeganu1==0){
-                        //nothing extra
-                        if (debug_mode>0) printf(
-                            "Collapse with nothing extra \n"
-                        );
+//                    if(cosmo->Omega_extra+cosmo->Omeganu2+cosmo->Omeganu1==0){
+//                        //nothing extra
+//                        if (debug_mode>0) printf(
+//                            "Collapse with nothing extra \n"
+//                        );
+//
+//                        z_coll_iteration=find_z_collapse_nothing(
+//                            cosmo, 
+//                            Ri, 
+//                            Rpi, 
+//                            delta_long, 
+//                            zlist_transfer,
+//                            Ti_klong[i_klong], 
+//                            transfer_gamma_klong[i_klong], 
+//                            transfer_nu_massless_klong[i_klong]
+//                        );
+//                    }
+//                    else if(cosmo->Omega_extra + cosmo->Omeganu2 == 0){
+//                        //only mnu1
+//                        if (debug_mode>0) printf("Collapse with nu1 \n");
+//                        z_coll_iteration=find_z_collapse_1nu(
+//                            cosmo, 
+//                            Ri, 
+//                            Rpi, 
+//                            delta_long, 
+//                            zlist_transfer,
+//                            Ti_klong[i_klong], 
+//                            transfer_gamma_klong[i_klong], 
+//                            transfer_nu_massless_klong[i_klong],
+//                            transfer_nu1_klong[i_klong], 
+//                            zmin_EoS, 
+//                            dz_EoS, 
+//                            Nz_EoS, 
+//                            rholist_nu1_EoS, 
+//                            plist_nu1_EoS,
+//                            Nz_solution, 
+//                            Rhalo_solution, 
+//                            Mnu1_solution
+//                        );
+//                    }
+//                    else if (cosmo->Omega_extra == 0 && cosmo->Omeganu2 > 0){
+//                        //mnu1 and mnu2
+//                        if (debug_mode>0) printf("Collapse with nu1 and nu2\n");
+//                        z_coll_iteration=find_z_collapse_2nu(
+//                            cosmo, 
+//                            Ri, 
+//                            Rpi, 
+//                            delta_long, 
+//                            zlist_transfer,
+//                            Ti_klong[i_klong], 
+//                            transfer_gamma_klong[i_klong], 
+//                            transfer_nu_massless_klong[i_klong], 
+//                            transfer_nu1_klong[i_klong],
+//                            transfer_nu2_klong[i_klong],
+//                            zmin_EoS, 
+//                            dz_EoS, 
+//                            Nz_EoS, 
+//                            rholist_nu1_EoS, 
+//                            plist_nu1_EoS, 
+//                            rholist_nu2_EoS, 
+//                            plist_nu2_EoS,
+//                            Nz_solution, 
+//                            Rhalo_solution, 
+//                            Mnu1_solution, 
+//                            Mnu2_solution
+//                        );
+//
+//                    }
+//                    else if(cosmo->Omeganu1 + cosmo->Omeganu2 == 0){
+//                        //only extra
+//                        if (debug_mode>0) printf("Collapse with extra \n");
+//                        z_coll_iteration=find_z_collapse_1nu(
+//                            cosmo, 
+//                            Ri, 
+//                            Rpi, 
+//                            delta_long, 
+//                            zlist_transfer,
+//                            Ti_klong[i_klong], 
+//                            transfer_gamma_klong[i_klong], 
+//                            transfer_nu_massless_klong[i_klong],
+//                            transfer_extra_klong[i_klong], 
+//                            zmin_EoS, 
+//                            dz_EoS, 
+//                            Nz_EoS, 
+//                            rholist_extra_EoS, 
+//                            plist_extra_EoS,
+//                            Nz_solution, 
+//                            Rhalo_solution, 
+//                            Mextra_solution
+//                        );
+//                    }
+//                    else if (cosmo->Omega_extra > 0 && cosmo->Omeganu2 == 0){
+//                        //mnu1 and extra, useful for CAMB
+//                        if (debug_mode>0) printf(
+//                            "Collapse with nu1 and extra\n"
+//                        );
+//                        z_coll_iteration=find_z_collapse_2nu(
+//                            cosmo, 
+//                            Ri, 
+//                            Rpi, 
+//                            delta_long, 
+//                            zlist_transfer,
+//                            Ti_klong[i_klong], 
+//                            transfer_gamma_klong[i_klong], 
+//                            transfer_nu_massless_klong[i_klong], 
+//                            transfer_nu1_klong[i_klong],
+//                            transfer_extra_klong[i_klong],
+//                            zmin_EoS, 
+//                            dz_EoS, 
+//                            Nz_EoS, 
+//                            rholist_nu1_EoS, 
+//                            plist_nu1_EoS, 
+//                            rholist_extra_EoS, 
+//                            plist_extra_EoS,
+//                            Nz_solution, 
+//                            Rhalo_solution, 
+//                            Mnu1_solution, 
+//                            Mextra_solution
+//                        );
+//
+//                    }
+//                    else{    //mnu1, mnu2 and extra
+//                        if (debug_mode>0) printf(
+//                            "Collapse with nu1,nu2 & extra \n"
+//                        );
+//                        z_coll_iteration=find_z_collapse_3nu(
+//                            cosmo, 
+//                            Ri, 
+//                            Rpi, 
+//                            delta_long, 
+//                            zlist_transfer,
+//                            Ti_klong[i_klong], 
+//                            transfer_gamma_klong[i_klong], 
+//                            transfer_nu_massless_klong[i_klong],
+//                            transfer_nu1_klong[i_klong],
+//                            transfer_nu2_klong[i_klong],
+//                            transfer_extra_klong[i_klong],
+//                            zmin_EoS, 
+//                            dz_EoS, 
+//                            Nz_EoS, 
+//                            rholist_nu1_EoS, 
+//                            plist_nu1_EoS, 
+//                            rholist_nu2_EoS, 
+//                            plist_nu2_EoS, 
+//                            rholist_extra_EoS, 
+//                            plist_extra_EoS,
+//                            Nz_solution, 
+//                            Rhalo_solution, 
+//                            Mnu1_solution, 
+//                            Mnu2_solution, 
+//                            Mextra_solution
+//                        );
+//
+//                    }
 
-                        z_coll_iteration=find_z_collapse_nothing(
-                            cosmo, 
-                            Ri, 
-                            Rpi, 
-                            delta_long, 
-                            zlist_transfer,
-                            Ti_klong[i_klong], 
-                            transfer_gamma_klong[i_klong], 
-                            transfer_nu_massless_klong[i_klong]
-                        );
-                    }
-                    else if(cosmo->Omega_extra + cosmo->Omeganu2 == 0){
-                        //only mnu1
-                        if (debug_mode>0) printf("Collapse with nu1 \n");
-                        z_coll_iteration=find_z_collapse_1nu(
-                            cosmo, 
-                            Ri, 
-                            Rpi, 
-                            delta_long, 
-                            zlist_transfer,
-                            Ti_klong[i_klong], 
-                            transfer_gamma_klong[i_klong], 
-                            transfer_nu_massless_klong[i_klong],
-                            transfer_nu1_klong[i_klong], 
-                            zmin_EoS, 
-                            dz_EoS, 
-                            Nz_EoS, 
-                            rholist_nu1_EoS, 
-                            plist_nu1_EoS,
-                            Nz_solution, 
-                            Rhalo_solution, 
-                            Mnu1_solution
-                        );
-                    }
-                    else if (cosmo->Omega_extra == 0 && cosmo->Omeganu2 > 0){
-                        //mnu1 and mnu2
-                        if (debug_mode>0) printf("Collapse with nu1 and nu2\n");
-                        z_coll_iteration=find_z_collapse_2nu(
-                            cosmo, 
-                            Ri, 
-                            Rpi, 
-                            delta_long, 
-                            zlist_transfer,
-                            Ti_klong[i_klong], 
-                            transfer_gamma_klong[i_klong], 
-                            transfer_nu_massless_klong[i_klong], 
-                            transfer_nu1_klong[i_klong],
-                            transfer_nu2_klong[i_klong],
-                            zmin_EoS, 
-                            dz_EoS, 
-                            Nz_EoS, 
-                            rholist_nu1_EoS, 
-                            plist_nu1_EoS, 
-                            rholist_nu2_EoS, 
-                            plist_nu2_EoS,
-                            Nz_solution, 
-                            Rhalo_solution, 
-                            Mnu1_solution, 
-                            Mnu2_solution
-                        );
-
-                    }
-                    else if(cosmo->Omeganu1 + cosmo->Omeganu2 == 0){
-                        //only extra
-                        if (debug_mode>0) printf("Collapse with extra \n");
-                        z_coll_iteration=find_z_collapse_1nu(
-                            cosmo, 
-                            Ri, 
-                            Rpi, 
-                            delta_long, 
-                            zlist_transfer,
-                            Ti_klong[i_klong], 
-                            transfer_gamma_klong[i_klong], 
-                            transfer_nu_massless_klong[i_klong],
-                            transfer_extra_klong[i_klong], 
-                            zmin_EoS, 
-                            dz_EoS, 
-                            Nz_EoS, 
-                            rholist_extra_EoS, 
-                            plist_extra_EoS,
-                            Nz_solution, 
-                            Rhalo_solution, 
-                            Mextra_solution
-                        );
-                    }
-                    else if (cosmo->Omega_extra > 0 && cosmo->Omeganu2 == 0){
-                        //mnu1 and extra, useful for CAMB
-                        if (debug_mode>0) printf(
-                            "Collapse with nu1 and extra\n"
-                        );
-                        z_coll_iteration=find_z_collapse_2nu(
-                            cosmo, 
-                            Ri, 
-                            Rpi, 
-                            delta_long, 
-                            zlist_transfer,
-                            Ti_klong[i_klong], 
-                            transfer_gamma_klong[i_klong], 
-                            transfer_nu_massless_klong[i_klong], 
-                            transfer_nu1_klong[i_klong],
-                            transfer_extra_klong[i_klong],
-                            zmin_EoS, 
-                            dz_EoS, 
-                            Nz_EoS, 
-                            rholist_nu1_EoS, 
-                            plist_nu1_EoS, 
-                            rholist_extra_EoS, 
-                            plist_extra_EoS,
-                            Nz_solution, 
-                            Rhalo_solution, 
-                            Mnu1_solution, 
-                            Mextra_solution
-                        );
-
-                    }
-                    else{    //mnu1, mnu2 and extra
-                        if (debug_mode>0) printf(
-                            "Collapse with nu1,nu2 & extra \n"
-                        );
-                        z_coll_iteration=find_z_collapse_3nu(
-                            cosmo, 
-                            Ri, 
-                            Rpi, 
-                            delta_long, 
-                            zlist_transfer,
-                            Ti_klong[i_klong], 
-                            transfer_gamma_klong[i_klong], 
-                            transfer_nu_massless_klong[i_klong],
-                            transfer_nu1_klong[i_klong],
-                            transfer_nu2_klong[i_klong],
-                            transfer_extra_klong[i_klong],
-                            zmin_EoS, 
-                            dz_EoS, 
-                            Nz_EoS, 
-                            rholist_nu1_EoS, 
-                            plist_nu1_EoS, 
-                            rholist_nu2_EoS, 
-                            plist_nu2_EoS, 
-                            rholist_extra_EoS, 
-                            plist_extra_EoS,
-                            Nz_solution, 
-                            Rhalo_solution, 
-                            Mnu1_solution, 
-                            Mnu2_solution, 
-                            Mextra_solution
-                        );
-
-                    }
+                    if (debug_mode>0) printf(
+                        "Collapse with nu1,nu2,extra, and axion \n"
+                    ); 
+                    z_coll_iteration=find_z_collapse_3nu_axion(
+                        cosmo, 
+                        Ri, 
+                        Rpi, 
+                        delta_long, 
+                        zlist_transfer,
+                        Ti_klong[i_klong], 
+                        transfer_gamma_klong[i_klong], 
+                        transfer_nu_massless_klong[i_klong],
+                        transfer_nu1_klong[i_klong],
+                        transfer_nu2_klong[i_klong],
+                        transfer_extra_klong[i_klong],
+                        transfer_axion_klong[i_klong], 
+                        zmin_EoS, 
+                        dz_EoS, 
+                        Nz_EoS, 
+                        rholist_nu1_EoS, 
+                        plist_nu1_EoS, 
+                        rholist_nu2_EoS, 
+                        plist_nu2_EoS, 
+                        rholist_extra_EoS, 
+                        plist_extra_EoS,
+                        rholist_axion_EoS, 
+                        plist_axion_EoS,
+                        Nz_solution, 
+                        Rhalo_solution, 
+                        Mnu1_solution, 
+                        Mnu2_solution, 
+                        Mextra_solution, 
+                        Maxion_solution
+                    );
 
                     if(z_coll_iteration>cosmo->z_collapse){ 
                         //collapses too quickly
@@ -1452,170 +1553,206 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
                             //we now call the collapse routine relevant for 
                             //each case:
 
-                            if(
-                                cosmo->Omega_extra 
-                                + cosmo->Omeganu2 
-                                + cosmo->Omeganu1 == 0){//nothing extra
+//                            if(
+//                                cosmo->Omega_extra 
+//                                + cosmo->Omeganu2 
+//                                + cosmo->Omeganu1 == 0){//nothing extra
+//
+//                                if (debug_mode>0) printf(
+//                                    "Collapse with nothing extra \n");
+//
+//                                    z_coll_iteration=find_z_collapse_nothing(
+//                                        cosmo, 
+//                                        Ri, 
+//                                        Rpi, 
+//                                        delta_long, 
+//                                        zlist_transfer,
+//                                        Ti_klong[i_klong], 
+//                                        transfer_gamma_klong[i_klong], 
+//                                        transfer_nu_massless_klong[i_klong]
+//                                    );
+//                            }
+//                            else if(cosmo->Omega_extra + cosmo->Omeganu2 == 0){
+//                                //only mnu1
+//                                if (debug_mode>0) printf(
+//                                    "Collapse with nu1 \n"
+//                                );
+//                                z_coll_iteration=find_z_collapse_1nu(
+//                                    cosmo, 
+//                                    Ri, 
+//                                    Rpi, 
+//                                    delta_long, 
+//                                    zlist_transfer,
+//                                    Ti_klong[i_klong], 
+//                                    transfer_gamma_klong[i_klong], 
+//                                    transfer_nu_massless_klong[i_klong],
+//                                    transfer_nu1_klong[i_klong], 
+//                                    zmin_EoS, 
+//                                    dz_EoS, 
+//                                    Nz_EoS, 
+//                                    rholist_nu1_EoS, 
+//                                    plist_nu1_EoS,
+//                                    Nz_solution, 
+//                                    Rhalo_solution, 
+//                                    Mnu1_solution
+//                                );
+//                            }
+//                            else if (cosmo->Omega_extra == 0 
+//                                && cosmo->Omeganu2 > 0){
+//                                //mnu1 and mnu2
+//                                if (debug_mode>0) printf(
+//                                    "Collapse with nu1 and nu2 \n"
+//                                );
+//                                z_coll_iteration=find_z_collapse_2nu(
+//                                    cosmo, 
+//                                    Ri, 
+//                                    Rpi, 
+//                                    delta_long, 
+//                                    zlist_transfer,
+//                                    Ti_klong[i_klong], 
+//                                    transfer_gamma_klong[i_klong], 
+//                                    transfer_nu_massless_klong[i_klong], 
+//                                    transfer_nu1_klong[i_klong],
+//                                    transfer_nu2_klong[i_klong],
+//                                    zmin_EoS, 
+//                                    dz_EoS, 
+//                                    Nz_EoS, 
+//                                    rholist_nu1_EoS, 
+//                                    plist_nu1_EoS, 
+//                                    rholist_nu2_EoS,    
+//                                    plist_nu2_EoS,
+//                                    Nz_solution, 
+//                                    Rhalo_solution, 
+//                                    Mnu1_solution, 
+//                                    Mnu2_solution
+//                                );
+//
+//                            }
+//                            else if(cosmo->Omeganu1 + cosmo->Omeganu2 == 0){
+//                                //only extra
+//                                if (debug_mode>0) printf(
+//                                    "Collapse with extra \n"
+//                                );
+//                                z_coll_iteration=find_z_collapse_1nu(
+//                                    cosmo, 
+//                                    Ri, 
+//                                    Rpi, 
+//                                    delta_long, 
+//                                    zlist_transfer,
+//                                    Ti_klong[i_klong], 
+//                                    transfer_gamma_klong[i_klong], 
+//                                    transfer_nu_massless_klong[i_klong],
+//                                    transfer_extra_klong[i_klong], 
+//                                    zmin_EoS, 
+//                                    dz_EoS, 
+//                                    Nz_EoS, 
+//                                    rholist_extra_EoS, 
+//                                    plist_extra_EoS,
+//                                    Nz_solution, 
+//                                    Rhalo_solution, 
+//                                    Mextra_solution
+//                                );
+//                            }
+//                            else if (cosmo->Omega_extra > 0 
+//                                && cosmo->Omeganu2 == 0){
+//                                //mnu1 and extra, useful for CAMB
+//                                if (debug_mode>0) printf(
+//                                    "Collapse with nu1 and extra \n"
+//                                );
+//                                z_coll_iteration=find_z_collapse_2nu(
+//                                    cosmo, 
+//                                    Ri, 
+//                                    Rpi, 
+//                                    delta_long, 
+//                                    zlist_transfer,
+//                                    Ti_klong[i_klong], 
+//                                    transfer_gamma_klong[i_klong], 
+//                                    transfer_nu_massless_klong[i_klong], 
+//                                    transfer_nu1_klong[i_klong],
+//                                    transfer_extra_klong[i_klong],
+//                                    zmin_EoS, 
+//                                    dz_EoS, 
+//                                    Nz_EoS, 
+//                                    rholist_nu1_EoS, 
+//                                    plist_nu1_EoS, 
+//                                    rholist_extra_EoS, 
+//                                    plist_extra_EoS,
+//                                    Nz_solution, 
+//                                    Rhalo_solution, 
+//                                    Mnu1_solution, 
+//                                    Mextra_solution
+//                                );
+//
+//                            }
+//                            else{    //mnu1, mnu2 and extra
+//                                if (debug_mode>0) printf(
+//                                    "Collapse with nu1,nu2 & extra \n"
+//                                );
+//                                z_coll_iteration=find_z_collapse_3nu(  
+//                                    cosmo, 
+//                                    Ri, 
+//                                    Rpi, 
+//                                    delta_long, 
+//                                    zlist_transfer,
+//                                    Ti_klong[i_klong], 
+//                                    transfer_gamma_klong[i_klong], 
+//                                    transfer_nu_massless_klong[i_klong],
+//                                    transfer_nu1_klong[i_klong],
+//                                    transfer_nu2_klong[i_klong],
+//                                    transfer_extra_klong[i_klong],
+//                                    zmin_EoS, 
+//                                    dz_EoS, 
+//                                    Nz_EoS, 
+//                                    rholist_nu1_EoS, 
+//                                    plist_nu1_EoS, 
+//                                    rholist_nu2_EoS, 
+//                                    plist_nu2_EoS, 
+//                                    rholist_extra_EoS, 
+//                                    plist_extra_EoS,
+//                                    Nz_solution, 
+//                                    Rhalo_solution, 
+//                                    Mnu1_solution, 
+//                                    Mnu2_solution, 
+//                                    Mextra_solution
+//                                );
+//
+//                            }
 
-                                if (debug_mode>0) printf(
-                                    "Collapse with nothing extra \n");
 
-                                    z_coll_iteration=find_z_collapse_nothing(
-                                        cosmo, 
-                                        Ri, 
-                                        Rpi, 
-                                        delta_long, 
-                                        zlist_transfer,
-                                        Ti_klong[i_klong], 
-                                        transfer_gamma_klong[i_klong], 
-                                        transfer_nu_massless_klong[i_klong]
-                                    );
-                            }
-                            else if(cosmo->Omega_extra + cosmo->Omeganu2 == 0){
-                                //only mnu1
-                                if (debug_mode>0) printf(
-                                    "Collapse with nu1 \n"
-                                );
-                                z_coll_iteration=find_z_collapse_1nu(
-                                    cosmo, 
-                                    Ri, 
-                                    Rpi, 
-                                    delta_long, 
-                                    zlist_transfer,
-                                    Ti_klong[i_klong], 
-                                    transfer_gamma_klong[i_klong], 
-                                    transfer_nu_massless_klong[i_klong],
-                                    transfer_nu1_klong[i_klong], 
-                                    zmin_EoS, 
-                                    dz_EoS, 
-                                    Nz_EoS, 
-                                    rholist_nu1_EoS, 
-                                    plist_nu1_EoS,
-                                    Nz_solution, 
-                                    Rhalo_solution, 
-                                    Mnu1_solution
-                                );
-                            }
-                            else if (cosmo->Omega_extra == 0 
-                                && cosmo->Omeganu2 > 0){
-                                //mnu1 and mnu2
-                                if (debug_mode>0) printf(
-                                    "Collapse with nu1 and nu2 \n"
-                                );
-                                z_coll_iteration=find_z_collapse_2nu(
-                                    cosmo, 
-                                    Ri, 
-                                    Rpi, 
-                                    delta_long, 
-                                    zlist_transfer,
-                                    Ti_klong[i_klong], 
-                                    transfer_gamma_klong[i_klong], 
-                                    transfer_nu_massless_klong[i_klong], 
-                                    transfer_nu1_klong[i_klong],
-                                    transfer_nu2_klong[i_klong],
-                                    zmin_EoS, 
-                                    dz_EoS, 
-                                    Nz_EoS, 
-                                    rholist_nu1_EoS, 
-                                    plist_nu1_EoS, 
-                                    rholist_nu2_EoS,    
-                                    plist_nu2_EoS,
-                                    Nz_solution, 
-                                    Rhalo_solution, 
-                                    Mnu1_solution, 
-                                    Mnu2_solution
-                                );
-
-                            }
-                            else if(cosmo->Omeganu1 + cosmo->Omeganu2 == 0){
-                                //only extra
-                                if (debug_mode>0) printf(
-                                    "Collapse with extra \n"
-                                );
-                                z_coll_iteration=find_z_collapse_1nu(
-                                    cosmo, 
-                                    Ri, 
-                                    Rpi, 
-                                    delta_long, 
-                                    zlist_transfer,
-                                    Ti_klong[i_klong], 
-                                    transfer_gamma_klong[i_klong], 
-                                    transfer_nu_massless_klong[i_klong],
-                                    transfer_extra_klong[i_klong], 
-                                    zmin_EoS, 
-                                    dz_EoS, 
-                                    Nz_EoS, 
-                                    rholist_extra_EoS, 
-                                    plist_extra_EoS,
-                                    Nz_solution, 
-                                    Rhalo_solution, 
-                                    Mextra_solution
-                                );
-                            }
-                            else if (cosmo->Omega_extra > 0 
-                                && cosmo->Omeganu2 == 0){
-                                //mnu1 and extra, useful for CAMB
-                                if (debug_mode>0) printf(
-                                    "Collapse with nu1 and extra \n"
-                                );
-                                z_coll_iteration=find_z_collapse_2nu(
-                                    cosmo, 
-                                    Ri, 
-                                    Rpi, 
-                                    delta_long, 
-                                    zlist_transfer,
-                                    Ti_klong[i_klong], 
-                                    transfer_gamma_klong[i_klong], 
-                                    transfer_nu_massless_klong[i_klong], 
-                                    transfer_nu1_klong[i_klong],
-                                    transfer_extra_klong[i_klong],
-                                    zmin_EoS, 
-                                    dz_EoS, 
-                                    Nz_EoS, 
-                                    rholist_nu1_EoS, 
-                                    plist_nu1_EoS, 
-                                    rholist_extra_EoS, 
-                                    plist_extra_EoS,
-                                    Nz_solution, 
-                                    Rhalo_solution, 
-                                    Mnu1_solution, 
-                                    Mextra_solution
-                                );
-
-                            }
-                            else{    //mnu1, mnu2 and extra
-                                if (debug_mode>0) printf(
-                                    "Collapse with nu1,nu2 & extra \n"
-                                );
-                                z_coll_iteration=find_z_collapse_3nu(  
-                                    cosmo, 
-                                    Ri, 
-                                    Rpi, 
-                                    delta_long, 
-                                    zlist_transfer,
-                                    Ti_klong[i_klong], 
-                                    transfer_gamma_klong[i_klong], 
-                                    transfer_nu_massless_klong[i_klong],
-                                    transfer_nu1_klong[i_klong],
-                                    transfer_nu2_klong[i_klong],
-                                    transfer_extra_klong[i_klong],
-                                    zmin_EoS, 
-                                    dz_EoS, 
-                                    Nz_EoS, 
-                                    rholist_nu1_EoS, 
-                                    plist_nu1_EoS, 
-                                    rholist_nu2_EoS, 
-                                    plist_nu2_EoS, 
-                                    rholist_extra_EoS, 
-                                    plist_extra_EoS,
-                                    Nz_solution, 
-                                    Rhalo_solution, 
-                                    Mnu1_solution, 
-                                    Mnu2_solution, 
-                                    Mextra_solution
-                                );
-
-                            }
+                            if (debug_mode>0) printf(
+                                "Collapse with nu1,nu2 & extra \n"
+                            );
+                            z_coll_iteration=find_z_collapse_3nu_axion(  
+                                cosmo, 
+                                Ri, 
+                                Rpi, 
+                                delta_long, 
+                                zlist_transfer,
+                                Ti_klong[i_klong], 
+                                transfer_gamma_klong[i_klong], 
+                                transfer_nu_massless_klong[i_klong],
+                                transfer_nu1_klong[i_klong],
+                                transfer_nu2_klong[i_klong],
+                                transfer_extra_klong[i_klong],
+                                transfer_axion_klong[i_klong],
+                                zmin_EoS, 
+                                dz_EoS, 
+                                Nz_EoS, 
+                                rholist_nu1_EoS, 
+                                plist_nu1_EoS, 
+                                rholist_nu2_EoS, 
+                                plist_nu2_EoS, 
+                                rholist_extra_EoS, 
+                                plist_extra_EoS,
+                                rholist_axion_EoS,
+                                plist_axion_EoS,
+                                Nz_solution, 
+                                Rhalo_solution, 
+                                Mnu1_solution, 
+                                Mnu2_solution, 
+                                Mextra_solution,
+                                Maxion_solution 
+                            );
 
                             if(z_coll_iteration>cosmo->z_collapse){ 
                                 //collapses too quickly
@@ -1786,6 +1923,7 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     free(transfer_array_nu1_zi);
     free(transfer_array_nu2_zi);
     free(transfer_array_extra_zi);
+    free(transfer_array_axion_zi); 
 
     free(transfer_array_zi);
     free(transfer_array_zip1);
@@ -1803,12 +1941,14 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     free_2D_array(transfer_nu1, Nz_transfer);
     free_2D_array(transfer_nu2, Nz_transfer);
     free_2D_array(transfer_extra, Nz_transfer);
+    free_2D_array(transfer_axion, Nz_transfer); 
 
     free_2D_array(transfer_gamma_klong, cosmo->N_klong);
     free_2D_array(transfer_nu_massless_klong, cosmo->N_klong);
     free_2D_array(transfer_nu1_klong, cosmo->N_klong);
     free_2D_array(transfer_nu2_klong, cosmo->N_klong);
     free_2D_array(transfer_extra_klong, cosmo->N_klong);
+    free_2D_array(transfer_axion_klong, cosmo->N_klong); 
 
     free(klong_list);
 
@@ -1832,12 +1972,16 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     free(plist_extra_EoS);
     free(rholist_extra_EoS);
 
+    free(plist_axion_EoS);
+    free(rholist_axion_EoS);
+
     free(etalist);
 
     free(Rhalo_solution);
     free(Mnu1_solution);
     free(Mnu2_solution);
     free(Mextra_solution);
+    free(Maxion_solution); 
 
     return 1;
 }
@@ -3081,6 +3225,489 @@ double find_z_collapse_3nu(
     return z;
 }
 
+double find_z_collapse_3nu_axion(
+    Cosmology *const cosmo, 
+    const double Ri, 
+    const double Rpi, 
+    const double delta_long, 
+    double * const  zlist_transfer,
+    const double Tfm_klong, 
+    double * const transfer_gamma_klong, 
+    double * const transfer_nu_klong, 
+    double * const transfer_nu1_klong, 
+    double * const transfer_nu2_klong, 
+    double * const transfer_nu3_klong,
+    double * const transfer_axion_klong,
+    const double zmin_EoS, 
+    const double dz_EoS, 
+    const long Nz_EoS, 
+    double * const rholist1_EoS, 
+    double * const plist1_EoS, 
+    double * const rholist2_EoS, 
+    double * const plist2_EoS, 
+    double * const rholist3_EoS, 
+    double * const plist3_EoS,
+    double * const rholistaxion_EoS,
+    double * const plistaxion_EoS,
+    const long Nz_solution, 
+    double *R_solution, 
+    double *Mnu1_solution, 
+    double *Mnu2_solution, 
+    double *Mnu3_solution,
+    double *Maxion_solution
+
+    ){
+    // This function returns the z at which an overdensity collapses. global 
+    //cosmological parameters assumed.
+    // In the presence of a long-wavelength PHOTON, MASSLESS and 2 MASSIVE NU 
+    //perturbation, and an EXTRA SPECIES.
+    //we read the instantaneous transfer function from CAMB at each redshift.
+    //and we save R(z) to perform BKT calculation of neutrino clustering, or 
+    //we input Mnu(z) if we already calculated it.
+
+    const int precision = (int) fmax(fmin(precision_normalization,10),1);
+    //1<=precision<=20
+
+    const long npoints = precision*30000; 
+    //number of points for the ODE solution to converge, ~10^4 logspaced in z.
+
+    double zf_code=cosmo->z_collapse/2.0;
+    if(zf_code<z_collapse_min){
+        printf(
+            "Warning, for z_collapse = 0 you need to change z binning to \
+            linear in collapse code \n"
+        );
+        zf_code=z_collapse_min;
+    }
+
+    const double zstep_log=(log(zf_code/zi))/(npoints-1.); //log-spaced in z.
+    double zstep_lin; //for integration of ODE, linear step.
+
+    double R1, R2; //R and R_next.
+    double Rp1, Rp2; //derivative of R and next value.
+    double R1tilde, Rp1tilde; 
+    //the "guesses" of R and Rprime for  Heun's methood
+
+    R1=R2=Ri; //initial conditions
+    Rp1=Rp2=Rpi;
+
+    long i;
+    double z=zi;
+
+    const double T_matter=Tfm_klong;
+
+    //the nu1 is nu1, but nu2 can be any new species, just make sure that the 
+    //Omegas are well defined here
+    if((cosmo->Omega_extra==0) || (cosmo->mnu2==0) || (cosmo->mnu1==0)){
+        printf(
+            "Using wrong collapse function, XXX_3nu works with 3 nus \
+            (or 2+extra). \n"
+        );
+    }
+    double rhonu1_0=rholist1_EoS[0];//rho1 at z=0. units are K^4
+    double rhonu2_0=rholist2_EoS[0];//rho2 at z=0. units are K^4
+    double rhonu3_0=rholist3_EoS[0];//rho3 at z=0. units are K^4
+    double rhoaxion_0=rholistaxion_EoS[0];//axion at z=0.  
+
+    //we set the initial H. All these are average densities.
+    double OmGbar= cosmo->OmegaG * pow(1.+zi,4.); //photon
+    double Omnu_masslessbar= cosmo->Omeganu_massless * pow(1.+zi,4.); 
+    //massless nu
+    double OmRbar = OmGbar + Omnu_masslessbar; 
+    //all radiation (massless nu + photon)
+    double OmAx = cosmo->Omega_ax * pow(1.+zi, 4.); //CAUTION! Only if zi<z_osc!
+    double OmM = cosmo->OmegaM * pow(1.+zi,3.); //matter
+    double OmL = cosmo->OmegaL; //Omega_Lambda(z), we take it as z-independent.
+
+    double rhonu1_z=interpol_cubic(zmin_EoS, dz_EoS, rholist1_EoS, Nz_EoS, zi);
+    //rho of nu1 at z
+    double rho_ratio_nu1=rhonu1_z/rhonu1_0; //ratio to rho of zero
+    double Omnu1bar_z =  cosmo->Omeganu1 * rho_ratio_nu1; //omeganu1
+
+    double rhonu2_z=interpol_cubic(zmin_EoS, dz_EoS, rholist2_EoS, Nz_EoS, zi); 
+    //rho of nu2 at z
+    double rho_ratio_nu2=rhonu2_z/rhonu2_0; //ratio to rho of zero
+    double Omnu2bar_z =  cosmo->Omeganu2 * rho_ratio_nu2; //omeganu2
+
+    double rhonu3_z=interpol_cubic(zmin_EoS, dz_EoS, rholist3_EoS, Nz_EoS, zi); 
+    //rho of nu3 at z
+    double rho_ratio_nu3=rhonu3_z/rhonu3_0; //ratio to rho of zero
+    double Omnu3bar_z = cosmo->Omega_extra * rho_ratio_nu3; //omeganu3
+
+    double rhoaxion_z=interpol_cubic(zmin_EoS, dz_EoS, rholistaxion_EoS, Nz_EoS, zi); 
+    //rho of axion at z
+    double rho_ratio_axion=rhoaxion_z/rhoaxion_0; //ratio to rho of zero
+    double Omaxionbar_z = cosmo->Omega_ax * rho_ratio_axion; //axion
+
+    double H = cosmo->H0_Mpc* sqrt(
+        OmL + OmM + OmRbar + Omnu1bar_z + Omnu2bar_z + Omnu3bar_z + Omaxionbar_z
+    ); //H(zi)
+
+    //and the initial OmR
+    double T_gamma = interpol(
+        transfer_gamma_klong, 
+        zlist_transfer, 
+        Nz_transfer, 
+        zi
+    );
+    double T_nu = interpol(
+        transfer_nu_klong, 
+        zlist_transfer, 
+        Nz_transfer, 
+        zi
+    );
+    double OmG= OmGbar * (1.+delta_long*T_gamma/T_matter); 
+    //Omega_gamma(z) (1+\delta_long_gamma)
+    double Omnu_massless= Omnu_masslessbar * (1.+delta_long*T_nu/T_matter); 
+    //Omega_massless neutrino(z) (1+\delta_long_nu)
+    double OmR, OmR2 = OmG + Omnu_massless;
+    //and initial perturbation in nu1    (massive) and pressure
+    double pnu1_z = interpol_cubic(zmin_EoS, dz_EoS, plist1_EoS, Nz_EoS, zi); 
+    //pressure of nu2 at z
+    double wnu1_z = pnu1_z/rhonu1_z; //equation of state
+    double T_nu1_z=interpol(
+        transfer_nu1_klong, 
+        zlist_transfer, 
+        Nz_transfer, 
+        zi
+    );
+    double delta_nu1_z = delta_long*T_nu1_z/T_matter; 
+    //the long-wavelength nu1 perturbation, at z and z_next
+
+    //and initial perturbation in nu2    (massive) and pressure
+    double pnu2_z = interpol_cubic(zmin_EoS, dz_EoS, plist2_EoS, Nz_EoS, zi); 
+    //pressure of nu2 at z
+    double wnu2_z = pnu2_z/rhonu2_z; //equation of state
+    double T_nu2_z=interpol(
+        transfer_nu2_klong, 
+        zlist_transfer, 
+        Nz_transfer, 
+        zi
+    );
+    double delta_nu2_z = delta_long*T_nu2_z/T_matter; 
+    //the long-wavelength nu2 perturbation, at z and z_next
+
+    //and initial perturbation in nu3    (massive) and pressure
+    double pnu3_z = interpol_cubic(zmin_EoS, dz_EoS, plist3_EoS, Nz_EoS, zi); 
+    //pressure of nu3 at z
+    double wnu3_z = pnu3_z/rhonu3_z; //equation of state
+    double T_nu3_z=interpol(
+        transfer_nu3_klong, 
+        zlist_transfer, 
+        Nz_transfer, 
+        zi
+    );
+    double delta_nu3_z = delta_long*T_nu3_z/T_matter; 
+    //the long-wavelength nu3 perturbation, at z and z_next
+
+    //and initial perturbation in axion    (massive) and pressure
+    double paxion_z = interpol_cubic(zmin_EoS, dz_EoS, plistaxion_EoS, Nz_EoS, zi); 
+    //pressure of axion at z
+    double waxion_z = paxion_z/rhoaxion_z; //equation of state
+    double T_axion_z=interpol(
+        transfer_axion_klong, 
+        zlist_transfer, 
+        Nz_transfer, 
+        zi
+    );
+    double delta_axion_z = delta_long*T_axion_z/T_matter; 
+    //the long-wavelength axion perturbation, at z and z_next
+
+    //for the next values, to do Heun's method. We assume Omega_L does not 
+    //change. Symbol 2 denotes next step.
+    //we also get initial dE, for which we need H2 (next z)
+    double z_next = zi * exp(zstep_log);//first step
+    OmGbar= cosmo->OmegaG * pow(1.+z_next,4.);
+    Omnu_masslessbar= cosmo->Omeganu_massless * pow(1.+z_next,4.);
+    OmRbar = OmGbar + Omnu_masslessbar;
+    OmM = cosmo->OmegaM * pow(1.+z_next,3.);
+    OmAx = cosmo->Omega_ax * pow(1.+z_next,3.); //Caution whether z<z_osc!
+    OmL = cosmo->OmegaL;
+
+    rhonu1_z=interpol_cubic(zmin_EoS, dz_EoS, rholist1_EoS, Nz_EoS, z_next);
+    rho_ratio_nu1=rhonu1_z/rhonu1_0;
+    Omnu1bar_z =  cosmo->Omeganu1 * rho_ratio_nu1;
+
+    rhonu2_z=interpol_cubic(zmin_EoS, dz_EoS, rholist2_EoS, Nz_EoS, z_next);
+    rho_ratio_nu2=rhonu2_z/rhonu2_0;
+    Omnu2bar_z =  cosmo->Omeganu2 * rho_ratio_nu2;
+
+    rhonu3_z=interpol_cubic(zmin_EoS, dz_EoS, rholist3_EoS, Nz_EoS, z_next);
+    rho_ratio_nu3=rhonu3_z/rhonu3_0;
+    Omnu3bar_z = cosmo->Omega_extra * rho_ratio_nu3;
+
+    rhoaxion_z=interpol_cubic(zmin_EoS, dz_EoS, rholistaxion_EoS, Nz_EoS, z_next);
+    rho_ratio_axion=rhoaxion_z/rhoaxion_0;
+    Omaxionbar_z = cosmo->Omega_ax * rho_ratio_axion;
+
+    double H2 = cosmo->H0_Mpc* sqrt(
+        OmL + OmM + OmRbar + Omnu1bar_z + Omnu2bar_z + Omnu3bar_z + Omaxionbar_z
+    ); // H(z_next)
+    double dE, dE2 = (H2-H)/H2/(zi*zstep_log);
+
+    //and the w and c_s^2 of nus at first step we calculate.
+    //for nu1
+    pnu1_z=interpol_cubic(zmin_EoS, dz_EoS, plist1_EoS, Nz_EoS, z_next);
+    double wnu1_z2=pnu1_z/rhonu1_z;
+    double d_wnu1_z = (wnu1_z2-wnu1_z)/(z_next-zi);
+    double csq_ad_nu1_z = wnu1_z2 + d_wnu1_z/(3.0*(1+wnu1_z2))*(1.0+z_next); 
+    //sound speed squared, calculated as w - w'/(3*(1+w)*(1+z)).
+
+    //for nu2
+    pnu2_z=interpol_cubic(zmin_EoS, dz_EoS, plist2_EoS, Nz_EoS, z_next);
+    double wnu2_z2=pnu2_z/rhonu2_z;
+    double d_wnu2_z = (wnu2_z2-wnu2_z)/(z_next-zi);
+    double csq_ad_nu2_z = wnu2_z2 + d_wnu2_z/(3.0*(1+wnu2_z2))*(1.0+z_next); 
+    //sound speed squared, calculated as w - w'/(3*(1+w)*(1+z)).
+
+    //for nu3
+    pnu3_z=interpol_cubic(zmin_EoS, dz_EoS, plist3_EoS, Nz_EoS, z_next);
+    double wnu3_z2=pnu3_z/rhonu3_z;
+    double d_wnu3_z = (wnu3_z2-wnu3_z)/(z_next-zi);
+    double csq_ad_nu3_z = wnu3_z2 + d_wnu3_z/(3.0*(1+wnu3_z2))*(1.0+z_next); 
+    //sound speed squared, calculated as w - w'/(3*(1+w)*(1+z)).
+
+    //for axion sound speed and equation of state
+    paxion_z=interpol_cubic(zmin_EoS, dz_EoS, plistaxion_EoS, Nz_EoS, z_next);
+    double waxion_z2=paxion_z/rhoaxion_z;
+    double d_waxion_z = (waxion_z2-waxion_z)/(z_next-zi);
+    double csq_ad_axion_z = waxion_z2 + d_waxion_z/(3.0*(1+waxion_z2))*(1.0+z_next); 
+    //sound speed squared, calculated as w - w'/(3*(1+w)*(1+z)).
+
+    double Rpp1, Rpp2; //d^2R(z)/dz^2
+
+    int i_solution=0; 
+    //we only check for the solution of neutrino clustering every few steps
+    double Mhalo_nu1_Mpc=0, Mhalo_nu2_Mpc=0, Mhalo_nu3_Mpc=0; 
+    //M of the nu1, nu2, and nu3 haloes
+    int collapse_steps= (int) npoints/Nz_solution;    
+    //how many steps we take before saving R(z) and/or updating Mnu
+    //we save manually the first value of R and mass to avoid running the 
+    //loop at i=0.
+    R_solution[i_solution]=R1;
+    Mhalo_nu1_Mpc = Mnu1_solution[i_solution];
+    Mhalo_nu2_Mpc = Mnu2_solution[i_solution];
+    Mhalo_nu3_Mpc = Mnu3_solution[i_solution];
+    i_solution++;
+
+    /////////////////////////////////////////////////////////
+    ////    here we solve for the collapse                     
+    /////////////////////////////////////////////////////////
+    for(i=1; i<npoints-1 && R2>0.; i++){
+        //we update the values from the previous step
+        R1 = R2;
+        Rp1 = Rp2;
+        //including all z-dependent quantities, for Heun's method. 
+        //Remember 2 means next step.
+        z=z_next;
+        H=H2;
+        dE=dE2;
+        OmR=OmR2;
+        wnu1_z=wnu1_z2;
+        wnu2_z=wnu2_z2;
+        wnu3_z=wnu3_z2;
+        waxion_z=waxion_z2; 
+
+        //we save R and read Mnu, only every few steps since it doesn't vary much.
+        if (i % collapse_steps == 0){
+            R_solution[i_solution]=R1;
+            Mhalo_nu1_Mpc = Mnu1_solution[i_solution];
+            Mhalo_nu2_Mpc = Mnu2_solution[i_solution];
+            Mhalo_nu3_Mpc = Mnu3_solution[i_solution];
+            i_solution++;
+            if(debug_mode > 1){
+                printf(
+                    "z=%.1le, R=%.1le, Mnu1=%1le , Mnu2=%1le , Mnu3=%1le \n\n", 
+                    z, 
+                    R_solution[i_solution], 
+                    Mhalo_nu1_Mpc, 
+                    Mhalo_nu2_Mpc, 
+                    Mhalo_nu3_Mpc
+                );
+            }
+        }
+
+        //current redshift is updated at the end
+        z_next *= exp(zstep_log); //next redshift
+        zstep_lin = z_next - z; 
+        //linear step, more precise than z*zstep_log and cheap.
+
+        //these are the terms that go inside the sum, define them outside for 
+        //clarity.
+        double Onu1 = (
+            (1.0+3.0*wnu1_z + delta_nu1_z*(1.0+3.0*csq_ad_nu1_z))*Omnu1bar_z
+        );
+        double Onu2 = (
+            (1.0+3.0*wnu2_z + delta_nu2_z*(1.0+3.0*csq_ad_nu2_z))*Omnu2bar_z
+        );
+        double Onu3 = (
+            (1.0+3.0*wnu3_z + delta_nu3_z*(1.0+3.0*csq_ad_nu3_z))*Omnu3bar_z
+        );
+        double Oaxion = cosmo->Omega_ax * pow(1.+z, 3); 
+
+        //we find R''(z). Only depends on z and other variables calculated at 
+        //the previous z.
+        Rpp1 = (
+            - Rp1*(1./(1+z) + dE)
+            - cosmo->Mhalo_Mpc/R1/R1/pow(H*(1.+z),2.)
+            - Mhalo_nu1_Mpc/R1/R1/pow(H*(1.+z),2.)
+            - Mhalo_nu2_Mpc/R1/R1/pow(H*(1.+z),2.)
+            - Mhalo_nu3_Mpc/R1/R1/pow(H*(1.+z),2.)
+            - R1/2.*(
+                2*OmR 
+                + Onu1 
+                + Onu2 
+                + Onu3 
+                + Oaxion
+                - 2*OmL
+            )*cosmo->H0_Mpc*cosmo->H0_Mpc/pow(H*(1.+z),2.)
+        ); //R''(R1,t1)
+
+        //we update all z-dependent stuff to the next z
+        OmGbar= cosmo->OmegaG * pow(1.+z_next,4.);
+        T_gamma = interpol(
+            transfer_gamma_klong, 
+            zlist_transfer, 
+            Nz_transfer, 
+            z_next
+        );
+        OmG= OmGbar * (1.0+delta_long*T_gamma/T_matter); 
+        //Omega_gamma(z) (1+\delta_long_gamma)
+
+        Omnu_masslessbar= cosmo->Omeganu_massless * pow(1.+z_next,4.);
+        T_nu = interpol(
+            transfer_nu_klong, 
+            zlist_transfer, 
+            Nz_transfer, 
+            z_next
+        );
+        Omnu_massless= Omnu_masslessbar * (1.0+delta_long*T_nu/T_matter); 
+        //Omega_massless neutrino(z) (1+\delta_long_nu)
+
+        OmRbar = OmGbar + Omnu_masslessbar;
+        OmR2 = OmG + Omnu_massless;
+
+        OmM = cosmo->OmegaM * pow(1.+z_next,3.);
+
+        rhonu1_z=interpol_cubic(zmin_EoS, dz_EoS, rholist1_EoS, Nz_EoS, z_next);
+        rho_ratio_nu1=rhonu1_z/rhonu1_0;
+        Omnu1bar_z = cosmo->Omeganu1 * rho_ratio_nu1;
+        T_nu1_z=interpol(
+            transfer_nu1_klong, 
+            zlist_transfer, 
+            Nz_transfer, 
+            z_next
+        );
+        delta_nu1_z = delta_long*T_nu1_z/T_matter; 
+        //long-wavlength neutrino perturbation
+        pnu1_z=interpol_cubic(zmin_EoS, dz_EoS, plist1_EoS, Nz_EoS, z_next);
+        wnu1_z2=pnu1_z/rhonu1_z;
+        d_wnu1_z = (wnu1_z2-wnu1_z)/zstep_lin;
+        csq_ad_nu1_z = wnu1_z2 + d_wnu1_z/3.0*(1.0+z_next)/(1.0+wnu1_z2); 
+        //adiabatic sound speed squared.
+
+        rhonu2_z=interpol_cubic(zmin_EoS, dz_EoS, rholist2_EoS, Nz_EoS, z_next);
+        rho_ratio_nu2=rhonu2_z/rhonu2_0;
+        Omnu2bar_z = cosmo->Omeganu2 * rho_ratio_nu2;
+        T_nu2_z=interpol(transfer_nu2_klong, zlist_transfer, Nz_transfer, z_next);
+        delta_nu2_z = delta_long*T_nu2_z/T_matter; 
+        //long-wavlength neutrino perturbation
+        pnu2_z=interpol_cubic(zmin_EoS, dz_EoS, plist2_EoS, Nz_EoS, z_next);
+        wnu2_z2=pnu2_z/rhonu2_z;
+        d_wnu2_z = (wnu2_z2-wnu2_z)/zstep_lin;
+        csq_ad_nu2_z = wnu2_z2 + d_wnu2_z/3.0*(1.0+z_next)/(1.0+wnu2_z2); 
+        //adiabatic sound speed squared.
+
+        rhonu3_z=interpol_cubic(zmin_EoS, dz_EoS, rholist3_EoS, Nz_EoS, z_next);
+        rho_ratio_nu3=rhonu3_z/rhonu3_0;
+        Omnu3bar_z = cosmo->Omega_extra * rho_ratio_nu3;
+        T_nu3_z=interpol(
+            transfer_nu3_klong, 
+            zlist_transfer, 
+            Nz_transfer, 
+            z_next
+        );
+        delta_nu3_z = delta_long*T_nu3_z/T_matter; 
+        //long-wavlength neutrino perturbation
+        pnu3_z=interpol_cubic(zmin_EoS, dz_EoS, plist3_EoS, Nz_EoS, z_next);
+        wnu3_z2=pnu3_z/rhonu3_z;
+        d_wnu3_z = (wnu3_z2-wnu3_z)/zstep_lin;
+        csq_ad_nu3_z = wnu3_z2 + d_wnu3_z/3.0*(1.0+z_next)/(1.0+wnu3_z2); 
+        //adiabatic sound speed squared.
+
+        rhoaxion_z=interpol_cubic(zmin_EoS, dz_EoS, rholistaxion_EoS, Nz_EoS, z_next);
+        rho_ratio_axion=rhoaxion_z/rhoaxion_0;
+        Omaxionbar_z = cosmo->Omega_ax * rho_ratio_axion;
+        T_axion_z=interpol(
+            transfer_axion_klong, 
+            zlist_transfer, 
+            Nz_transfer, 
+            z_next
+        );
+        delta_axion_z = delta_long*T_axion_z/T_matter; 
+        //long-wavlength axion perturbation
+        paxion_z=interpol_cubic(zmin_EoS, dz_EoS, plistaxion_EoS, Nz_EoS, z_next);
+        waxion_z2=paxion_z/rhoaxion_z;
+        d_waxion_z = (waxion_z2-waxion_z)/zstep_lin;
+        csq_ad_axion_z = waxion_z2 + d_waxion_z/3.0*(1.0+z_next)/(1.0+waxion_z2); 
+        //adiabatic sound speed squared.
+
+        //we update the Onu terms that go inside the integral.
+        Onu1 =( 
+            (1.0+3.0*wnu1_z + delta_nu1_z*(1.0+3.0*csq_ad_nu1_z))*Omnu1bar_z
+        );
+        Onu2 =( 
+            (1.0+3.0*wnu2_z + delta_nu2_z*(1.0+3.0*csq_ad_nu2_z))*Omnu2bar_z
+        );
+        Onu3 =( 
+            (1.0+3.0*wnu3_z + delta_nu3_z*(1.0+3.0*csq_ad_nu3_z))*Omnu3bar_z
+        );
+        Oaxion =( 
+            (1.0+3.0*waxion_z + delta_axion_z*(1.0+3.0*csq_ad_axion_z))*Omaxionbar_z
+        );
+
+        H2  = cosmo->H0_Mpc * sqrt(
+            OmL + OmM + OmRbar + Omnu1bar_z + Omnu2bar_z + Omnu3bar_z + Omaxionbar_z
+        );// H(z_next)
+
+        dE2 = (H2-H)/H2/zstep_lin; 
+        //dE/dz*1/E (z_next). We update the stored value at the end.
+
+        //these are too annoying to keep even with debug_mode, activate manually
+        //if you want:
+        //printf("z=%le, H=%le , H_LCDM=%le , dE=%le , dE_LCDM=%le\n", z, H, 
+        //cosmo->H0_Mpc*E_LCDM(cosmo, z), dE, dlogE_dz_LCDM(cosmo, z));
+        //printf("z=%.1le, OmL=%.1le , OmR=%.1le , R=%.1le \n", z, OmL, OmR, 
+        //R1);
+
+        //now we evolve R and R'.
+
+        R1tilde = R1 + zstep_lin * Rp1;
+        Rp1tilde = Rp1 + zstep_lin * Rpp1;
+
+        //we need R''(z_next,R_tilde):
+        Rpp2 = (
+            - Rp1tilde*(1./(1+z_next) + dE2)
+            - cosmo->Mhalo_Mpc/R1tilde/R1tilde/pow(H2*(1.+z_next),2.)
+            - Mhalo_nu1_Mpc/R1tilde/R1tilde/pow(H2*(1.+z_next),2.)
+            - Mhalo_nu2_Mpc/R1tilde/R1tilde/pow(H2*(1.+z_next),2.)
+            - Mhalo_nu3_Mpc/R1tilde/R1tilde/pow(H2*(1.+z_next),2.)
+            - R1tilde/2.*(
+                2*OmR2 
+                + Onu1 
+                + Onu2 
+                + Onu3 
+                + Oaxion
+                - 2*OmL
+            )*cosmo->H0_Mpc*cosmo->H0_Mpc/pow(H2*(1.+z_next),2.)
+        ); //R''(R2,t2)
+    
+        //and these will be the next-z solutions.
+        R2 = R1 + zstep_lin/2.0 * (Rp1 + Rp1tilde);
+        Rp2 = Rp1 + zstep_lin/2.0 * (Rpp1 + Rpp2);
+    }
+    return z;
+}
 int findmass_1nu(
     Cosmology *cosmo, 
     double mass_0, 
