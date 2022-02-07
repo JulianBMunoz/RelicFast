@@ -78,7 +78,7 @@ int main(int argc, char** filenameinput){
     int iM, iz;
 
     //we now import the axion background equation of state
-    int j;
+    int j, k;
     int axion_N=5000; 
 
     cosmo->axion_N = &axion_N; 
@@ -90,7 +90,9 @@ int main(int argc, char** filenameinput){
 
     double axion_a[2*axion_N];
     double axion_w[2*axion_N];
-    double axion_rho[2*axion_N]; 
+    double axion_rho[2*axion_N];
+    double axion_z[2*axion_N];
+    double axion_p[2*axion_N]; 
     double temp;    
     double axion_osc; 
 
@@ -115,12 +117,9 @@ int main(int argc, char** filenameinput){
         )==4; 
         ++j
     ){
-        printf("%le \t %le \t %le \n", axion_a[j], axion_w[j], axion_rho[j]);
-        cosmo->axion_a[j]=axion_a[j]; 
-        cosmo->axion_z[j]=((1./axion_a[j])-1.); 
-        cosmo->axion_w[j]=axion_w[j]; 
-        cosmo->axion_rho[j]=axion_rho[j];
-        cosmo->axion_p[j]=(cosmo->axion_w[j])*(cosmo->axion_rho[j]);  
+        //printf("%le \t %le \t %le \n", axion_a[j], axion_w[j], axion_rho[j]);
+        axion_z[j]=((1./axion_a[j])-1.); 
+        axion_p[j]=axion_w[j]*axion_rho[j];  
     }; 
 
     //Fill in values after a_osc
@@ -128,37 +127,48 @@ int main(int argc, char** filenameinput){
     double a_osc; 
     double z_osc, logz_osc; 
     double dz_late, dlogz_early; 
-    int linear_idx=2*axion_N-1000; 
+    int linear_idx=2*axion_N-1000; //Do last 1000 entries linearly spaced
 
     for(j=0; j<(2*axion_N); ++j){
-        if (j==4999){
-            rho_osc = cosmo->axion_rho[j]; 
-            a_osc = cosmo->axion_a[j]; 
+        if (j==(axion_N-1)){
+            rho_osc = axion_rho[j]; 
+            a_osc = axion_a[j]; 
             z_osc = (1./a_osc)-1.; 
-            dlogz_early = (log10(1.)-log10(z_osc))/4000.; 
-            printf("OSCILLATION BEGINS HERE\n"); 
+            dlogz_early = (log10(1.)-log10(z_osc))/(axion_N-1000); 
+            //printf("OSCILLATION BEGINS HERE\n"); 
         }; 
-        if (j>=4999){
+        if (j>=(axion_N-1)){
             if (j<linear_idx){
-                cosmo->axion_w[j]=0.; 
-                cosmo->axion_p[j]=0.;  
-                cosmo->axion_z[j]=pow(10., log10(z_osc)+((j-4998)*dlogz_early)); 
-                cosmo->axion_a[j]=1./(cosmo->axion_z[j] + 1.);
-                cosmo->axion_rho[j]=rho_osc * pow((1+cosmo->axion_z[j])/(1+z_osc), 3.); 
+                axion_w[j]=0.; 
+                axion_p[j]=0.;  
+                axion_z[j]=pow(10., log10(z_osc)+((j-axion_N-2)*dlogz_early)); 
+                axion_a[j]=1./(axion_z[j] + 1.);
+                axion_rho[j]=rho_osc * pow((1+axion_z[j])/(1+z_osc), 3.); 
             } 
             else{
                 if (j==linear_idx){
-                    dz_late = cosmo->axion_z[j-1]/1000.;
-                    printf("SWITCHING TO LINEAR Z SPACING... dz = %le \n", dz_late); 
+                    dz_late = axion_z[j-1]/1000.;
+                    //printf("SWITCHING TO LINEAR Z SPACING... dz = %le \n", dz_late); 
                 }
-                cosmo->axion_w[j]=0.; 
-                cosmo->axion_p[j]=0.;  
-                cosmo->axion_z[j]=cosmo->axion_z[linear_idx-1]-((j+1-linear_idx)*dz_late); 
-                cosmo->axion_a[j]=1./(cosmo->axion_z[j] + 1.);
-                cosmo->axion_rho[j]=rho_osc * pow((1+cosmo->axion_z[j])/(1+z_osc), 3.); 
+                axion_w[j]=0.; 
+                axion_p[j]=0.;  
+                axion_z[j]=axion_z[linear_idx-1]-((j+1-linear_idx)*dz_late); 
+                axion_a[j]=1./(axion_z[j] + 1.);
+                axion_rho[j]=rho_osc * pow((1+axion_z[j])/(1+z_osc), 3.); 
             };  
-            printf("%le \t %le \t %.10e \n", cosmo->axion_a[j], cosmo->axion_w[j], cosmo->axion_rho[j]); 
+            //printf("%le \t %le \t %.10e \n", axion_a[j], axion_w[j], axion_rho[j]); 
         };
+    }; 
+
+    //printf("Reversing order of axion background arrays...\n"); 
+    for(j=0; j<(2*axion_N); ++j){
+        cosmo->axion_w[j] = axion_w[2*axion_N-j-1]; 
+        cosmo->axion_p[j] = axion_p[2*axion_N-j-1];
+        cosmo->axion_z[j] = axion_z[2*axion_N-j-1];
+        cosmo->axion_a[j] = axion_a[2*axion_N-j-1];
+        cosmo->axion_rho[j] = axion_rho[2*axion_N-j-1];
+
+        //printf("%le \t %le \t %.10e \n", cosmo->axion_a[j], cosmo->axion_w[j], cosmo->axion_rho[j]);
     }; 
 
     //we now solve for the collapse and calculate the biases at each z
