@@ -988,7 +988,11 @@ Params%grhoax_table=dlog10(dexp(Params%grhoax_table))
 
 open(unit=983, file="/Users/nicholasdeporzio/Downloads/axion_background.dat", action="write", status="replace")
 do i=1,ntable
-   write(983,*) dexp(Params%loga_table(i)), Params%wax_table(i), Params%cs2_table(i), Params%grhoax_table(i) 
+   write(983,*) dexp(Params%loga_table(i)), Params%wax_table(i), Params%cs2_table(i), &
+        grhom*grhoax_table_internal(i), grhoax_table_internal(i), Params%grhoax_table(i), &
+        Params%omegaax, rhocrit, (Params%H0/100.)**2./(3.*((Params%H0)**2/(8.0*const_pi*G))) 
+        !scale factor, eq of state, adiabatic sound speed, little omega axion, big Omega axion today,
+        !critical energy density, critical energy density check 
 end do
 close(983)
 
