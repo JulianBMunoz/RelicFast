@@ -604,13 +604,21 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
     plist_axion_EoS=allocate_1D_array(Nz_EoS);
     rholist_axion_EoS=allocate_1D_array(Nz_EoS);
 
+    printf("TESTA\n"); 
     for(i=0;i<Nz_EoS;i++){
         zlist_EoS[i]=zmin_EoS+i*dz_EoS; 
         //z linearly from 0 to z_collapse EQUALLY SPACED! 
         //Since we will use interpol_cubic.
 
-        rholist_axion_EoS[i] = interpol(cosmo->axion_rho, cosmo->axion_z, *cosmo->axion_N, zlist_EoS[i]);
-        plist_axion_EoS[i] = interpol(cosmo->axion_p, cosmo->axion_z, *cosmo->axion_N, zlist_EoS[i]);
+        printf("%.10e\n", cosmo->axion_rho[0]); 
+        printf("%.10e\n", cosmo->axion_rho[2*(*cosmo->axion_N) - 1]);
+        printf("%.10e\n", cosmo->axion_z[0]);
+        printf("%.10e\n", cosmo->axion_z[2*(*cosmo->axion_N) - 1]);
+        printf("%le\n", cosmo->axion_N);
+        printf("%.10e\n", zlist_EoS[0]);
+        rholist_axion_EoS[i] = interpol(cosmo->axion_rho.reverse(), cosmo->axion_z.reverse(), 2*(*cosmo->axion_N), zlist_EoS[i]);
+        printf("Got rho, now P..."); 
+        plist_axion_EoS[i] = interpol(cosmo->axion_p, cosmo->axion_z, 2*(*cosmo->axion_N), zlist_EoS[i]);
         //printf("z=%.1le,  w=%.1le, Tnu/mnu=%.1le \n",zlist_EoS[i],plist_EoS[i]/rholist_EoS[i],Temp_nu*KtoeV/(mnu1));
 
         if(debug_mode > 0){
@@ -623,10 +631,13 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
             );
         }
     }
+    printf("TESTB\n"); 
 
     rho_extra_zi=interpol(cosmo->axion_rho, cosmo->axion_z, *cosmo->axion_N, zi);
     rho_extra_z0=interpol(cosmo->axion_rho, cosmo->axion_z, *cosmo->axion_N, zf);
     rho_extra_ratio_zi=rho_extra_zi/rho_extra_z0;
+
+    printf("TESTC\n"); 
 
     if(debug_mode > 0) fclose(fp);
     //if we ask for clustering do it only if at least one of the species is 

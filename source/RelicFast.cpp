@@ -77,29 +77,30 @@ int main(int argc, char** filenameinput){
 
     int iM, iz;
 
-
     //we now import the axion background equation of state
     int j;
     int axion_N=5000; 
 
     cosmo->axion_N = &axion_N; 
+    cosmo->axion_a = allocate_1D_array(2*axion_N);
+    cosmo->axion_z = allocate_1D_array(2*axion_N);
+    cosmo->axion_w = allocate_1D_array(2*axion_N);
+    cosmo->axion_rho = allocate_1D_array(2*axion_N);
+    cosmo->axion_p = allocate_1D_array(2*axion_N);
 
-    cosmo->axion_a = allocate_1D_array(axion_N);
-    cosmo->axion_z = allocate_1D_array(axion_N);
-    cosmo->axion_w = allocate_1D_array(axion_N);
-    cosmo->axion_rho = allocate_1D_array(axion_N);
-    cosmo->axion_p = allocate_1D_array(axion_N);
-
-    double axion_a[axion_N];
-    double axion_w[axion_N];
-    double axion_rho[axion_N]; 
+    double axion_a[2*axion_N];
+    double axion_w[2*axion_N];
+    double axion_rho[2*axion_N]; 
     double temp;    
     double axion_osc; 
 
-    FILE *fp3=fopen("/Users/nicholasdeporzio/Downloads/axion_osc.dat", "r"); 
-    fscanf(fp3, "%le", axion_osc); 
-    cosmo->axion_osc = &axion_osc; 
- 
+    FILE *fp3=fopen("/Users/nicholasdeporzio/Downloads/axion_aosc.dat", "r"); 
+
+    fscanf(fp3, "%le", &axion_osc); 
+    cosmo->axion_osc = &axion_osc;
+    printf("Axion a_{osc} = %le \n", axion_osc); 
+    printf("Axion a_{osc} = %le \n", cosmo->axion_osc);  
+
     FILE *fp2=fopen("/Users/nicholasdeporzio/Downloads/axion_background.dat", "r"); 
 
     for(
@@ -109,7 +110,7 @@ int main(int argc, char** filenameinput){
             "%le %le %le %le",
             &axion_a[j], 
             &axion_w[j], 
-            temp, 
+            &temp, 
             &axion_rho[j]
         )==4; 
         ++j
@@ -118,21 +119,68 @@ int main(int argc, char** filenameinput){
         cosmo->axion_a[j]=axion_a[j]; 
         cosmo->axion_z[j]=((1./axion_a[j])-1.); 
         cosmo->axion_w[j]=axion_w[j]; 
-        cosmo->axion_rho[j]=(axion_rho[j]*pow(0.70148, 2.0))/(0.45069*pow(10.0, 23.)*pow(axion_osc, 3.));
+        cosmo->axion_rho[j]=axion_rho[j];
         cosmo->axion_p[j]=(cosmo->axion_w[j])*(cosmo->axion_rho[j]);  
+    }; 
+
+    //Fill in values after a_osc
+    double rho_osc; 
+    double a_osc; 
+    double z_osc, logz_osc; 
+    double dz_late, dlogz_early; 
+    int linear_idx=2*axion_N-1000; 
+
+    for(j=0; j<(2*axion_N); ++j){
+        if (j==4999){
+            rho_osc = cosmo->axion_rho[j]; 
+            a_osc = cosmo->axion_a[j]; 
+            z_osc = (1./a_osc)-1.; 
+            dlogz_early = (log10(1.)-log10(z_osc))/4000.; 
+            printf("OSCILLATION BEGINS HERE\n"); 
+        }; 
+        if (j>=4999){
+            if (j<linear_idx){
+                cosmo->axion_w[j]=0.; 
+                cosmo->axion_p[j]=0.;  
+                cosmo->axion_z[j]=pow(10., log10(z_osc)+((j-4998)*dlogz_early)); 
+                cosmo->axion_a[j]=1./(cosmo->axion_z[j] + 1.);
+                cosmo->axion_rho[j]=rho_osc * pow((1+cosmo->axion_z[j])/(1+z_osc), 3.); 
+            } 
+            else{
+                if (j==linear_idx){
+                    dz_late = cosmo->axion_z[j-1]/1000.;
+                    printf("SWITCHING TO LINEAR Z SPACING... dz = %le \n", dz_late); 
+                }
+                cosmo->axion_w[j]=0.; 
+                cosmo->axion_p[j]=0.;  
+                cosmo->axion_z[j]=cosmo->axion_z[linear_idx-1]-((j+1-linear_idx)*dz_late); 
+                cosmo->axion_a[j]=1./(cosmo->axion_z[j] + 1.);
+                cosmo->axion_rho[j]=rho_osc * pow((1+cosmo->axion_z[j])/(1+z_osc), 3.); 
+            };  
+            printf("%le \t %le \t %.10e \n", cosmo->axion_a[j], cosmo->axion_w[j], cosmo->axion_rho[j]); 
+        };
     }; 
 
     //we now solve for the collapse and calculate the biases at each z
     for(iz=0;iz<cosmo->N_zcoll;iz++){
+        printf("TEST1\n");
         cosmo->z_collapse = cosmo->z_collapse_array[iz];
         if(debug_mode>=0) printf("z_coll = %le \n", cosmo->z_collapse);
+
+        printf("TEST2\n"); 
 
         collapse_check = collapse(cosmo, zlist_transfer); 
         //solve for the collapse, and save delta_crit as a function of delta_L
 
+        printf("TEST3\n"); 
+
         bias_check = get_bias(cosmo, zlist_transfer);    
         //find Lagrangian and Eulerian biases from the saved files.
+
+        printf("TEST4\n"); 
     }
+
+    printf("TEST5\n"); 
 
     //this tells the user which of the things have been done.
     printf("Boltzmann? %d Collapse? %d Bias? %d \n",boltzmann_check,collapse_check,bias_check);

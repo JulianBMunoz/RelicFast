@@ -206,15 +206,15 @@
     double *klong_list_input;    //for which k_longs we calculate. We use
     //slightly different values to match CLASS/CAMB
     //for higher precision.
-
+    
     double *axion_a;
-    double *axion_z;  
+    double *axion_z;
     double *axion_w;
     double *axion_rho;
-    double *axion_p;  
-    double *axion_osc;  
-    int *axion_N; 
-
+    double *axion_p;
+    double *axion_osc;
+    int *axion_N;
+    
     };
     
     #if boltzmann_tag==0
@@ -259,7 +259,7 @@
     #define _MICE_ 1
     #define _wCDM_ 2
     #define _ST_ 3
-    #define HMF_option _MICE_    //Option for what Halo Mass Function to use.
+    #define HMF_option _ST_    //Option for what Halo Mass Function to use.
     //1:MICE, 2:wLCDM, 3:ST. Add your own in Bias.h
     
     // Other code parameters:
@@ -273,7 +273,7 @@
     #define length_transfer_camb 597    //Number of elements in the transfer
     //function output from CAMB
     
-    #define length_transfer_axioncamb 595    //Number of elements in the transfer
+    #define length_transfer_axioncamb 597    //Number of elements in the transfer
     //function output from axionCAMB
     
     #define length_transfer_class 122    //Number of elements in the transfer
