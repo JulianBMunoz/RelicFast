@@ -389,7 +389,6 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         );
     }
 
-    printf("TESTA\n");
     if(boltzmann_tag == 0){//CLASS
         lengthname=sprintf(
             filename,
@@ -401,7 +400,6 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         //zlist reversed, starts at 1
     }
     else {//CAMB, AXIONCAMB
-        printf("TESTB\n");
         lengthname=sprintf(
             filename,
             "Boltzmann_%d/transfer_files_%d/_transfer_out_z%.3f",
@@ -411,16 +409,16 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
         ); 
         //We reuse the same filename variable name.
     }
-    printf("TESTC\n");
+
     transfer_check=gettransfer_matter(
         cosmo, 
         filename, 
         k_transfer_array, 
         transfer_array_z_collapse
     );
-    printf("TESTD\n");
+
     do_check(transfer_check);
-    printf("TESTE\n");
+
     ///////////////////////////////////////////////////////////////////////////
     ////    we create an interpolation table for the equations  of state      
     ///////////////////////////////////////////////////////////////////////////

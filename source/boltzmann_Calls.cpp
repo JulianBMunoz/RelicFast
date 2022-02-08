@@ -225,6 +225,7 @@ int gettransfer_matter(Cosmology *cosmo, char *filename,  double *kgrid, double 
         printf("Error in gettransfer, boltzmann_tag has to be either 0 or 1 \n");
         return -1;
     }
+
     free(buffer);
     free(transfer_temp);
     return 1;

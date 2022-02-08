@@ -173,24 +173,17 @@ int main(int argc, char** filenameinput){
 
     //we now solve for the collapse and calculate the biases at each z
     for(iz=0;iz<cosmo->N_zcoll;iz++){
-        printf("TEST1\n");
         cosmo->z_collapse = cosmo->z_collapse_array[iz];
-        if(debug_mode>=0) printf("z_coll = %le \n", cosmo->z_collapse);
 
-        printf("TEST2\n"); 
+        if(debug_mode>=0) printf("z_coll = %le \n", cosmo->z_collapse);
 
         collapse_check = collapse(cosmo, zlist_transfer); 
         //solve for the collapse, and save delta_crit as a function of delta_L
 
-        printf("TEST3\n"); 
-
         bias_check = get_bias(cosmo, zlist_transfer);    
         //find Lagrangian and Eulerian biases from the saved files.
 
-        printf("TEST4\n"); 
     }
-
-    printf("TEST5\n"); 
 
     //this tells the user which of the things have been done.
     printf("Boltzmann? %d Collapse? %d Bias? %d \n",boltzmann_check,collapse_check,bias_check);
