@@ -81,6 +81,9 @@ int tests_pre_run(Cosmology *cosmo){
     if(cosmo->tag_thermal_relic){
         printf("Thermal Relic, with m=%.2lf eV and T_0=%.2lf K \n", cosmo->m_TR, cosmo->T0_TR);
     }
+    if(boltzmann_tag == _AXIONCAMB_){
+        printf("Axion with m=%.3e eV and Omega*h^2=%.3f \n", cosmo->m_ax, cosmo->omega_ax); 
+    }
 
     if(cosmo->z_collapse_top > 1. && cosmo->N_zcoll>1 && HMF_option!=_ST_){
         printf("For z>1 HMFs from simulations might not properly calibrated, \

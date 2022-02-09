@@ -66,7 +66,7 @@ int main(int argc, char** filenameinput){
     double *zlist_transfer;
     zlist_transfer=allocate_1D_array(Nz_transfer);
 
-    int boltzmann_check = boltzmann(cosmo, zlist_transfer); //run CLASS/CAMB.
+    int boltzmann_check = boltzmann(cosmo, zlist_transfer); //run CLASS/CAMB/AXIONCAMB
 
     int collapse_check=0;
     int bias_check=0;

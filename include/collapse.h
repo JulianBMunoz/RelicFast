@@ -107,6 +107,27 @@ double find_z_collapse_3nu(
     double *Mnu3_solution
 );
 
+//For massless neutrinos plus axion
+double find_z_collapse_masslessnu_axion(
+    Cosmology *cosmo,
+    double Ri,
+    double Rpi,
+    double delta_long,
+    double *zlist_transfer,
+    double Tfm_klong,
+    double *transfer_gamma_klong,
+    double *transfer_nu_massless_klong,
+    double *transfer_axion_klong,
+    double zmin_EoS,
+    double dz_EoS,
+    long Nz_EoS,
+    double *rholist_axion_EoS,
+    double *plist_axion_EoS,
+    long Nz_solution,
+    double *R_solution,
+    double *axion_solution
+);
+
 //for 2 massive neutrinos + extra + axion
 double find_z_collapse_3nu_axion(
     Cosmology *cosmo, 
