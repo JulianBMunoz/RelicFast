@@ -1313,7 +1313,8 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
                             plist_axion_EoS,
                             Nz_solution,
                             Rhalo_solution,
-                            Maxion_solution
+                            Maxion_solution,
+                            k_long
                         );
                     }
                     else{
@@ -1349,7 +1350,8 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
                             Mnu1_solution, 
                             Mnu2_solution, 
                             Mextra_solution, 
-                            Maxion_solution
+                            Maxion_solution,
+                            k_long
                         );
                     }
                     if(z_coll_iteration>cosmo->z_collapse){ 
@@ -1531,6 +1533,8 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
                         int i_klong=0;
                         i_klong<N_klong_calc[i_delta_long];
                         i_klong++){
+
+                        double k_long=klong_list[i_klong];
 
                         double delta_long=delta_long_list[i_delta_long];
 
@@ -1788,7 +1792,8 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
                                     plist_axion_EoS,
                                     Nz_solution,
                                     Rhalo_solution,
-                                    Maxion_solution
+                                    Maxion_solution,
+                                    k_long
                                 );
                             }
                             else{
@@ -1824,7 +1829,8 @@ int collapse(Cosmology *cosmo, double *zlist_transfer){
                                     Mnu1_solution, 
                                     Mnu2_solution, 
                                     Mextra_solution,
-                                    Maxion_solution 
+                                    Maxion_solution,
+                                    k_long 
                                 );
                             }
 
@@ -3316,7 +3322,8 @@ double find_z_collapse_masslessnu_axion(
     double * const plistaxion_EoS,
     const long Nz_solution, 
     double *R_solution, 
-    double *Maxion_solution
+    double *Maxion_solution, 
+    double k_long
     ){
     // This function returns the z at which an overdensity collapses. global 
     //cosmological parameters assumed.
@@ -3431,8 +3438,16 @@ double find_z_collapse_masslessnu_axion(
     paxion_z=interpol_cubic(zmin_EoS, dz_EoS, plistaxion_EoS, Nz_EoS, z_next);
     double waxion_z2=paxion_z/rhoaxion_z;
     double d_waxion_z = (waxion_z2-waxion_z)/(z_next-zi);
-    double csq_ad_axion_z = waxion_z2 + d_waxion_z/(3.0*(1+waxion_z2))*(1.0+z_next); 
+    double a_next = (1./(1.+z_next));
+    double km = 2. * cosmo->m_ax * a_next * MpctoeV_natural; 
+    double csq_ef_axion_z = ( pow(k_long/km, 2.)/(1.+pow(k_long/km, 2.)) ); 
+    //double csq_ad_axion_z = waxion_z2 + d_waxion_z/(3.0*(1+waxion_z2))*(1.0+z_next); 
     //sound speed squared, calculated as w - w'/(3*(1+w)*(1+z)).
+    //FILE * cs2file;
+    //cs2file=fopen("/Users/nicholasdeporzio/Downloads/collapse_cs2_ad.dat", "a+"); 
+    //fprintf(cs2file, "%le \t %le \t %le \n", transfer_axion_klong, z_next, csq_ad_axion_z); 
+    //fprintf(cs2file, "NEW CALL OF COLLAPSE FUNCTION \n"); 
+    //fclose(cs2file);  
 
     double Rpp1, Rpp2; //d^2R(z)/dz^2
 
@@ -3509,13 +3524,20 @@ double find_z_collapse_masslessnu_axion(
         paxion_z=interpol_cubic(zmin_EoS, dz_EoS, plistaxion_EoS, Nz_EoS, z_next);
         waxion_z2=paxion_z/rhoaxion_z;
         d_waxion_z = (waxion_z2-waxion_z)/zstep_lin;
-        csq_ad_axion_z = waxion_z2 + d_waxion_z/3.0*(1.0+z_next)/(1.0+waxion_z2); 
+        a_next = (1./(1.+z_next));
+        km = 2. * cosmo->m_ax * a_next * MpctoeV_natural;
+        csq_ef_axion_z = ( pow(k_long/km, 2.)/(1.+pow(k_long/km, 2.)) );
+        //csq_ad_axion_z = waxion_z2 + d_waxion_z/3.0*(1.0+z_next)/(1.0+waxion_z2); 
         //adiabatic sound speed squared.
+        //cs2file=fopen("/Users/nicholasdeporzio/Downloads/collapse_cs2_ad.dat", "a+");
+        //fprintf(cs2file, "%le \t %le \t %le \n", transfer_axion_klong, z_next, csq_ad_axion_z);
+        //fclose(cs2file);
+
 
         //we update the terms that go inside the integral.
         Oaxion =( 
-            (1.0+3.0*waxion_z + delta_axion_z*(1.0+3.0*csq_ad_axion_z))*Omaxionbar_z
-        );
+            (1.0+3.0*waxion_z + delta_axion_z*(1.0+3.0*csq_ef_axion_z))*Omaxionbar_z
+        ); //CAUTION, USING THE EFFECTIVE SOUND SPEED OF AXION!
 
         H2  = cosmo->H0_Mpc * sqrt(OmL + OmM + OmRbar + Omaxionbar_z);// H(z_next)
 
@@ -3549,6 +3571,11 @@ double find_z_collapse_masslessnu_axion(
         R2 = R1 + zstep_lin/2.0 * (Rp1 + Rp1tilde);
         Rp2 = Rp1 + zstep_lin/2.0 * (Rpp1 + Rpp2);
     }
+    FILE * cs2file;
+    cs2file=fopen("/Users/nicholasdeporzio/Downloads/collapse_cs2_ef.dat", "a+");
+    fprintf(cs2file, "%le \t %le \t %le \n", k_long, z, csq_ef_axion_z); 
+    //fprintf(cs2file, "NEW CALL OF COLLAPSE FUNCTION \n");
+    fclose(cs2file);
     return z;
 }
 double find_z_collapse_3nu_axion(
@@ -3580,8 +3607,8 @@ double find_z_collapse_3nu_axion(
     double *Mnu1_solution, 
     double *Mnu2_solution, 
     double *Mnu3_solution,
-    double *Maxion_solution
-
+    double *Maxion_solution,
+    double k_long
     ){
     // This function returns the z at which an overdensity collapses. global 
     //cosmological parameters assumed.
@@ -3797,7 +3824,10 @@ double find_z_collapse_3nu_axion(
     paxion_z=interpol_cubic(zmin_EoS, dz_EoS, plistaxion_EoS, Nz_EoS, z_next);
     double waxion_z2=paxion_z/rhoaxion_z;
     double d_waxion_z = (waxion_z2-waxion_z)/(z_next-zi);
-    double csq_ad_axion_z = waxion_z2 + d_waxion_z/(3.0*(1+waxion_z2))*(1.0+z_next); 
+    double a_next = (1./(1.+z_next));
+    double km = 2. * cosmo->m_ax * a_next * MpctoeV_natural;
+    double csq_ef_axion_z = ( pow(k_long/km, 2.)/(1.+pow(k_long/km, 2.)) );
+    //double csq_ad_axion_z = waxion_z2 + d_waxion_z/(3.0*(1+waxion_z2))*(1.0+z_next); 
     //sound speed squared, calculated as w - w'/(3*(1+w)*(1+z)).
 
     double Rpp1, Rpp2; //d^2R(z)/dz^2
@@ -3869,7 +3899,10 @@ double find_z_collapse_3nu_axion(
         double Onu3 = (
             (1.0+3.0*wnu3_z + delta_nu3_z*(1.0+3.0*csq_ad_nu3_z))*Omnu3bar_z
         );
-        double Oaxion = cosmo->Omega_ax * pow(1.+z, 3); 
+        //double Oaxion = cosmo->Omega_ax * pow(1.+z, 3); 
+        double Oaxion =(
+            (1.0+3.0*waxion_z + delta_axion_z*(1.0+3.0*csq_ef_axion_z))*Omaxionbar_z
+        ); //CAUTION, USING THE EFFECTIVE SOUND SPEED OF AXION!
 
         //we find R''(z). Only depends on z and other variables calculated at 
         //the previous z.
@@ -3975,7 +4008,11 @@ double find_z_collapse_3nu_axion(
         paxion_z=interpol_cubic(zmin_EoS, dz_EoS, plistaxion_EoS, Nz_EoS, z_next);
         waxion_z2=paxion_z/rhoaxion_z;
         d_waxion_z = (waxion_z2-waxion_z)/zstep_lin;
-        csq_ad_axion_z = waxion_z2 + d_waxion_z/3.0*(1.0+z_next)/(1.0+waxion_z2); 
+        a_next = (1./(1.+z_next));
+        km = 2. * cosmo->m_ax * a_next * MpctoeV_natural;
+        csq_ef_axion_z = ( pow(k_long/km, 2.)/(1.+pow(k_long/km, 2.)) );
+        //effective axion sound speed squared 
+        //csq_ad_axion_z = waxion_z2 + d_waxion_z/3.0*(1.0+z_next)/(1.0+waxion_z2); 
         //adiabatic sound speed squared.
 
         //we update the Onu terms that go inside the integral.
@@ -3989,7 +4026,7 @@ double find_z_collapse_3nu_axion(
             (1.0+3.0*wnu3_z + delta_nu3_z*(1.0+3.0*csq_ad_nu3_z))*Omnu3bar_z
         );
         Oaxion =( 
-            (1.0+3.0*waxion_z + delta_axion_z*(1.0+3.0*csq_ad_axion_z))*Omaxionbar_z
+            (1.0+3.0*waxion_z + delta_axion_z*(1.0+3.0*csq_ef_axion_z))*Omaxionbar_z
         );
 
         H2  = cosmo->H0_Mpc * sqrt(

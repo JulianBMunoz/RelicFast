@@ -125,7 +125,8 @@ double find_z_collapse_masslessnu_axion(
     double *plist_axion_EoS,
     long Nz_solution,
     double *R_solution,
-    double *axion_solution
+    double *axion_solution,
+    double k_long
 );
 
 //for 2 massive neutrinos + extra + axion
@@ -158,7 +159,8 @@ double find_z_collapse_3nu_axion(
     double *Mnu1_solution, 
     double *Mnu2_solution, 
     double *Mnu3_solution,
-    double *axion_solution
+    double *axion_solution,
+    double k_long
 );
 
 //this gets the solution for R(t) and finds the Mnu(t) within Rhalo. One for
