@@ -1,4 +1,14 @@
-.DS_Store
+# Mac OSX files
+.DS_Store 
+
+# Compilation and installation files
 relicfast
 *.o
+*_Current
+
+# Data files created at runtime
 Boltzmann_*
+output/*
+
+# Generated plots
+*.png
