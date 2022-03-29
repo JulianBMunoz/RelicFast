@@ -9,17 +9,17 @@ from matplotlib.lines import Line2D
 
 sns.set()
 
-axioncamb_data_eulbias = []
-axioncamb_data_lagbias = []
+relicfast_data_eulbias = []
+relicfast_data_lagbias = []
 axioncamb_data_tf = []
 axioncamb_data_pk = []
+relicfast_data_tf = []
+relicfast_data_pk = []
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
 rfpath_outputsuffix = "output/result-0/"
-outpath = "/Users/nicholasdeporzio/Desktop/"
-
-
-
+rfpath_boltzmannsuffix = "Boltzmann_2/transfer_files_0/"
+outpath = "/Users/nicholasdeporzio/Downloads/"
 
 M_nu = 0. # Units: eV
 redshift = 0.7
@@ -40,7 +40,6 @@ omega_cdm = omega_cdm_LCDM - omega_ax
 
 
 M_ax = [1.0e-30, 1.0e-28, 1.0e-26]
-#M_ax = [1.0e-30]
 
 # Set solver to axionCAMB
 os.chdir(rfpath+'/include/')
@@ -102,7 +101,7 @@ for m_idx, m_val in enumerate(M_ax):
             ).replace(
                 "m_ax = 1.0e-22", "m_ax = "+f'{m_val:.3e}'
             )
-            if (m_val!=0.0): 
+            if (M_nu!=0.0): 
                 new_line = new_line.replace(
                     "tag_sterile_nu = 0", "tag_sterile_nu = 1"
                 )
@@ -114,24 +113,59 @@ for m_idx, m_val in enumerate(M_ax):
         
         os.system('./relicfast run.ini')
         
-        axioncamb_data_eulbias.append(
+        relicfast_data_eulbias.append(
             np.loadtxt(rfpath_outputsuffix+'bias_Euler_z'+f'{redshift:.2f}'+'_M'
                        +f'{np.log10(M_halo)-np.log10(h_lcdm):.2f}'
                        +'_Nk50.dat', skiprows=1)
         )
-        axioncamb_data_lagbias.append(
+        relicfast_data_lagbias.append(
             np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{redshift:.2f}'+'_M'
                        +f'{np.log10(M_halo)-np.log10(h_lcdm):.2f}'
                        +'_Nk50.dat', skiprows=1)
         )
-        axioncamb_data_tf.append(
+        relicfast_data_tf.append(
             np.loadtxt(rfpath_outputsuffix+'z'+f'{redshift:.2f}'+'TF_CAMB.dat', skiprows=1)
         )
-        axioncamb_data_pk.append(
+        relicfast_data_pk.append(
             np.loadtxt(rfpath_outputsuffix+'power_spectra_'+'z'+f'{redshift:.2f}'+'_M'
                        +f'{np.log10(M_halo)-np.log10(h_lcdm):.2f}'
                        +'_Nk50.dat', skiprows=1)
         )
+
+        #############
+        # Collect axioncamb power spectrum for requested redshift 
+        #output_dirs = os.listdir(rfpath_boltzmannsuffix)
+        #output_dirs.remove('_params.ini')
+        #
+        #z_vals = np.array([])
+        #
+        #for str_idx, str_val in enumerate(output_dirs):
+        #    if (str_val[0:15]=='_transfer_out_z'): 
+        #        z_vals = np.append(
+        #            z_vals, 
+        #            np.float(str_val.split('_transfer_out_z')[1])
+        #        )
+        #            
+        #z_vals = np.sort(z_vals)
+        #    
+    
+        #pm_idx = np.argmin(np.abs(z_vals - redshift))
+        #print('Requested/found redshift: ', redshift, z_vals[pm_idx])
+        #
+        #print('Loading: ')
+        #
+        #print('\t '+rfpath_boltzmannsuffix+'_matterpower_'+str(pm_idx+1)+'.dat')
+        #print('\t '+rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_vals[pm_idx]:.3f}')
+        #
+        #axioncamb_data_pk.append(
+        #    np.loadtxt(rfpath_boltzmannsuffix+'_matterpower_'+str(pm_idx+1)+'.dat')
+        #)
+        #
+        #axioncamb_data_tf.append(
+        #    np.loadtxt(rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_vals[pm_idx]:.3f}')
+        #)
+
+        #############
         
         os.system('mv ./run.ini ./run_axioncamb_'+str(m_idx)+'.ini')
 
@@ -142,19 +176,19 @@ colors = sns.color_palette("magma", len(omega_ax))
 
 for m_idx, m_val in enumerate(M_ax):
     plt.figure(figsize=(15, 7.5))
-    ref = np.loadtxt("/Users/nicholasdeporzio/Downloads/2104.07802_FIG2_REF_"+str(m_idx)+".csv", delimiter=",")
+    ref = np.loadtxt(rfpath+"scripts/2104.07802_FIG2_REF_"+str(m_idx)+".csv", delimiter=",")
     
     for o_idx, o_val in enumerate(omega_ax): 
         idx = len(omega_ax)*m_idx + o_idx
         
         if o_idx==0: 
-            k_lcdm_vals = axioncamb_data_pk[idx][:, 0]/h_lcdm
-            pm_lcdm_vals = axioncamb_data_pk[idx][:, 1]
+            k_lcdm_vals = relicfast_data_pk[idx][:, 0]/h_lcdm
+            pm_lcdm_vals = relicfast_data_pk[idx][:, 1]
             pm_lcdm_interp = scipy.interpolate.interp1d(k_lcdm_vals, pm_lcdm_vals)
             pm_lcdm_plot = pm_lcdm_interp(kplot)
         
-        kvals = axioncamb_data_pk[idx][:, 0]/h_lcdm # h/Mpc
-        pmvals = axioncamb_data_pk[idx][:, 1] # Pmm
+        kvals = relicfast_data_pk[idx][:, 0]/h_lcdm # h/Mpc
+        pmvals = relicfast_data_pk[idx][:, 1] # Pmm
     
         pminterp = scipy.interpolate.interp1d(kvals, pmvals)
         pmplot = pminterp(kplot)
@@ -162,7 +196,7 @@ for m_idx, m_val in enumerate(M_ax):
         plt.plot(
             kplot, 
             pmplot/pm_lcdm_plot, 
-            label=r'Nick Data, $\Omega_{ax}/\Omega_{d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}', 
+            label=r'RelicFast+axionCAMB, $\Omega_{ax}/\Omega_{d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}', 
             color=colors[o_idx]
         )
         
@@ -171,14 +205,6 @@ for m_idx, m_val in enumerate(M_ax):
         else: 
             plt.scatter(ref[:,0][::10], ref[:,o_idx+1][::10], marker='.', color="black")
     
-        #plt.plot(
-        #    ref[:,0], 
-        #    ref[:, 1]/ref_refactor, 
-        #    color=colors[m_idx],  
-        #    marker="o", 
-        #    linestyle="dashed"
-        #)
-
     plt.xscale('log')
     plt.xlabel(r'$k ~[h ~{\rm Mpc}^{-1}]$', fontsize=15)
     plt.ylabel(r'$P_m/P_{m, ~LCDM}$', fontsize=15)
