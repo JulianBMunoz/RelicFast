@@ -257,14 +257,18 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
     int counter; //to get average of delta_crit.
 
     const int N_species = (
-        1 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0) + (cosmo->Omega_ax>0)
+        1 + cosmo->counter_massive_nus + (cosmo->Omega_extra>0) //+ (cosmo->Omega_ax>0)
     );
     //how many species (cdm+b) + others
 
     int species_counter=0;
 
     const double Omegatot = (
-        cosmo->OmegaM + cosmo->Omeganu1 + cosmo->Omeganu2 + cosmo->Omega_extra + cosmo->Omega_ax
+        cosmo->OmegaM 
+        + cosmo->Omeganu1 
+        + cosmo->Omeganu2 
+        + cosmo->Omega_extra 
+        //+ cosmo->Omega_ax
     ); 
     //remember we call OmegaM=Omegab+Omegac
 
@@ -285,8 +289,8 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
         fraction_species[species_counter] = cosmo->Omega_extra/Omegatot;
     }
     if(cosmo->Omega_ax>0){
-        species_counter++;
-        fraction_species[species_counter] = cosmo->Omega_ax/Omegatot;
+        //species_counter++;
+        //fraction_species[species_counter] = cosmo->Omega_ax/Omegatot;
     }
     for(species_counter=0;species_counter<N_species;species_counter++){
         if (debug_mode>0) printf(
@@ -485,13 +489,13 @@ int get_bias(Cosmology *cosmo, double *zlist_transfer){
                 );
             }
             if(cosmo->Omega_ax>0){
-                species_counter++;
-                tf_species[species_counter] = interpol(
-                    transfer_array_axion_z_coll,
-                    k_transfer_array,
-                    length_transfer,
-                    k_long
-                );
+                //species_counter++;
+                //tf_species[species_counter] = interpol(
+                //    transfer_array_axion_z_coll,
+                //    k_transfer_array,
+                //    length_transfer,
+                //    k_long
+                //);
             }
             species_counter=0; //we reset the counter.
 
