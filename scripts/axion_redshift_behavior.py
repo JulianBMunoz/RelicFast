@@ -29,12 +29,12 @@ omega_cdm_LCDM = 0.12
 omega_b_LCDM = 0.022
 Omega_M_LCDM = (omega_b_LCDM + omega_cdm_LCDM)/np.power(h_lcdm, 2.)
 
-Omega_ax = np.array([0.02])*omega_cdm_LCDM/np.power(h_lcdm, 2.)
+Omega_ax = np.array([0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07])*omega_cdm_LCDM/np.power(h_lcdm, 2.)
 omega_ax = Omega_ax*np.power(h_lcdm, 2.)
 
 omega_cdm = omega_cdm_LCDM - omega_ax
 
-M_ax_fixed = 1.0e-26
+M_ax_fixed = np.power(10., -26)
 
 # Set solver to axionCAMB
 os.chdir(rfpath+'/include/')
@@ -114,6 +114,7 @@ for o_idx, o_val in enumerate(omega_ax):
         
     os.system('mv ./run.ini ./run_fixed_mass_'+str(o_idx)+'.ini')
 
+textvars = []
 colors = sns.color_palette("magma", len(omega_ax))
 plt.figure(figsize=(15, 7.5))
 for o_idx, o_val in enumerate(omega_ax): 
@@ -122,6 +123,42 @@ for o_idx, o_val in enumerate(omega_ax):
 
     rhointerp = scipy.interpolate.interp1d(avals, rhovals)
     
+
+    a_osc = np.loadtxt(outpath+"axion_aosc.dat")
+    rho_osc = rhointerp(a_osc)
+    a_dm = np.geomspace(avals[-50], 10**0, 50)
+    rho_dm = rho_osc*np.power(a_osc/a_dm, 3)
+    #rho_dm = rhovals[-1]*np.power(avals[-1]/a_dm, 3)
+
+    if o_idx==0:
+        plt.plot(
+            avals, 
+            len(avals)*[rhovals[0]], 
+            color=colors[o_idx], 
+            linestyle='dashed',
+            label="Dark Energy, $\propto a^0$"
+        )   
+        plt.plot(
+            a_dm, 
+            rho_dm, 
+            color=colors[o_idx],
+            linestyle='dashed',
+            label="Dark Matter, $\propto a^{-3}$"
+        )
+    else: 
+        plt.plot(
+            avals,
+            len(avals)*[rhovals[0]],
+            color=colors[o_idx],
+            linestyle='dashed'
+        ) 
+        plt.plot(
+            a_dm, 
+            rho_dm, 
+            color=colors[o_idx],
+            linestyle='dotted'
+        )
+
     plt.plot(
         avals, 
         rhovals, 
@@ -129,23 +166,22 @@ for o_idx, o_val in enumerate(omega_ax):
         color=colors[o_idx]
     )
 
-    plt.plot(avals, len(avals)*[rhovals[0]], label="Dark Energy, $\propto a^0$")    
-
-    a_osc = np.loadtxt(outpath+"axion_aosc.dat")
-    rho_osc = rhointerp(a_osc)
-    a_dm = np.geomspace(avals[-50], 10**0, 50)
-    rho_dm = rho_osc*np.power(a_osc/a_dm, 3)
-    #rho_dm = rhovals[-1]*np.power(avals[-1]/a_dm, 3)
-    plt.plot(a_dm, rho_dm, label="Dark Matter, $\propto a^{-3}$")
-
-    plt.text(10**-3, 0.2*(10**10), f'{rho_dm[-1]:.3e}')
-    print(a_osc, avals[-1])
+    textvar = plt.text(10**-3, rhovals[0], r'$\omega_{\chi, 0} = $'+f'{rho_dm[-1]:.3e}')
+    textvars.append(textvar)
+#print(a_osc, avals[-1])
 
 plt.xscale('log')
 #plt.yscale('log')
 plt.xlabel(r'$a$', fontsize=15)
 plt.ylabel(r'$\omega_\chi$', fontsize=15)
 plt.title(r'$M_\chi = $'+f'{M_ax_fixed:.3e}', fontsize=15)
-plt.legend(fontsize=15)
+plt.legend(fontsize=15, loc='upper left')
 plt.grid(True, which='both', axis='both')
-plt.savefig("axion_redshift_behavior_fixed_mass.png")    
+plt.savefig("axion_redshift_behavior_fixed_mass_1.png") 
+
+for textvar in textvars: 
+    textvar.set_visible(False)
+plt.yscale('log')
+plt.xlim((10**-5, 2))
+plt.ylim((1.*(10**-3), 1.*(10**11)))
+plt.savefig("axion_redshift_behavior_fixed_mass_2.png")   
