@@ -87,12 +87,14 @@ int main(int argc, char** filenameinput){
     cosmo->axion_w = allocate_1D_array(2*axion_N);
     cosmo->axion_rho = allocate_1D_array(2*axion_N);
     cosmo->axion_p = allocate_1D_array(2*axion_N);
+    cosmo->axion_omega = allocate_1D_array(2*axion_N);
 
     double axion_a[2*axion_N];
     double axion_w[2*axion_N];
     double axion_rho[2*axion_N];
     double axion_z[2*axion_N];
-    double axion_p[2*axion_N]; 
+    double axion_p[2*axion_N];
+    double axion_omega[2*axion_N];  
     double temp;    
     double axion_osc; 
 
@@ -122,8 +124,23 @@ int main(int argc, char** filenameinput){
         axion_p[j]=axion_w[j]*axion_rho[j];  
     }; 
 
+    FILE *fp4=fopen("/Users/nicholasdeporzio/Downloads/axion_grhoax_internal.dat", "r");
+
+    for(
+        j=0;
+        fscanf(
+            fp4,
+            "%le %le",
+            &temp,
+            &axion_omega[j]
+        )==2;
+        ++j
+    ){
+        //printf("%le \t %le \n", axion_a[j], axion_omega[j]);
+    };
+
     //Fill in values after a_osc
-    double rho_osc; 
+    double rho_osc, omega_osc; 
     double a_osc; 
     double z_osc, logz_osc; 
     double dz_late, dlogz_early; 
@@ -132,6 +149,7 @@ int main(int argc, char** filenameinput){
     for(j=0; j<(2*axion_N); ++j){
         if (j==(axion_N-1)){
             rho_osc = axion_rho[j]; 
+            omega_osc = axion_omega[j]; 
             a_osc = axion_a[j]; 
             z_osc = (1./a_osc)-1.; 
             dlogz_early = (log10(1.)-log10(z_osc))/(axion_N-1000); 
@@ -143,7 +161,8 @@ int main(int argc, char** filenameinput){
                 axion_p[j]=0.;  
                 axion_z[j]=pow(10., log10(z_osc)+((j-axion_N-2)*dlogz_early)); 
                 axion_a[j]=1./(axion_z[j] + 1.);
-                axion_rho[j]=rho_osc * pow((1+axion_z[j])/(1+z_osc), 3.); 
+                axion_rho[j]=rho_osc * pow((1+axion_z[j])/(1+z_osc), 3.);
+                axion_omega[j] = omega_osc * pow(a_osc/axion_a[j], 3.);  
             } 
             else{
                 if (j==linear_idx){
@@ -155,6 +174,7 @@ int main(int argc, char** filenameinput){
                 axion_z[j]=axion_z[linear_idx-1]-((j+1-linear_idx)*dz_late); 
                 axion_a[j]=1./(axion_z[j] + 1.);
                 axion_rho[j]=rho_osc * pow((1+axion_z[j])/(1+z_osc), 3.); 
+                axion_omega[j] = omega_osc * pow(a_osc/axion_a[j], 3.);
             };  
             //printf("%le \t %le \t %.10e \n", axion_a[j], axion_w[j], axion_rho[j]); 
         };
@@ -167,7 +187,7 @@ int main(int argc, char** filenameinput){
         cosmo->axion_z[j] = axion_z[2*axion_N-j-1];
         cosmo->axion_a[j] = axion_a[2*axion_N-j-1];
         cosmo->axion_rho[j] = axion_rho[2*axion_N-j-1];
-
+        cosmo->axion_omega[j] = axion_omega[2*axion_N-j-1];
         //printf("%le \t %le \t %.10e \n", cosmo->axion_a[j], cosmo->axion_w[j], cosmo->axion_rho[j]);
     }; 
 

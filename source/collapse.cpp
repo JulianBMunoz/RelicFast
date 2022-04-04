@@ -3372,7 +3372,6 @@ double find_z_collapse_masslessnu_axion(
     //massless nu
     double OmRbar = OmGbar + Omnu_masslessbar; 
     //all radiation (massless nu + photon)
-    double OmAx = cosmo->Omega_ax * pow(1.+zi, 4.); //CAUTION! Only if zi<z_osc!
     double OmM = cosmo->OmegaM * pow(1.+zi,3.); //matter
     double OmL = cosmo->OmegaL; //Omega_Lambda(z), we take it as z-independent.
 
@@ -3423,7 +3422,7 @@ double find_z_collapse_masslessnu_axion(
     Omnu_masslessbar= cosmo->Omeganu_massless * pow(1.+z_next,4.);
     OmRbar = OmGbar + Omnu_masslessbar;
     OmM = cosmo->OmegaM * pow(1.+z_next,3.);
-    OmAx = cosmo->Omega_ax * pow(1.+z_next,3.); //Caution whether z<z_osc!
+    double OmAx = interpol(cosmo->axion_omega, cosmo->axion_z, 2*(*cosmo->axion_N), z_next)/pow(cosmo->h, 2.);
     OmL = cosmo->OmegaL;
 
     rhoaxion_z=interpol_cubic(zmin_EoS, dz_EoS, rholistaxion_EoS, Nz_EoS, z_next);
@@ -3668,7 +3667,6 @@ double find_z_collapse_3nu_axion(
     //massless nu
     double OmRbar = OmGbar + Omnu_masslessbar; 
     //all radiation (massless nu + photon)
-    double OmAx = cosmo->Omega_ax * pow(1.+zi, 4.); //CAUTION! Only if zi<z_osc!
     double OmM = cosmo->OmegaM * pow(1.+zi,3.); //matter
     double OmL = cosmo->OmegaL; //Omega_Lambda(z), we take it as z-independent.
 
@@ -3774,7 +3772,7 @@ double find_z_collapse_3nu_axion(
     Omnu_masslessbar= cosmo->Omeganu_massless * pow(1.+z_next,4.);
     OmRbar = OmGbar + Omnu_masslessbar;
     OmM = cosmo->OmegaM * pow(1.+z_next,3.);
-    OmAx = cosmo->Omega_ax * pow(1.+z_next,3.); //Caution whether z<z_osc!
+    double OmAx = interpol(cosmo->axion_omega, cosmo->axion_z, 2*(*cosmo->axion_N), z_next)/pow(cosmo->h, 2.);
     OmL = cosmo->OmegaL;
 
     rhonu1_z=interpol_cubic(zmin_EoS, dz_EoS, rholist1_EoS, Nz_EoS, z_next);
