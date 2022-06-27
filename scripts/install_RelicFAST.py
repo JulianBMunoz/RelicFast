@@ -23,26 +23,26 @@ writing_file = open("./include/common.h", "w")
 writing_file.write(new_file_content)
 writing_file.close()
 
-print('Compiling CLASS Boltzmann solver...')
-os.system('cp -r ./CLASS ./CLASS_Current')          
-os.chdir('./CLASS_Current')
-reading_file = open("./Makefile", "r")
-new_file_content = ""
-for line in reading_file:
-  stripped_line = line.strip()
-  new_line = stripped_line.replace(
-    "CC       = gcc", "CC       = gcc-10"
-  ).replace(
-    "OMPFLAG   = -openmp", "#OMPFLAG   = -openmp"
-  )
-  new_file_content += new_line +"\n"
-reading_file.close()
-os.system('rm ./Makefile')
-writing_file = open("./Makefile", "w")
-writing_file.write(new_file_content)
-writing_file.close()
-os.system('make all')
-os.chdir('../')
+#print('Compiling CLASS Boltzmann solver...')
+#os.system('cp -r ./CLASS ./CLASS_Current')          
+#os.chdir('./CLASS_Current')
+#reading_file = open("./Makefile", "r")
+#new_file_content = ""
+#for line in reading_file:
+#  stripped_line = line.strip()
+#  new_line = stripped_line.replace(
+#    "CC       = gcc", "CC       = gcc-10"
+#  ).replace(
+#    "OMPFLAG   = -openmp", "#OMPFLAG   = -openmp"
+#  )
+#  new_file_content += new_line +"\n"
+#reading_file.close()
+#os.system('rm ./Makefile')
+#writing_file = open("./Makefile", "w")
+#writing_file.write(new_file_content)
+#writing_file.close()
+#os.system('make all')
+#os.chdir('../')
 
 print('Compiling CAMB Boltzmann solver...')
 os.system('cp -r ./CAMB ./CAMB_Current') 
