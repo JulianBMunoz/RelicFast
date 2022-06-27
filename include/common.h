@@ -212,9 +212,9 @@
     double *axion_w;
     double *axion_rho;
     double *axion_p;
+    double *axion_omega; 
     double *axion_osc;
-    int *axion_N;
-    
+    int *axion_N;  
     };
     
     #if boltzmann_tag==0
@@ -320,6 +320,6 @@
     #define  Msuntokg   1.9886e30    // 1 Msun in kg
     #define  eVtoMpc   4.304e-86    //eVtokg/Msuntokg*MsuntoMpc; here we assume
     //G=1: geometrized units.
-    #define MpctoeV_natural 1.5e29 //Mpc to eV^{-1} natural units 
- 
+    #define MpctoeV_natural 1.5e29 //Mpc to eV^{-1} natural units
+    
     #endif
