@@ -21,32 +21,22 @@ rfpath_outputsuffix = "output/result-0/"
 
 outpath = "/Users/nicholasdeporzio/Desktop/"
 
-omega_cdm_LCDM = 0.1127
-omega_b_LCDM = 0.02226
-Omega_M_LCDM = 0.27464
-
-m_ax = np.array([
-    10**-25, 
-    10**-26, 
-    10**-27, 
-    10**-28, 
-    10**-29, 
-    10**-30, 
-    10**-31,
-    10**-32
-])
-omega_ax = np.array(len(m_ax)*[0.05*omega_cdm_LCDM])
-
-sum_massive_nu = 0.
+sum_massive_nu = 0.168
 redshift = 0.65
 kmin = 1.0e-4
 kmax = 0.5
 Nk = 50
 
+omega_cdm_LCDM = 0.1127
+omega_b_LCDM = 0.02226
+Omega_M_LCDM = 0.27464
+
 ######################################################
 
 omega_nu = sum_massive_nu/93.2
-Mnu = sum_massive_nu # Units: eV
+Mnu = np.array([0.0, sum_massive_nu]) # Units: eV
+
+omega_ax = np.array([omega_nu, omega_cdm_LCDM*1.0e-12])
 
 f_cdm_LCDM = omega_cdm_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
 f_b_LCDM = omega_b_LCDM/(omega_cdm_LCDM + omega_b_LCDM)
@@ -60,7 +50,27 @@ f_b = omega_b_LCDM/(omega_cdm + omega_b_LCDM)
 h = (0.70148)*np.sqrt((omega_b_LCDM+omega_cdm_LCDM+omega_nu+omega_ax)/(omega_b_LCDM+omega_cdm_LCDM))
 #h = (0.70148)*np.sqrt((omega_b_LCDM+omega_cdm+omega_nu+omega_ax)/(omega_b_LCDM+omega_cdm_LCDM))
 
-kfs = np.pi * np.sqrt(m_ax*1.56*np.power(10., 29)) * np.power((h/2997.)*np.power(1.+redshift, 3.), 0.5)
+m_ax = ( #double check this
+    np.power(0.08, 2.)
+    * np.power(np.pi, -2.)
+    * np.power(1+redshift, -2)
+    * np.power(1000.*sum_massive_nu/3./100., 2.)
+    * np.power(h[1], 2.)
+    * np.power(10., 33.)
+    * np.power(Omega_M_LCDM, -0.5)
+    * np.power(1.+redshift, -1.5)
+    * np.power(1.56, -2.)
+    * np.power(10., -58)
+)
+#m_ax = 1.0e-30
+print((
+    "For single neutrino mass: "
+    +f'{sum_massive_nu/3.:.3e}'
+    +"\n, axion mass with same suppresion scale: "
+    +f'{m_ax:.3e}'
+    +"\n, and abundance little omega_ax = "
+    f'{omega_ax[0]:.3e}'
+))
 
 ######################################################
 ####         INTERNAL 
@@ -95,10 +105,9 @@ os.system('make')
 
 os.chdir(rfpath)
 
-
 # Run RelicFast for each axion abundance 
-for ax_idx, ax_val in enumerate(m_ax): 
-    print("Running RelicFast + axionCAMB for m_ax = ", ax_val)
+for mnu_idx, mnu_val in enumerate(Mnu): 
+    print("Running RelicFast + axionCAMB for m_nu = ", mnu_val)
     
     # Clear old data 
     os.system('rm -r '+rfpath_outputsuffix)
@@ -113,11 +122,11 @@ for ax_idx, ax_val in enumerate(m_ax):
     for line in reading_file:
         stripped_line = line.strip()
         new_line = stripped_line.replace(
-            "mnu1 = 0.0", "mnu1 = "+f'{Mnu:.2e}'
+            "mnu1 = 0.0", "mnu1 = "+f'{mnu_val/3.:.2e}'
         ).replace(
-            "mnu2 = 0.0", "mnu2 = "+f'{Mnu:.2e}'
+            "mnu2 = 0.0", "mnu2 = "+f'{mnu_val/3.:.2e}'
         ).replace(
-            "m_SN = 0.02", "m_SN = "+f'{Mnu:.2e}'
+            "m_SN = 0.02", "m_SN = "+f'{mnu_val/3.:.2e}'
         ).replace(
             "z_collapse_bot = 0.7", "z_collapse_bot = "+f'{redshift:.3f}'
         ).replace(
@@ -125,19 +134,19 @@ for ax_idx, ax_val in enumerate(m_ax):
         ).replace(
             "N_zcoll = 1", "N_zcoll = 1"
         ).replace(
-            "hubble = 0.701", "hubble = "+f'{h[ax_idx]:.6f}'
+            "hubble = 0.701", "hubble = "+f'{h[mnu_idx]:.6f}'
         ).replace(
-            "omega_ax = 1.0e-9", "omega_ax = "+f'{omega_ax[ax_idx]:.6e}'
+            "omega_ax = 1.0e-9", "omega_ax = "+f'{omega_ax[mnu_idx]:.6e}'
         ).replace(
             "N_klong = 1", "N_klong = "+str(Nk)
         ).replace(
-            "omegac = 0.11271", "omegac = "+f'{omega_cdm[ax_idx]:.6e}'
+            "omegac = 0.11271", "omegac = "+f'{omega_cdm[mnu_idx]:.6e}'
         ).replace(
-            "m_ax = 1.0e-22", "m_ax = "+f'{ax_val:.6e}'
+            "m_ax = 1.0e-22", "m_ax = "+f'{m_ax:.6e}'
         )
         
         
-        if (Mnu!=0.): 
+        if (mnu_val!=0.): 
             new_line = new_line.replace(
                 "tag_sterile_nu = 0", "tag_sterile_nu = 1"
             )
@@ -170,7 +179,6 @@ for ax_idx, ax_val in enumerate(m_ax):
         
 
     pm_idx = np.argmin(np.abs(z_vals - redshift))
-    #pm_idx = np.argmin(np.abs(z_vals - 0.0))
     print('Requested/found redshift: ', redshift, z_vals[pm_idx])
     
     print('Loading: ')
@@ -192,95 +200,45 @@ for ax_idx, ax_val in enumerate(m_ax):
     data_lagbias.append(
         np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{z_vals[pm_idx]:.2f}'+'_M13.00_Nk'+str(Nk)+'.dat', skiprows=1)
     )
-    #print(data_lagbias[-1][0])
 
-    os.system('mv ./run.ini ./run_'+str(ax_idx+8)+'.ini')
-    os.system('mv ./axionCAMB_Current/params_collapse.ini ./axionCAMB_Current/params_collapse_'+str(ax_idx+8)+'.ini')  
-
-kplot = np.geomspace(10**-3.9, 0.6, 100)
+    os.system('mv ./run.ini ./run_'+str(mnu_idx)+'.ini')
+    os.system('mv ./axionCAMB_Current/params_collapse.ini ./axionCAMB_Current/params_collapse_'+str(mnu_idx)+'.ini')    
 
 
-# eulerian bias plots
-#plt.figure(figsize=(15, 10))
-#plt.xscale('log')
-#for ax_idx, ax_val in enumerate(m_ax): 
-#    if ((ax_idx==0) or (ax_idx==(len(m_ax)-1))): 
-#        continue 
-#    
-#    kvals = data_eulbias[ax_idx][:, 0]
-#    eulbiasvals = data_eulbias[ax_idx][:, 1]
-#    
-#    eulbiasinterp = scipy.interpolate.interp1d(kvals, eulbiasvals)
-#    eulbiasplot = eulbiasinterp(kplot)
-#    
-#    rgb = np.zeros(3)
-#    rgb[0] = 3./255.
-#    rgb[1] = (len(m_ax)-1-ax_idx) * (255/(len(m_ax)-1)) / 255.
-#    rgb[2] = (len(m_ax)-1-ax_idx) * (255/(len(m_ax)-1)) / 255.
-#    
-#    yplot = eulbiasplot/eulbiasplot[0]
-#    
-#    plt.plot(kplot, yplot, label=r'$m_{\chi, i}=$'+f'{ax_val:.3e}'+r' eV', color=tuple(rgb))
-#    plt.plot([kfs[ax_idx], kfs[ax_idx]], [min(yplot), max(yplot)], color=tuple(rgb), linestyle='dashed')
-#    
-#plt.plot([0.7*0.015, 0.7*0.015], [1., 1.01], color='red', label=r'$k_{eq}$')
-#plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=30)
-#plt.ylabel(r'$b_1(k)/b_1(k_{\rm ref})$', fontsize=30)
-#plt.title(r'$\omega_\chi = 0.05\times\omega_{cdm},  ~z = 0.65, ~\Sigma M_\nu = 0$ eV', fontsize=30)
-##plt.legend(lines, labels, fontsize=15)
-#plt.legend(fontsize=25)
-##plt.yscale('log')
-#plt.grid(False, which='both', axis='both')
 
-# lagrangian bias plots 
-plt.figure(figsize=(15, 15))
-plt.xscale('log')
-for ax_idx, ax_val in enumerate(m_ax): 
-    #if ((ax_idx==0) or (ax_idx==(len(m_ax)-1))):
-    #    continue 
+
+
+#####################################
+
+kplot = np.geomspace(10**-3.9, 0.1, 32)
+
+fig, ax = plt.subplots(1, 1, figsize=(15, 15))
+for mnu_idx, mnu_val in enumerate(Mnu): 
+    kvals = data_eulbias[mnu_idx][:, 0]
+    eulbiasvals = data_eulbias[mnu_idx][:, 1]
     
-    kvals = data_lagbias[ax_idx][:, 0]
-    lagbiasvals = data_lagbias[ax_idx][:, 1]
-    
-    lagbiasinterp = scipy.interpolate.interp1d(kvals, lagbiasvals)
-    lagbiasplot = lagbiasinterp(kplot)
+    eulbiasinterp = scipy.interpolate.interp1d(kvals, eulbiasvals)
+    eulbiasplot = eulbiasinterp(kplot)
     
     rgb = np.zeros(3)
     rgb[0] = 3./255.
-    rgb[1] = (len(m_ax)-1-ax_idx) * (255/(len(m_ax)-1)) / 255.
-    rgb[2] = (len(m_ax)-1-ax_idx) * (255/(len(m_ax)-1)) / 255.
+    rgb[1] = (len(Mnu)-1-mnu_idx) * (255/(len(Mnu)-1)) / 255.
+    rgb[2] = (len(Mnu)-1-mnu_idx) * (255/(len(Mnu)-1)) / 255.
     
-    yplot = lagbiasplot/lagbiasplot[0]
-    
-    plt.plot(
+    ax.plot(
         kplot, 
-        yplot, 
-        label=r'$m_{\phi}= 10^{'+f'{np.log10(ax_val):.1f}'+r'}$ eV', 
+        eulbiasplot/eulbiasplot[0], 
+        label=r'$m_{\nu, i}=$'+f'{1000.*mnu_val/3.:.0f}'+r' meV', 
         color=tuple(rgb), 
-        linewidth=5.)
-    plt.plot(
-        [kfs[ax_idx], kfs[ax_idx]], 
-        [min(yplot), max(yplot)], 
-        color=tuple(rgb), 
-        linestyle='dashed', 
-        linewidth=5.)
-    
-plt.plot(
-    [0.70148*0.015, 0.70148*0.015], 
-    [1., 1.07], 
-    color='red', 
-    label=r'$k_{\rm eq}$',
-    linewidth=5.)
+        linewidth=5.
+    )
 
-plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=30)
-plt.ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$', fontsize=30)
-plt.xticks(fontsize=25)
-plt.yticks(fontsize=25)
-plt.xlim((1.0e-4, 1.0e0))
-#plt.title(r'$\omega_\chi = 0.05\times\omega_{cdm},  ~z = 0.65, ~\Sigma M_\nu = 0$ eV', fontsize=30)
-#plt.legend(lines, labels, fontsize=15)
-plt.legend(fontsize=25)
-#plt.yscale('log')
-plt.grid(False, which='both', axis='both')
-plt.savefig(rfpath+"Figure_6.png") 
-
+#ax.plot([0.7*0.015, 0.7*0.015], [0.999, 1.008], color='red', label=r'$k_{eq}$')
+#ax.plot([0.024, 0.024], [0.999, 1.008], color='blue', label=r'$k_{*}$')
+ax.set_xscale('log')
+ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=30)
+ax.set_ylabel(r'$b_1(k)/b_1(k_{\rm ref})$', fontsize=30)
+ax.tick_params(axis='both', labelsize=25)
+ax.legend(fontsize=25)
+ax.grid(False)
+plt.savefig("/Users/nicholasdeporzio/Downloads/Figure_9.png")

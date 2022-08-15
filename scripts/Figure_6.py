@@ -13,7 +13,6 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
-
 ######################################################
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
@@ -26,21 +25,22 @@ omega_b_LCDM = 0.02226
 Omega_M_LCDM = 0.27464
 
 m_ax = np.array([
-    10**-25, 
-    10**-26, 
-    10**-27, 
-    10**-28, 
-    10**-29, 
-    10**-30, 
-    10**-31,
-    10**-32
+    np.power(10., -26.), 
+    np.power(10., -29.), 
+    np.power(10., -32.),
+####################################
+    np.power(10., -26.), 
+    np.power(10., -29.), 
+    np.power(10., -32.)
 ])
-omega_ax = np.array(len(m_ax)*[0.05*omega_cdm_LCDM])
-
+omega_ax = np.append(
+    np.array(int(len(m_ax)/2)*[0.05*omega_cdm_LCDM]),
+    np.array(int(len(m_ax)/2)*[1.0e-9*omega_cdm_LCDM])
+)
 sum_massive_nu = 0.
 redshift = 0.65
 kmin = 1.0e-4
-kmax = 0.5
+kmax = 1.0
 Nk = 50
 
 ######################################################
@@ -57,7 +57,8 @@ omega_cdm = omega_cdm_LCDM - omega_ax
 f_cdm = omega_cdm/(omega_cdm + omega_b_LCDM)
 f_b = omega_b_LCDM/(omega_cdm + omega_b_LCDM)
 
-h = (0.70148)*np.sqrt((omega_b_LCDM+omega_cdm_LCDM+omega_nu+omega_ax)/(omega_b_LCDM+omega_cdm_LCDM))
+h = 0.70148
+#h = (0.70148)*np.sqrt((omega_b_LCDM+omega_cdm_LCDM+omega_nu+omega_ax)/(omega_b_LCDM+omega_cdm_LCDM))
 #h = (0.70148)*np.sqrt((omega_b_LCDM+omega_cdm+omega_nu+omega_ax)/(omega_b_LCDM+omega_cdm_LCDM))
 
 kfs = np.pi * np.sqrt(m_ax*1.56*np.power(10., 29)) * np.power((h/2997.)*np.power(1.+redshift, 3.), 0.5)
@@ -73,6 +74,7 @@ data_tf = []
 data_eulbias = []
 data_lagbias = []
 axion_background = []
+axion_aosc = []
 
 os.chdir(rfpath+'/include/')
 reading_file = open("common.h", "r")
@@ -94,7 +96,6 @@ os.chdir(rfpath)
 os.system('make')
 
 os.chdir(rfpath)
-
 
 # Run RelicFast for each axion abundance 
 for ax_idx, ax_val in enumerate(m_ax): 
@@ -125,7 +126,8 @@ for ax_idx, ax_val in enumerate(m_ax):
         ).replace(
             "N_zcoll = 1", "N_zcoll = 1"
         ).replace(
-            "hubble = 0.701", "hubble = "+f'{h[ax_idx]:.6f}'
+            #"hubble = 0.701", "hubble = "+f'{h[ax_idx]:.6f}'
+            "hubble = 0.701", "hubble = "+f'{h:.6f}'
         ).replace(
             "omega_ax = 1.0e-9", "omega_ax = "+f'{omega_ax[ax_idx]:.6e}'
         ).replace(
@@ -135,7 +137,6 @@ for ax_idx, ax_val in enumerate(m_ax):
         ).replace(
             "m_ax = 1.0e-22", "m_ax = "+f'{ax_val:.6e}'
         )
-        
         
         if (Mnu!=0.): 
             new_line = new_line.replace(
@@ -151,7 +152,8 @@ for ax_idx, ax_val in enumerate(m_ax):
     os.system('./relicfast run.ini')
     
     # Collect axion background evolution
-    axion_background.append(np.loadtxt("/Users/nicholasdeporzio/Downloads/axion_background.dat"))    
+    axion_background.append(np.loadtxt("/Users/nicholasdeporzio/Downloads/axion_background.dat"))
+    axion_aosc.append(np.loadtxt("/Users/nicholasdeporzio/Downloads/axion_aosc.dat"))
     
     # Collect power spectrum for requested redshift 
     output_dirs = os.listdir(rfpath_boltzmannsuffix)
@@ -167,120 +169,196 @@ for ax_idx, ax_val in enumerate(m_ax):
             )
                 
     z_vals = np.sort(z_vals)
-        
-
-    pm_idx = np.argmin(np.abs(z_vals - redshift))
-    #pm_idx = np.argmin(np.abs(z_vals - 0.0))
-    print('Requested/found redshift: ', redshift, z_vals[pm_idx])
     
-    print('Loading: ')
+    PM = []
+    TF = []
+    for z_idx, z_val in enumerate(z_vals): 
+        PM.append(np.loadtxt(rfpath_boltzmannsuffix+'_matterpower_'+str(len(z_vals)-z_idx)+'.dat'))
+        TF.append(np.loadtxt(rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_val:.3f}'))
     
-    print('\t '+rfpath_boltzmannsuffix+'_matterpower_'+str(pm_idx+1)+'.dat')
-    print('\t '+rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_vals[pm_idx]:.3f}')
+    data_pm.append(PM)
+    data_tf.append(TF)
     
-    data_pm.append(
-        np.loadtxt(rfpath_boltzmannsuffix+'_matterpower_'+str(pm_idx+1)+'.dat')
-    )
-    
-    data_tf.append(
-        np.loadtxt(rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_vals[pm_idx]:.3f}')
-    )
-    
-    data_eulbias.append(
-        np.loadtxt(rfpath_outputsuffix+'bias_Euler_z'+f'{z_vals[pm_idx]:.2f}'+'_M13.00_Nk'+str(Nk)+'.dat', skiprows=1)
-    )
-    data_lagbias.append(
-        np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{z_vals[pm_idx]:.2f}'+'_M13.00_Nk'+str(Nk)+'.dat', skiprows=1)
-    )
+    #data_eulbias.append(
+    #    np.loadtxt(rfpath_outputsuffix+'bias_Euler_z'+f'{z_vals[pm_idx]:.2f}'+'_M13.00_Nk'+str(Nk)+'.dat', skiprows=1)
+    #)
+    #data_lagbias.append(
+    #    np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{z_vals[pm_idx]:.2f}'+'_M13.00_Nk'+str(Nk)+'.dat', skiprows=1)
+    #)
     #print(data_lagbias[-1][0])
 
-    os.system('mv ./run.ini ./run_'+str(ax_idx+8)+'.ini')
-    os.system('mv ./axionCAMB_Current/params_collapse.ini ./axionCAMB_Current/params_collapse_'+str(ax_idx+8)+'.ini')  
+    os.system('mv ./run.ini ./run_'+str(ax_idx)+'.ini')
+    os.system('mv ./axionCAMB_Current/params_collapse.ini ./axionCAMB_Current/params_collapse_'+str(ax_idx)+'.ini')  
 
-kplot = np.geomspace(10**-3.9, 0.6, 100)
+def Pprim(k): #k in units of Mpc^-1
+    val = (1.
+        *(2.*np.power(np.pi, 2.))
+        *np.power(k, -3.)
+        *(2.23e-9) #As
+        *np.power(k/0.05, 0.9666-1.) #(k/kp)^(ns-1)
+    )
+    return val 
+
+def Pij(k, Ti, Tj, fi, fj): 
+    val = (
+        (fi * fj)
+        * 2.*(Ti * Tj)
+        *Pprim(k)
+    )
+    return val 
 
 
-# eulerian bias plots
-#plt.figure(figsize=(15, 10))
-#plt.xscale('log')
-#for ax_idx, ax_val in enumerate(m_ax): 
-#    if ((ax_idx==0) or (ax_idx==(len(m_ax)-1))): 
-#        continue 
-#    
-#    kvals = data_eulbias[ax_idx][:, 0]
-#    eulbiasvals = data_eulbias[ax_idx][:, 1]
-#    
-#    eulbiasinterp = scipy.interpolate.interp1d(kvals, eulbiasvals)
-#    eulbiasplot = eulbiasinterp(kplot)
-#    
-#    rgb = np.zeros(3)
-#    rgb[0] = 3./255.
-#    rgb[1] = (len(m_ax)-1-ax_idx) * (255/(len(m_ax)-1)) / 255.
-#    rgb[2] = (len(m_ax)-1-ax_idx) * (255/(len(m_ax)-1)) / 255.
-#    
-#    yplot = eulbiasplot/eulbiasplot[0]
-#    
-#    plt.plot(kplot, yplot, label=r'$m_{\chi, i}=$'+f'{ax_val:.3e}'+r' eV', color=tuple(rgb))
-#    plt.plot([kfs[ax_idx], kfs[ax_idx]], [min(yplot), max(yplot)], color=tuple(rgb), linestyle='dashed')
-#    
-#plt.plot([0.7*0.015, 0.7*0.015], [1., 1.01], color='red', label=r'$k_{eq}$')
-#plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=30)
-#plt.ylabel(r'$b_1(k)/b_1(k_{\rm ref})$', fontsize=30)
-#plt.title(r'$\omega_\chi = 0.05\times\omega_{cdm},  ~z = 0.65, ~\Sigma M_\nu = 0$ eV', fontsize=30)
-##plt.legend(lines, labels, fontsize=15)
-#plt.legend(fontsize=25)
-##plt.yscale('log')
-#plt.grid(False, which='both', axis='both')
+Pij = np.vectorize(Pij)
+Pprim = np.vectorize(Pprim)
 
-# lagrangian bias plots 
-plt.figure(figsize=(15, 15))
-plt.xscale('log')
-for ax_idx, ax_val in enumerate(m_ax): 
-    #if ((ax_idx==0) or (ax_idx==(len(m_ax)-1))):
-    #    continue 
-    
-    kvals = data_lagbias[ax_idx][:, 0]
-    lagbiasvals = data_lagbias[ax_idx][:, 1]
-    
-    lagbiasinterp = scipy.interpolate.interp1d(kvals, lagbiasvals)
-    lagbiasplot = lagbiasinterp(kplot)
-    
-    rgb = np.zeros(3)
-    rgb[0] = 3./255.
-    rgb[1] = (len(m_ax)-1-ax_idx) * (255/(len(m_ax)-1)) / 255.
-    rgb[2] = (len(m_ax)-1-ax_idx) * (255/(len(m_ax)-1)) / 255.
-    
-    yplot = lagbiasplot/lagbiasplot[0]
-    
-    plt.plot(
-        kplot, 
-        yplot, 
-        label=r'$m_{\phi}= 10^{'+f'{np.log10(ax_val):.1f}'+r'}$ eV', 
-        color=tuple(rgb), 
-        linewidth=5.)
-    plt.plot(
-        [kfs[ax_idx], kfs[ax_idx]], 
-        [min(yplot), max(yplot)], 
-        color=tuple(rgb), 
-        linestyle='dashed', 
-        linewidth=5.)
-    
-plt.plot(
-    [0.70148*0.015, 0.70148*0.015], 
-    [1., 1.07], 
-    color='red', 
-    label=r'$k_{\rm eq}$',
-    linewidth=5.)
+#Plot Pmm(k|z)
 
-plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=30)
-plt.ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$', fontsize=30)
-plt.xticks(fontsize=25)
-plt.yticks(fontsize=25)
-plt.xlim((1.0e-4, 1.0e0))
-#plt.title(r'$\omega_\chi = 0.05\times\omega_{cdm},  ~z = 0.65, ~\Sigma M_\nu = 0$ eV', fontsize=30)
-#plt.legend(lines, labels, fontsize=15)
-plt.legend(fontsize=25)
-#plt.yscale('log')
-plt.grid(False, which='both', axis='both')
-plt.savefig(rfpath+"Figure_6.png") 
+redshifts = np.array([0., 25., 200.])
+#redshifts = np.array(z_vals)
 
+
+############################
+shift = int(len(m_ax)/2)
+
+tflookup = {
+    "k/h" : 0,
+    "cdm" : 1,
+    "baryon" : 2,
+    "photon" : 3, 
+    "radiation" : 4,
+    "massive nu" : 5,
+    "axion" : 6
+}
+
+
+
+fig, ax = plt.subplots(len(redshifts), 1,
+    sharex=True,
+    figsize=(15., 7.5*len(redshifts)),
+    gridspec_kw={'height_ratios': [1]*len(redshifts)}
+)
+fig.subplots_adjust(hspace=0)    
+
+for z_idx, z_val in enumerate(redshifts): 
+    pm_idx = np.argmin(np.abs(z_vals - z_val))
+    print('Requested/found redshift: ', z_val, z_vals[pm_idx])
+    
+    colors=sns.color_palette("flare", int(len(m_ax)/2))
+    plot_x = np.logspace(-4, 0, 101)
+
+    for ax_idx, ax_val in enumerate(m_ax[0:shift]):   
+        
+        kfs = np.pi * np.sqrt(m_ax[ax_idx]*1.56*np.power(10., 29)) * np.power((h/2997.)*np.power(1.+z_val, 3.), 0.5)
+
+        #PM = data_pm[ax_idx][len(z_vals)-pm_idx-1] #In units of (Mpc/h)^3
+        #PM_lcdm = data_pm[ax_idx+shift][len(z_vals)-pm_idx-1] #In units of (Mpc/h)^3
+            
+        #pm_interp = scipy.interpolate.interp1d(PM[:,0], PM[:,1]) # P[(Mpc/h)^3](k[h/Mpc])
+        #pm_lcdm_interp = scipy.interpolate.interp1d(PM_lcdm[:,0], PM_lcdm[:,1])
+        
+        TF = data_tf[ax_idx][pm_idx]
+        TF_lcdm = data_tf[ax_idx+shift][pm_idx]
+        
+        TF_k = TF[:, tflookup['k/h']]*h # Careful of units
+        TF_cdm = TF[:, tflookup['cdm']]*np.power(TF_k, 2.)
+        TF_b = TF[:, tflookup['baryon']]*np.power(TF_k, 2.)
+        TF_x = TF[:, tflookup['axion']]*np.power(TF_k, 2.)
+        
+        TF_lcdm_k = TF_lcdm[:, tflookup['k/h']]*h # Careful of units 
+        TF_lcdm_cdm = TF_lcdm[:, tflookup['cdm']]*np.power(TF_lcdm_k, 2.)
+        TF_lcdm_b = TF_lcdm[:, tflookup['baryon']]*np.power(TF_lcdm_k, 2.)
+        TF_lcdm_x = TF_lcdm[:, tflookup['axion']]*np.power(TF_lcdm_k, 2.)
+        
+        TF_cdm_interp = scipy.interpolate.interp1d(TF_k, TF_cdm)
+        TF_b_interp = scipy.interpolate.interp1d(TF_k, TF_b)
+        TF_x_interp = scipy.interpolate.interp1d(TF_k, TF_x)
+        
+        TF_lcdm_cdm_interp = scipy.interpolate.interp1d(TF_lcdm_k, TF_lcdm_cdm)
+        TF_lcdm_b_interp = scipy.interpolate.interp1d(TF_lcdm_k, TF_lcdm_b)
+        TF_lcdm_x_interp = scipy.interpolate.interp1d(TF_lcdm_k, TF_lcdm_x)
+    
+        #omega_ax[ax_idx]
+        omega_M = omega_cdm[ax_idx] + omega_b_LCDM
+        
+        Pmm_vals = (
+            Pprim(plot_x)
+            * (
+                np.power(f_b[ax_idx], 2.)*np.power(TF_b_interp(plot_x), 2.)
+                + 2.*f_b[ax_idx]*f_cdm[ax_idx]*TF_b_interp(plot_x)*TF_cdm_interp(plot_x)
+                + np.power(f_cdm[ax_idx], 2.)*np.power(TF_cdm_interp(plot_x), 2.)
+            )
+        )
+        
+        Pmm_lcdm_vals = (
+            Pprim(plot_x)
+            * (
+                np.power(f_b[ax_idx+shift], 2.)*np.power(TF_lcdm_b_interp(plot_x), 2.)
+                + 2.*f_b[ax_idx+shift]*f_cdm[ax_idx+shift]*TF_lcdm_b_interp(plot_x)*TF_lcdm_cdm_interp(plot_x)
+                + np.power(f_cdm[ax_idx+shift], 2.)*np.power(TF_lcdm_cdm_interp(plot_x), 2.)
+            )
+        )
+        
+        #reco_Pmm_interp = scipy.interpolate.interp1d(TF_k, Pmm_vals*np.power(TF_k, 4.))
+        #reco_Pmm_lcdm_interp = scipy.interpolate.interp1d(TF_lcdm_k, Pmm_lcdm_vals*np.power(TF_lcdm_k, 4.))
+    
+        plot_y =  Pmm_vals/Pmm_lcdm_vals
+        #plot_y = TF_b_interp(plot_x)/TF_lcdm_b_interp(plot_x)
+        #plot_y = TF_cdm_interp(plot_x)/TF_lcdm_cdm_interp(plot_x)
+        
+        z_osc = (1./axion_aosc[ax_idx])-1.
+    
+        ax[z_idx].plot(
+            plot_x, 
+            plot_y, 
+            label="$m_\chi = $"+f'{ax_val:.2e}'+", $z_{osc}=$"+f"{z_osc:.2f}", 
+            color=colors[ax_idx], 
+            linewidth=5.
+        )
+        ax[z_idx].plot(
+            [kfs, kfs], 
+            [min(plot_y), max(plot_y)], 
+            color=colors[ax_idx], 
+            linestyle='dotted', 
+            linewidth=5.
+        )
+        
+    #plt.plot(
+    #    [plot_x[0], plot_x[0]], 
+    #    [plot_y[0], plot_y[0]], 
+    #    color='black', 
+    #    linestyle='dotted', 
+    #    label="$k_{fs}$" )
+    #    plt.xlabel('k')
+    #    #plt.ylabel('$P_{mm}/P_{mm, \Lambda CDM}$')
+    #    #plt.ylabel('$T_{b}/T_{b, \Lambda CDM}$')
+    #    plt.ylabel('$T_{cdm}/T_{cdm, \Lambda CDM}$'
+    #)
+
+    ax[z_idx].set_xscale('log')
+    ax[z_idx].tick_params(axis='both', labelsize=25)
+    ax[z_idx].grid(False)
+    ax[z_idx].set_xlim(1.0e-4, 1.0e0) 
+    ax[z_idx].set_ylim((0.65, 1.1))
+    ax[z_idx].text(0.27, 1.05, "z = "+f"{z_val:.0f}", fontsize=30, 
+        bbox=dict(facecolor='white', edgecolor='black', pad=10.0))
+
+    if z_idx==0:     
+        ax[z_idx].plot(
+            [1.0e-6, 1.0e-6], 
+            [0., 0.], 
+            color='black',
+            linestyle='dotted', 
+            label="$k_{fs}$", 
+            linewidth=5.
+        )
+
+        ax[z_idx].legend(fontsize=20, loc='lower left')
+    elif z_idx==1: 
+        ax[z_idx].set_ylabel(r'$P_m/P_{m, ~LCDM}$',
+            fontsize=30)
+    elif z_idx==2: 
+        ax[z_idx].set_xlabel(r"$k$ [Mpc$^{-1}$]", fontsize=30) 
+
+plt.savefig("/Users/nicholasdeporzio/Downloads/Figure_5.png")
+#plt.savefig("/Users/nicholasdeporzio/Desktop/plots/tcdm/z_"+f"{z_val:.3f}"+".png")
+    
