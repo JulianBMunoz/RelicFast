@@ -240,5 +240,5 @@ ax2.tick_params(axis='both', labelsize=25)
 #ax2.set_legend(fontsize=15, loc='upper left')
 ax2.grid(False, which='both', axis='both')
 
-plt.savefig("Figure_1.png") 
+plt.savefig(rfpath+"plots/Figure_2.png") 
 

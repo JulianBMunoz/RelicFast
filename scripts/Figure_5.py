@@ -221,7 +221,7 @@ if method==1:
             ax.legend(fontsize=25)
     #        ax[m_idx].title((r'$M_\chi = 10^{'+f'{np.log10(m_val):.1f}'+r'}$ eV'), fontsize=30)
     
-    plt.savefig("Figure_4.png")    
+    plt.savefig(rfpath+"plots/Figure_5.png")    
 
 elif method==2: 
     axioncamb_data_pk = []
@@ -336,7 +336,7 @@ elif method==2:
             ax.legend(fontsize=25)
     #        ax[m_idx].title((r'$M_\chi = 10^{'+f'{np.log10(m_val):.1f}'+r'}$ eV'), fontsize=30)
 
-    plt.savefig("Figure_4.png")
+    plt.savefig(rfpath+"plots/Figure_5.png")
 
 elif method==3: 
     
@@ -517,4 +517,4 @@ elif method==3:
             ax.legend(fontsize=25)
     #        ax[m_idx].title((r'$M_\chi = 10^{'+f'{np.log10(m_val):.1f}'+r'}$ eV'), fontsize=30)
 
-    plt.savefig("Figure_4.png")
+    plt.savefig(rfpath+"plots/Figure_5.png")

@@ -282,5 +282,5 @@ plt.xlim((1.0e-4, 1.0e0))
 plt.legend(fontsize=25)
 #plt.yscale('log')
 plt.grid(False, which='both', axis='both')
-plt.savefig(rfpath+"Figure_6.png") 
+plt.savefig(rfpath+"plots/Figure_7.png") 
 

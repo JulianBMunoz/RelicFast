@@ -225,10 +225,10 @@ for ax_idx, ax_val in enumerate(m_ax):
         os.system('mv ./run.ini ./run_'+str(ax_idx)+'.ini')
         os.system('mv ./axionCAMB_Current/params_collapse.ini ./axionCAMB_Current/params_collapse_'+str(ax_idx)+'.ini')  
 
-np.savetxt(rfpath+"Figure_8_b1l_max.txt", b1l_max)
-np.savetxt(rfpath+"Figure_8_b1e_max.txt", b1e_max)
-np.savetxt(rfpath+"Figure_8_b1l_kmax.txt", b1l_kmax)
-np.savetxt(rfpath+"Figure_8_b1e_kmax.txt", b1e_kmax)
+np.savetxt(rfpath+"plots/Figure_9_b1l_max.txt", b1l_max)
+np.savetxt(rfpath+"plots/Figure_9_b1e_max.txt", b1e_max)
+np.savetxt(rfpath+"plots/Figure_9_b1l_kmax.txt", b1l_kmax)
+np.savetxt(rfpath+"plots/Figure_9_b1e_kmax.txt", b1e_kmax)
 
 sns.set_style("white")
 
@@ -268,4 +268,4 @@ cbar.ax.tick_params(labelsize=25)
 #ax.contourf(X, Y, np.transpose(Z), vmin=0., vmax=z_max)
 #ax.set_xscale('log')
 
-plt.savefig(rfpath+"Figure_8.png")
+plt.savefig(rfpath+"plots/Figure_9.png")

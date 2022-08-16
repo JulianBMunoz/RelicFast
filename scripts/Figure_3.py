@@ -185,5 +185,5 @@ plt.yticks(fontsize=25)
 #plt.title(r'$M_\chi = $'+f'{M_ax_fixed:.3e}', fontsize=15)
 plt.legend(fontsize=25, loc='upper right')
 plt.grid(False, which='both', axis='both')
-plt.savefig("Figure_2.png") 
+plt.savefig(rfpath+"plots/Figure_3.png") 
 

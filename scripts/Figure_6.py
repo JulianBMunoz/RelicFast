@@ -359,6 +359,5 @@ for z_idx, z_val in enumerate(redshifts):
     elif z_idx==2: 
         ax[z_idx].set_xlabel(r"$k$ [Mpc$^{-1}$]", fontsize=30) 
 
-plt.savefig("/Users/nicholasdeporzio/Downloads/Figure_5.png")
-#plt.savefig("/Users/nicholasdeporzio/Desktop/plots/tcdm/z_"+f"{z_val:.3f}"+".png")
+plt.savefig(rfpath+"plots/Figure_6.png")
     

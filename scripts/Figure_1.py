@@ -94,11 +94,11 @@ for m_idx, m_val in enumerate(M_ax):
 
 axion_zosc = ((1./axion_aosc)-1.)
 
-np.savetxt(rfpath+"Figure_10_m_ax.txt", M_ax)
-np.savetxt(rfpath+"Figure_10_omega_ax.txt", omega_ax)
-np.savetxt(rfpath+"Figure_10_axion_aosc.txt", axion_aosc)
-np.savetxt(rfpath+"Figure_10_axion_zosc.txt", axion_zosc)
-np.savetxt(rfpath+"Figure_10_axion_kfs.txt", axion_kfs)
+np.savetxt(rfpath+"plots/Figure_1_m_ax.txt", M_ax)
+np.savetxt(rfpath+"plots/Figure_1_omega_ax.txt", omega_ax)
+np.savetxt(rfpath+"plots/Figure_1_axion_aosc.txt", axion_aosc)
+np.savetxt(rfpath+"plots/Figure_1_axion_zosc.txt", axion_zosc)
+np.savetxt(rfpath+"plots/Figure_1_axion_kfs.txt", axion_kfs)
 
 plot_x = np.geomspace(np.min(M_ax), np.max(M_ax), 100) #Units: [h Mpc^-1]
 colors = sns.color_palette("magma", len(omega_ax))
@@ -122,5 +122,5 @@ ax.set_ylabel(r'$z_{\rm osc}$', fontsize=30)
 ax.grid(False, which='both', axis='both')
 ax.tick_params(axis='both', labelsize=25)
 ax.legend(fontsize=25)
-plt.savefig(rfpath+"Figure_10_.png")
+plt.savefig(rfpath+"/plots/Figure_1.png")
 
