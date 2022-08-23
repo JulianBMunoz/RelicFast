@@ -29,7 +29,7 @@ omega_b_LCDM = 0.022
 Omega_M_LCDM = (omega_b_LCDM + omega_cdm_LCDM)/np.power(h_lcdm, 2.)
 
 Omega_ax = (
-    np.array([0.01, 0.02])#([1e-9, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10])
+    np.array([1.0e-9, 0.01, 0.05, 0.1])
     *omega_cdm_LCDM
     /np.power(h_lcdm, 2.)
 )
@@ -39,7 +39,7 @@ omega_cdm = omega_cdm_LCDM - omega_ax
 f_cdm = omega_cdm/(omega_cdm + omega_b_LCDM)
 f_b = omega_b_LCDM/(omega_cdm + omega_b_LCDM)
 
-M_ax = np.logspace(-32.5, -22.0, 8)#, 105)
+M_ax = np.logspace(-32.5, -22.0, 106)
 axion_aosc = np.zeros((len(M_ax), len(omega_ax)))
 axion_kfs = np.zeros((len(M_ax), len(omega_ax)))
 
@@ -94,33 +94,85 @@ for m_idx, m_val in enumerate(M_ax):
 
 axion_zosc = ((1./axion_aosc)-1.)
 
-np.savetxt(rfpath+"plots/Figure_1_m_ax.txt", M_ax)
-np.savetxt(rfpath+"plots/Figure_1_omega_ax.txt", omega_ax)
-np.savetxt(rfpath+"plots/Figure_1_axion_aosc.txt", axion_aosc)
-np.savetxt(rfpath+"plots/Figure_1_axion_zosc.txt", axion_zosc)
-np.savetxt(rfpath+"plots/Figure_1_axion_kfs.txt", axion_kfs)
+np.savetxt(rfpath+"Figure_10_m_ax.txt", M_ax)
+np.savetxt(rfpath+"Figure_10_omega_ax.txt", omega_ax)
+np.savetxt(rfpath+"Figure_10_axion_aosc.txt", axion_aosc)
+np.savetxt(rfpath+"Figure_10_axion_zosc.txt", axion_zosc)
+np.savetxt(rfpath+"Figure_10_axion_kfs.txt", axion_kfs)
 
 plot_x = np.geomspace(np.min(M_ax), np.max(M_ax), 100) #Units: [h Mpc^-1]
 colors = sns.color_palette("magma", len(omega_ax))
 fig, ax = plt.subplots(1, 1, figsize=(15, 15))
-for o_idx, o_val in enumerate(omega_ax):
-    osc_interp = scipy.interpolate.interp1d(np.log10(M_ax), np.log10(axion_zosc[:,o_idx])) 
-    plot_y = osc_interp(np.log10(plot_x))
- 
+
+for o_idx, o_val in enumerate(omega_ax[0:1]):
+    osc_interp = scipy.interpolate.interp1d(np.log10(M_ax), np.log10(axion_zosc[:,o_idx]))
+    plot_y = np.power(10., osc_interp(np.log10(plot_x)))
+
     ax.plot(
         plot_x,
         plot_y,
+        #M_ax, 
+        #axion_zosc[:,o_idx],
         label=r'$\Omega_{\phi}/\Omega_{d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}',
-        color=colors[o_idx],
+        #color=colors[o_idx],
+        color="black",
         linewidth=5.0
     )
 
 ax.set_xscale('log')
-ax.set_yscale('log') 
+ax.set_yscale('log')
 ax.set_xlabel(r'$M_\phi$ [eV]', fontsize=30)
 ax.set_ylabel(r'$z_{\rm osc}$', fontsize=30)
-ax.grid(False, which='both', axis='both')
+ax.set_yticks(np.logspace(-1, 6, 8))
+ax.grid(False)
 ax.tick_params(axis='both', labelsize=25)
-ax.legend(fontsize=25)
-plt.savefig(rfpath+"/plots/Figure_1.png")
+
+ax_twin = ax.twinx()
+#ax_twin.plot((plot_x), (1./(plot_y+1.)), color='cyan', linestyle='dashed')
+ax_twin.set_xscale('log')
+ax_twin.set_yscale('log')
+ax_twin.grid(False)
+ax_twin.tick_params(axis='both', labelsize=25)
+ax_twin.set_ylabel(r"$a_{\rm osc}$", fontsize=30)
+ax_twin.set_ylim(ax.get_ylim())
+ax_twin.set_yticks(np.concatenate((
+    [np.power(10., -1.*np.log10(0.9)), np.power(10., -1.*np.log10(0.5))], np.logspace(1., 6., 6)))-1.)
+ax_twin.set_yticklabels(
+    [r'$0.9$', r'$0.5$', r'$10^{-1}$', r'$10^{-2}$', r'$10^{-3}$', r'$10^{-4}$', r'$10^{-5}$', r'$10^{-6}$'])
+#ax_twin.set_yticks((1./np.logspace(-1., 6., 8))-1.)
+#ax_twin.set_yticklabels(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])
+
+#ax.legend(fontsize=25)
+plt.savefig(rfpath+"Figure_1.png")
+
+plot_x = np.geomspace(np.min(M_ax), np.max(M_ax), 100) #Units: [h Mpc^-1]
+colors = sns.color_palette("magma", len(omega_ax))
+fig, ax = plt.subplots(1, 1, figsize=(15, 15))
+
+for o_idx, o_val in enumerate(omega_ax):
+    osc_interp = scipy.interpolate.interp1d(np.log10(M_ax), np.log10(axion_zosc[:,o_idx]))
+    plot_y = np.power(10., osc_interp(np.log10(plot_x)))
+    
+    if o_idx==0: 
+        norm = np.array(plot_y)
+        continue
+
+    ax.plot(
+        plot_x,
+        plot_y/norm-1.,
+        #M_ax, 
+        #axion_zosc[:,o_idx],
+        label=r'$\Omega_{\phi}/\Omega_{d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}',
+        color=colors[o_idx],
+        linewidth=1.0
+    )
+
+ax.set_xscale('log')
+#ax.set_yscale('log')
+ax.set_xlabel(r'$M_\phi$ [eV]', fontsize=30)
+ax.set_ylabel(r'$z_{\rm osc}$', fontsize=30)
+#ax.set_yticks(np.logspace(-1, 6, 8))
+ax.grid(False)
+ax.tick_params(axis='both', labelsize=25)
+plt.savefig(rfpath+"Figure_1b.png")
 
