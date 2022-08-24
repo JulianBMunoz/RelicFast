@@ -319,12 +319,33 @@ plt.xlabel("k", fontsize=16)
 plt.ylabel("$P_{mm, direct}/P_{mm, reco}$", fontsize=16)
 
 
+z_table = np.array(z_vals)
+k_table = np.geomspace(1.0e-4, 2., 100)
 
+k_ref = 1.0
 
+z_plot = np.linspace(min(z_vals), max(z_vals), 100)
+colors=sns.color_palette("flare", int(len(m_ax)/2))
 
+plt.figure(figsize=(15,7.5))
+for ax_idx, ax_val in enumerate(m_ax[0:8]):   
+    tf_vals = np.zeros(len(z_table))
+    tf_lcdm_vals = np.zeros(len(z_table))
+    
+    for z_idx, z_val in enumerate(z_table): 
+        TF = data_tf[ax_idx][z_idx]
+        TF_lcdm = data_tf[ax_idx+8][z_idx]
+        
+        tf_vals[z_idx] = scipy.interpolate.interp1d(TF[:, tflookup["k/h"]], TF[:, tflookup[species]])(k_ref)
+        tf_lcdm_vals[z_idx] = scipy.interpolate.interp1d(TF_lcdm[:, tflookup["k/h"]], TF_lcdm[:, tflookup[species]])(k_ref)
+        
+    tf_plot = (tf_vals-tf_lcdm_vals)/tf_lcdm_vals
+    
+    plt.plot(z_table, tf_plot, label="$m_\chi = $"+f'{ax_val:.2e}', color=colors[ax_idx])
 
-
-
-
-
+plt.xlabel('z')
+plt.ylabel('$\Delta T/T_{m\Lambda CDM}$')
+plt.legend()
+plt.title('T_'+species+', $\omega_\chi = 0.05 \omega_{cdm}$, $k = $'+f'{k_ref:.2e}')
+plt.show()
 
