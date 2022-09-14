@@ -158,9 +158,9 @@ for ax_idx, ax_val in enumerate(m_ax):
         writing_file.close()
     
         # Check if data already exists
-        b1e_path = (rfpath+"plots/Figure_13_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
+        b1e_path = (rfpath+"plots/Figure_9_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
                     +"_mhalo"+f"{mh_val:.2e}"+".txt")
-        b1l_path = (rfpath+"plots/Figure_13_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
+        b1l_path = (rfpath+"plots/Figure_9_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
                     +"_mhalo"+f"{mh_val:.2e}"+".txt")
 
         if (os.path.exists(b1e_path) and os.path.exists(b1l_path) and (use_existing_data==True)): 
@@ -250,9 +250,9 @@ for ax_idx, ax_val in enumerate(m_ax):
             )
     
             if data_save_level>1:
-                np.savetxt((rfpath+"plots/Figure_13_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
+                np.savetxt((rfpath+"plots/Figure_9_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
                     +"_mhalo"+f"{mh_val:.2e}"+".txt"), data_eulbias[-1])
-                np.savetxt((rfpath+"plots/Figure_13_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
+                np.savetxt((rfpath+"plots/Figure_9_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
                     +"_mhalo"+f"{mh_val:.2e}"+".txt"), data_lagbias[-1])
     
             os.system('mv ./run.ini ./run_'+str(mh_idx+len(m_ax)*ax_idx)+'.ini')
@@ -380,5 +380,5 @@ ax2.grid(False, which='both', axis='both')
 fig.text(0.5, 0.04, r'$k ~[{\rm Mpc}^{-1}]$',
     ha='center', rotation='horizontal', fontsize=40)
 
-plt.savefig(rfpath+"plots/Figure_13.png") 
+plt.savefig(rfpath+"plots/Figure_9.png") 
 

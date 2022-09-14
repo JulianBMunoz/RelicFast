@@ -154,13 +154,13 @@ for ax_idx, ax_val in enumerate(m_ax):
         writing_file.close()
 
         # Check if data already exists
-        b1e_path = (rfpath+"plots/Figure_8_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
+        b1e_path = (rfpath+"plots/Figure_10_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{omega_ax:.6f}"+"_z"+f"{z_val:.2f}"+".txt") 
-        b1l_path = (rfpath+"plots/Figure_8_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
+        b1l_path = (rfpath+"plots/Figure_10_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{omega_ax:.6f}"+"_z"+f"{z_val:.2f}"+".txt") 
-        ax_background_path = (rfpath+"plots/Figure_8_axbackground_logmaxion"+f"{np.log10(ax_val):.3f}"
+        ax_background_path = (rfpath+"plots/Figure_10_axbackground_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{omega_ax:.6f}"+"_z"+f"{z_val:.2f}"+".txt")
-        ax_aosc_path = (rfpath+"plots/Figure_8_axaosc_logmaxion"+f"{np.log10(ax_val):.3f}"
+        ax_aosc_path = (rfpath+"plots/Figure_10_axaosc_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{omega_ax:.6f}"+"_z"+f"{z_val:.2f}"+".txt") 
  
         if (
@@ -234,13 +234,13 @@ for ax_idx, ax_val in enumerate(m_ax):
                 ax_aosc = float(np.loadtxt(ac_outpath+"axion_aosc.dat"))
                 print("a_osc = ", ax_aosc)
                 if data_save_level>1:
-                    np.savetxt((rfpath+"plots/Figure_8_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
+                    np.savetxt((rfpath+"plots/Figure_10_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{omega_ax:.6f}"+"_z"+f"{z_val:.2f}"+".txt"), data_b1e)
-                    np.savetxt((rfpath+"plots/Figure_8_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
+                    np.savetxt((rfpath+"plots/Figure_10_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{omega_ax:.6f}"+"_z"+f"{z_val:.2f}"+".txt"), data_b1l) 
-                    np.savetxt((rfpath+"plots/Figure_8_axbackground_logmaxion"+f"{np.log10(ax_val):.3f}"
+                    np.savetxt((rfpath+"plots/Figure_10_axbackground_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{omega_ax:.6f}"+"_z"+f"{z_val:.2f}"+".txt"), ax_background)
-                    np.savetxt((rfpath+"plots/Figure_8_axaosc_logmaxion"+f"{np.log10(ax_val):.3f}"
+                    np.savetxt((rfpath+"plots/Figure_10_axaosc_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{omega_ax:.6f}"+"_z"+f"{z_val:.2f}"+".txt"), [ax_aosc])        
 
         axion_background.append(ax_background)
@@ -335,7 +335,7 @@ for m_idx, m_val in enumerate(m_ax):
             ax[m_idx].set_ylabel(r"$b_1^L(k)~/~b_1^L(k_{*})$", fontsize=40)            
 fig.subplots_adjust(hspace=0)
 plt.xticks(fontsize=30)
-plt.savefig(rfpath+"plots/Figure_8.png")
+plt.savefig(rfpath+"plots/Figure_10.png")
 
 colors = sns.color_palette("icefire", 2*len(redshifts)+1)
 
@@ -399,6 +399,6 @@ for m_idx, m_val in enumerate(m_ax):
             ax[m_idx].set_ylabel(r"$b_1^L(k)$", fontsize=15)
             
 fig.subplots_adjust(hspace=0)
-plt.savefig(rfpath+"plots/Figure_8b.png")
+plt.savefig(rfpath+"plots/Figure_10b.png")
 
 
