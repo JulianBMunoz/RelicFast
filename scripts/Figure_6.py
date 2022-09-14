@@ -13,6 +13,9 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 ######################################################
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
@@ -234,7 +237,7 @@ tflookup = {
 
 fig, ax = plt.subplots(len(redshifts), 1,
     sharex=True,
-    figsize=(15., 7.5*len(redshifts)),
+    figsize=(20, 7.5*len(redshifts)),
     gridspec_kw={'height_ratios': [1]*len(redshifts)}
 )
 fig.subplots_adjust(hspace=0)    

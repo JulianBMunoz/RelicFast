@@ -13,7 +13,9 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
-
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 ######################################################
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
@@ -230,7 +232,7 @@ for m_idx, m_val in enumerate(m_ax):
 colors = sns.color_palette('magma', len(m_ax))
 kplot = np.geomspace(10**-4.0, 0.1, 100)
 
-fig, ax = plt.subplots(1, 1, figsize=(15., 15.))
+fig, ax = plt.subplots(1, 1, figsize=(20., 15.))
 for m_idx, m_val in enumerate(m_ax): 
     for oax_idx, oax_val in enumerate(omega_ax): 
         k_vals = relicfast_pss[m_idx*len(omega_ax)+oax_idx][:, 0]

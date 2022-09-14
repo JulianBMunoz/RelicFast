@@ -13,6 +13,10 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
+
 use_existing_data=True
 data_save_level=2
 ######################################################
@@ -274,7 +278,7 @@ colors = sns.color_palette("icefire", 2*len(redshifts)+1)
 
 fig, ax = plt.subplots(len(m_ax), 1,
     sharex=True,
-    figsize=(15., 7.5*len(m_ax)),
+    figsize=(20., 7.5*len(m_ax)),
     gridspec_kw={'height_ratios': [1]*len(m_ax)}
 )
 fig.subplots_adjust(hspace=0)
@@ -310,7 +314,7 @@ for m_idx, m_val in enumerate(m_ax):
         ax[m_idx].tick_params(axis='y', labelsize=30)
         ax[m_idx].text(
             np.power(10., -1.3), 1., 
-            r"$m_\phi = 10^{"+f"{np.log10(m_val):.1f}"+r"}$ eV", 
+            r"$m_\phi = 10^{"+f"{np.log10(m_val):.0f}"+r"}$ eV", 
             fontsize=30, 
             bbox=dict(facecolor='white', edgecolor='black', pad=10.0)
         ) 
@@ -341,7 +345,7 @@ colors = sns.color_palette("icefire", 2*len(redshifts)+1)
 
 fig, ax = plt.subplots(len(m_ax), 1,
     sharex=True,
-    figsize=(15., 7.5*len(m_ax)),
+    figsize=(20., 7.5*len(m_ax)),
     gridspec_kw={'height_ratios': [1]*len(m_ax)}
 )
 fig.subplots_adjust(hspace=0)

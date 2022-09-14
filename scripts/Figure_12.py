@@ -13,6 +13,9 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 ######################################################
 

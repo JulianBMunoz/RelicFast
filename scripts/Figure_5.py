@@ -9,6 +9,9 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 method = 3
 
@@ -178,7 +181,7 @@ if method==1:
     
     colors = sns.color_palette("magma", len(omega_ax))
     
-    fig, ax = plt.subplots(1, 1, figsize=(15, 15))
+    fig, ax = plt.subplots(1, 1, figsize=(20, 15))
     linestyles=["solid", "dashed"]
     for m_idx, m_val in enumerate(M_ax):
         #ref = np.loadtxt(rfpath+"scripts/2104.07802_FIG2_REF_"+str(m_idx)+".csv", delimiter=",")
@@ -298,7 +301,7 @@ elif method==2:
 
     kplot = np.geomspace(10**-3, 10**0.3, 100) #Units: [h Mpc^-1]
     colors = sns.color_palette("magma", len(omega_ax))
-    fig, ax = plt.subplots(1, 1, figsize=(15, 15))
+    fig, ax = plt.subplots(1, 1, figsize=(20, 15))
     linestyles=["solid", "dashed"]
     for m_idx, m_val in enumerate(M_ax):
         #ref = np.loadtxt(rfpath+"scripts/2104.07802_FIG2_REF_"+str(m_idx)+".csv", delimiter=",")
@@ -452,7 +455,7 @@ elif method==3:
 
     plot_x = np.geomspace(10**-3, 10**0.3, 100) #Units: [h Mpc^-1]
     colors = sns.color_palette("magma", len(omega_ax))
-    fig, ax = plt.subplots(1, 1, figsize=(15, 15))
+    fig, ax = plt.subplots(1, 1, figsize=(20, 15))
     linestyles=["solid", "dashed"]
     for m_idx, m_val in enumerate(M_ax):
         #ref = np.loadtxt(rfpath+"scripts/2104.07802_FIG2_REF_"+str(m_idx)+".csv", delimiter=",")

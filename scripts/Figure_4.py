@@ -9,6 +9,9 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
 rfpath_outputsuffix = "output/result-0/"
@@ -159,7 +162,7 @@ def H(H0, Og, Om, a):
     return (H0*np.sqrt(Og*np.power(a, -4.)+Om*np.power(a, -3.)+Ol))
 
 colors = sns.color_palette("magma", 5)
-fig, (ax1, ax2) = plt.subplots(2,1, figsize=(15, 20), sharex=True)
+fig, (ax1, ax2) = plt.subplots(2,1, figsize=(20, 20), sharex=True)
 fig.subplots_adjust(hspace=0)
 xplot = np.array(a_vals) 
 
@@ -240,7 +243,7 @@ ax2.legend(fontsize=30, loc="lower left")
 
 fig.text(0.01, 0.5, r"$k_{{\rm physical}}$ [$m_\phi$]", 
     rotation='vertical', va='center', fontsize=40)
-fig.text(0.5, 0.04, r"a", 
+fig.text(0.5, 0.04, r"$a$", 
     ha='center', rotation='horizontal', fontsize=40)
 
 plt.savefig(rfpath+"plots/Figure_4.png")

@@ -29,6 +29,9 @@ from matplotlib.lines import Line2D
 # Plot settings
 sns.set()
 sns.set_style("white")
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 # Set cosmological parameters 
 omega_cdm_LCDM = 0.1127 # Units: none
@@ -147,9 +150,9 @@ for ax_idx, ax_val in enumerate(m_ax):
         writing_file.close()
 
         # Check if data already exists
-        b1e_path = (rfpath+"plots/Figure_9_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
+        b1e_path = (rfpath+"plots/Figure_11_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
             +"_omegaaxion"+f"{o_val:.6f}"+".txt")
-        b1l_path = (rfpath+"plots/Figure_9_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
+        b1l_path = (rfpath+"plots/Figure_11_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
             +"_omegaaxion"+f"{o_val:.6f}"+".txt")
 
         if (os.path.exists(b1e_path) and os.path.exists(b1l_path) and (use_existing_data==True)): 
@@ -214,9 +217,9 @@ for ax_idx, ax_val in enumerate(m_ax):
                 )
     
                 if data_save_level>1: 
-                    np.savetxt((rfpath+"plots/Figure_9_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
+                    np.savetxt((rfpath+"plots/Figure_11_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{o_val:.6f}"+".txt"), data_eulbias)
-                    np.savetxt((rfpath+"plots/Figure_9_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
+                    np.savetxt((rfpath+"plots/Figure_11_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
                         +"_omegaaxion"+f"{o_val:.6f}"+".txt"), data_lagbias)
             else: 
                 data_eulbias = np.array([[1.0e-4, 0.], [1.0, 0.]])
@@ -237,7 +240,7 @@ for ax_idx, ax_val in enumerate(m_ax):
             +' ./axionCAMB_Current/params_collapse_'+str(ax_idx*len(omega_ax)+o_idx)+'.ini'
         )  
 
-np.savetxt(rfpath+"plots/Figure_9_Failures.txt", np.array(spontaneous_failures, dtype='int'))
+np.savetxt(rfpath+"plots/Figure_11_Failures.txt", np.array(spontaneous_failures, dtype='int'))
 print("Spontaneous failures: ", np.array(spontaneous_failures, dtype='int'))
 
 def fmt(x):
@@ -246,10 +249,10 @@ def fmt(x):
 
 for kidx, kval in enumerate(krefs):
     if data_save_level>0:  
-        np.savetxt(rfpath+"plots/Figure_9_b1e_logk"+f"{np.log10(kval):.3f}"+".txt", b1e[kidx])
-        np.savetxt(rfpath+"plots/Figure_9_b1l_logk"+f"{np.log10(kval):.3f}"+".txt", b1l[kidx])
-        np.savetxt(rfpath+"plots/Figure_9_b1estep_logk"+f"{np.log10(kval):.3f}"+".txt", b1e_step[kidx])
-        np.savetxt(rfpath+"plots/Figure_9_b1lstep_logk"+f"{np.log10(kval):.3f}"+".txt", b1l_step[kidx])
+        np.savetxt(rfpath+"plots/Figure_11_b1e_logk"+f"{np.log10(kval):.3f}"+".txt", b1e[kidx])
+        np.savetxt(rfpath+"plots/Figure_11_b1l_logk"+f"{np.log10(kval):.3f}"+".txt", b1l[kidx])
+        np.savetxt(rfpath+"plots/Figure_11_b1estep_logk"+f"{np.log10(kval):.3f}"+".txt", b1e_step[kidx])
+        np.savetxt(rfpath+"plots/Figure_11_b1lstep_logk"+f"{np.log10(kval):.3f}"+".txt", b1l_step[kidx])
 
     Z = np.transpose(np.nan_to_num(b1l[kidx]))
     X, Y = np.meshgrid(np.log10(m_ax), omega_ax/omega_cdm_LCDM)
@@ -258,7 +261,7 @@ for kidx, kval in enumerate(krefs):
     #yn = np.arange(np.min(omega_ax/omega_cdm_LCDM), np.max(omega_ax/omega_cdm_LCDM), .001)
     #Z = interp(xn,yn)
     #X, Y = np.meshgrid(xn, yn) 
-    fig, ax = plt.subplots(1,1, figsize=(15, 15))
+    fig, ax = plt.subplots(1,1, figsize=(20, 15))
     hmap = ax.pcolormesh(X, Y, Z, vmin=np.min(Z), vmax=np.max(Z), shading="auto")
     ax.tick_params(axis='both', labelsize=30)
     ax.set_xlabel(r"$\log{M_\phi / {\rm [eV]}}$", fontsize=30)
@@ -266,7 +269,7 @@ for kidx, kval in enumerate(krefs):
     ax.set_ylim((0.,0.1)) 
     cbar = plt.colorbar(hmap)
     cbar.ax.tick_params(labelsize=30) 
-    plt.savefig(rfpath+"plots/Figure_9_b1l_logk"+f"{np.log10(kval):.3f}"+".png")
+    plt.savefig(rfpath+"plots/Figure_11_b1l_logk"+f"{np.log10(kval):.3f}"+".png")
 
     Z = np.transpose(np.nan_to_num(b1l_step[kidx]))
     X, Y = np.meshgrid(np.log10(m_ax), omega_ax/omega_cdm_LCDM)
@@ -275,7 +278,7 @@ for kidx, kval in enumerate(krefs):
     #yn = np.arange(np.min(omega_ax/omega_cdm_LCDM), np.max(omega_ax/omega_cdm_LCDM), .001)
     #Z = interp(xn,yn)
     #X, Y = np.meshgrid(xn, yn) 
-    fig, ax = plt.subplots(1,1, figsize=(15, 15))
+    fig, ax = plt.subplots(1,1, figsize=(20, 15))
     hmap = ax.pcolormesh(X, Y, Z, vmin=np.min(b1l_step), vmax=np.max(b1l_step), shading="auto")
     if (np.max(Z)>1.01):
         CS = ax.contour(X, Y, Z, np.linspace(1.01, 1.05, 5), colors='white')
@@ -289,6 +292,6 @@ for kidx, kval in enumerate(krefs):
         r"$b^1_L(k)~/~b^1_L(k_*)$"), size=40
     )
     cbar.ax.tick_params(labelsize=30) 
-    plt.savefig(rfpath+"plots/Figure_9_b1lstep_logk"+f"{np.log10(kval):.3f}"+".png")
+    plt.savefig(rfpath+"plots/Figure_11_b1lstep_logk"+f"{np.log10(kval):.3f}"+".png")
     if (kidx==(len(krefs)-1)): 
-        plt.savefig(rfpath+"plots/Figure_9.png") 
+        plt.savefig(rfpath+"plots/Figure_11.png") 

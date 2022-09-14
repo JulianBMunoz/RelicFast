@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib import rc
 import numpy as np
 import os
 import scipy
@@ -9,6 +10,8 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
 acpath = (rfpath+"axionCAMB_Current/")
@@ -129,7 +132,7 @@ if data_loaded==False:
 
 plot_x = np.geomspace(np.min(M_ax), np.max(M_ax), 100) #Units: [h Mpc^-1]
 colors = sns.color_palette("magma", len(omega_ax))
-fig, ax = plt.subplots(1, 1, figsize=(15, 15))
+fig, ax = plt.subplots(1, 1, figsize=(20, 15))
 for o_idx, o_val in enumerate(omega_ax[0:1]):
     osc_interp = scipy.interpolate.interp1d(np.log10(M_ax), np.log10(axion_zosc[:,o_idx]))
     plot_y = np.power(10., osc_interp(np.log10(plot_x)))
@@ -151,7 +154,7 @@ ax.plot(plot_x, np.power(10., np.log10(plot_x)*dlogydlogx1 + b1), linestyle='das
 ax.plot(plot_x, np.power(10., np.log10(plot_x)*dlogydlogx2 + b2), linestyle='dashed', color='tab:cyan', linewidth=5)
 ax.set_xscale('log')
 ax.set_yscale('log')
-ax.set_xlabel(r'$M_\phi$ [eV]', fontsize=40)
+ax.set_xlabel(r'$m_\phi$ [eV]', fontsize=40)
 ax.set_ylabel(r'$z_{\rm osc}$', fontsize=40)
 ax.set_yticks(np.logspace(-1, 6, 8))
 ax.grid(False)
@@ -163,7 +166,7 @@ ax_twin.set_xscale('log')
 ax_twin.set_yscale('log')
 ax_twin.grid(False)
 ax_twin.tick_params(axis='both', labelsize=25)
-ax_twin.set_ylabel(r"$a_{\rm osc}$", fontsize=40)
+ax_twin.set_ylabel(r"${a}_{\rm osc}$", fontsize=40)
 ax_twin.set_ylim(ax.get_ylim())
 ax_twin.set_yticks(np.concatenate((
     [np.power(10., -1.*np.log10(0.9)), np.power(10., -1.*np.log10(0.5))], np.logspace(1., 6., 6)))-1.)

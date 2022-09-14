@@ -4,11 +4,14 @@ import os
 import scipy 
 import seaborn as sns
 import subprocess
+from matplotlib import rc 
 from matplotlib.lines import Line2D
 from matplotlib.patches import ConnectionPatch
 
 sns.set()
 sns.set_style(style='white')
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 axion_rho_of_a = []
 
@@ -121,7 +124,7 @@ colors = sns.color_palette("magma", len(omega_ax))
 fig, ax1 = plt.subplots(1, 1, 
     #sharex=True, 
     #gridspec_kw={'height_ratios': [3, 1]},
-    figsize=(15, 20) 
+    figsize=(20, 20) 
 )
 #fig.subplots_adjust(hspace=0)
 ax2 = fig.add_axes([0.5, 0.3, 0.35, 0.25])
@@ -186,7 +189,7 @@ for o_idx, o_val in enumerate(omega_ax):
 
 ax1.set_xscale('linear')
 ax1.set_yscale('linear')
-ax1.set_xlabel(r'$\log({\rm a})$', fontsize=40)
+ax1.set_xlabel(r'$\log({a})$', fontsize=40)
 ax1.set_ylabel(r'$\omega_\phi ~/~ 10^{10}$', fontsize=40)
 ax1.set_xlim((-6, 0.1))
 ax1.tick_params(axis='both', labelsize=30)
@@ -196,7 +199,7 @@ ax1.grid(False, which='both', axis='both')
 
 ax2.set_xscale('linear')
 ax2.set_yscale('linear')
-ax2.set_xlabel(r'$\log({\rm a})$', fontsize=40)
+ax2.set_xlabel(r'$\log({a})$', fontsize=40)
 ax2.set_ylabel(r'$\log(\omega_\phi/\omega_{\rm d})$', fontsize=40)
 ax2.set_xlim((-1, 0.1))
 ax2.set_ylim((-2.5, 1.8))

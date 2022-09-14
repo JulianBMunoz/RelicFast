@@ -16,6 +16,9 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 data_save_level = 2
 
@@ -270,7 +273,7 @@ kplot = np.geomspace(10**-3.9, 0.6, 100)
 #plt.grid(False, which='both', axis='both')
 
 # lagrangian bias plots 
-fig, ax = plt.subplots(1,1, figsize=(15, 15))
+fig, ax = plt.subplots(1,1, figsize=(20, 15))
 ax.set_xscale('log')
 for ax_idx, ax_val in enumerate(m_ax): 
     #if ((ax_idx==0) or (ax_idx==(len(m_ax)-1))):
@@ -318,8 +321,7 @@ ax.plot(
 
 ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=40)
 ax.set_ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$', fontsize=40)
-ax.set_xticks(fontsize=30)
-ax.set_yticks(fontsize=30)
+ax.tick_params(axis='both', labelsize=30)
 ax.set_xlim((1.0e-4, 1.0e0))
 ax.legend(fontsize=30)
 ax.grid(False, which='both', axis='both')

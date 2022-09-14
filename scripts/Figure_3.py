@@ -9,6 +9,9 @@ from matplotlib.lines import Line2D
 
 sns.set()
 sns.set_style(style='white')
+from matplotlib import rc
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 axion_rho_of_a = []
 
@@ -148,7 +151,7 @@ for m_idx, m_val in enumerate(M_ax):
 
 textvars = []
 colors = sns.color_palette("magma", len(M_ax))
-plt.figure(figsize=(15, 15))
+plt.figure(figsize=(20, 15))
 for m_idx, m_val in enumerate(M_ax): 
     avals = axion_rho_of_a[m_idx][:, 0] 
     rhovals = axion_rho_of_a[m_idx][:, 1] 
@@ -187,7 +190,7 @@ for m_idx, m_val in enumerate(M_ax):
 
 plt.xscale('linear')
 plt.yscale('linear')
-plt.xlabel(r'$\log({\rm a})$', fontsize=40)
+plt.xlabel(r'$\log({a})$', fontsize=40)
 plt.ylabel(r'$\log(\omega_\phi)$', fontsize=40)
 plt.xlim((-7, 0.1))
 plt.xticks(fontsize=30)
