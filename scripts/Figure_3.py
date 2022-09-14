@@ -12,7 +12,7 @@ sns.set_style(style='white')
 
 axion_rho_of_a = []
 
-rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
+rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
 rfpath_outputsuffix = "output/result-0/"
 rfpath_boltzmannsuffix = "Boltzmann_2/transfer_files_0/"
 outpath = "/Users/nicholasdeporzio/Downloads/"
@@ -43,6 +43,8 @@ reading_file = open("common.h", "r")
 new_file_content = ""
 for line in reading_file:
     stripped_line = line.strip()
+    if "#define length_transfer_axioncamb " in stripped_line:
+        expected_axioncamb_output_lines = int(''.join(filter(str.isdigit, stripped_line)))
     new_line = stripped_line.replace(
         "define boltzmann_tag  _CLASS_", "define boltzmann_tag  _AXIONCAMB_"
     ).replace(
@@ -105,9 +107,38 @@ for m_idx, m_val in enumerate(M_ax):
     writing_file = open("run.ini", "w")
     writing_file.write(new_file_content)
     writing_file.close()
-    
-    os.system('./relicfast run.ini')
-    
+
+    lines_match_flag=False
+    while lines_match_flag==False:    
+        os.system('./relicfast run.ini')
+        with open(rfpath+"/Boltzmann_2/transfer_files_0/_transfer_out_z200.000", 'r') as fp:
+            ac_lines_out = sum(1 for line in fp)
+        fp.close()
+
+        if ac_lines_out==expected_axioncamb_output_lines:
+            lines_match_flag=True
+        else:
+            print("axionCAMB output doesn't match RelicFast compile parameters. Recompiling: "
+                +str(expected_axioncamb_output_lines)+"-->"+str(ac_lines_out))
+            os.chdir(rfpath+'/include/')
+            reading_file = open("common.h", "r")
+            new_file_content = ""
+            for line in reading_file:
+                stripped_line = line.strip()
+                new_line = stripped_line.replace(
+                        "#define length_transfer_axioncamb "+str(expected_axioncamb_output_lines),
+                        "#define length_transfer_axioncamb "+str(ac_lines_out)
+                )
+                new_file_content += "    " + new_line +"\n"
+            reading_file.close()
+            writing_file = open("common.h", "w")
+            writing_file.write(new_file_content)
+            writing_file.close()
+            os.chdir(rfpath)
+            os.system('make')
+
+            expected_axioncamb_output_lines = int(ac_lines_out)
+
     axion_rho_of_a.append(
         np.loadtxt(outpath+'axion_grhoax_internal.dat')
     )
@@ -130,38 +161,20 @@ for m_idx, m_val in enumerate(M_ax):
     #rho_dm = rho_osc*np.power(a_osc/a_dm, 3)
     rho_dm = rhovals[-1]*np.power(avals[-1]/a_dm, 3)
 
-    if m_idx==0:
-        plt.plot(
-            np.linspace(np.log10(avals[0]), np.log10(avals[-1])+0.5, 10), 
-            np.log10(10*[rhovals[0]]), 
-            color=colors[m_idx],
-            linewidth=5.0, 
-            linestyle='dashed',
-            label="Dark Energy $\propto a^0$"
-        )   
-        plt.plot(
-            np.log10(a_dm), 
-            np.log10(rho_dm), 
-            color=colors[m_idx],
-            linewidth=5.0, 
-            linestyle='dotted',
-            label="Dark Matter $\propto a^{-3}$"
-        )
-    else: 
-        plt.plot(
-            np.linspace(np.log10(avals[0]), np.log10(avals[-1])+0.5, 10),
-            np.log10(10*[rhovals[0]]),
-            color=colors[m_idx],
-            linewidth=5.0, 
-            linestyle='dashed'
-        ) 
-        plt.plot(
-            np.log10(a_dm), 
-            np.log10(rho_dm), 
-            color=colors[m_idx],
-            linewidth=5.0, 
-            linestyle='dotted'
-        )
+    plt.plot(
+        np.linspace(np.log10(avals[0]), np.log10(avals[-1])+0.5, 10), 
+        np.log10(10*[rhovals[0]]), 
+        color=colors[m_idx],
+        linewidth=5.0, 
+        linestyle='dashed'
+    )   
+    plt.plot(
+        np.log10(a_dm), 
+        np.log10(rho_dm), 
+        color=colors[m_idx],
+        linewidth=5.0, 
+        linestyle='dotted'
+    )
 
     plt.plot(
         np.log10(avals), 
@@ -171,19 +184,16 @@ for m_idx, m_val in enumerate(M_ax):
         color=colors[m_idx]
     )
 
-    #textvar = plt.text(10**-3, rhovals[0], r'$M_\chi = $'+f'{m_val:.2e}')
-    #textvars.append(textvar)
-#print(a_osc, avals[-1])
 
 plt.xscale('linear')
 plt.yscale('linear')
-plt.xlabel(r'$\log(a)$', fontsize=30)
-plt.ylabel(r'$\log(\omega_\chi)$', fontsize=30)
+plt.xlabel(r'$\log({\rm a})$', fontsize=40)
+plt.ylabel(r'$\log(\omega_\phi)$', fontsize=40)
 plt.xlim((-7, 0.1))
-plt.xticks(fontsize=25)
-plt.yticks(fontsize=25)
+plt.xticks(fontsize=30)
+plt.yticks(fontsize=30)
 #plt.title(r'$M_\chi = $'+f'{M_ax_fixed:.3e}', fontsize=15)
-plt.legend(fontsize=25, loc='upper right')
+plt.legend(fontsize=30, loc='upper right')
 plt.grid(False, which='both', axis='both')
 plt.savefig(rfpath+"plots/Figure_3.png") 
 

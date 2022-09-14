@@ -1,3 +1,6 @@
+# Can use circle patches if you want to control the width of the plot circles carefully
+#https://stackoverflow.com/questions/48172928/scale-matplotlib-pyplot-axes-scatter-markersize-by-x-scale/48174228#48174228
+
 ######################################################
 ####         USER INPUTS
 ######################################################
@@ -14,9 +17,11 @@ from matplotlib.lines import Line2D
 sns.set()
 sns.set_style(style='white')
 
+data_save_level = 2
+
 ######################################################
 
-rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
+rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
 rfpath_outputsuffix = "output/result-0/"
 
 outpath = "/Users/nicholasdeporzio/Desktop/"
@@ -26,16 +31,12 @@ omega_b_LCDM = 0.02226
 Omega_M_LCDM = 0.27464
 
 m_ax = np.array([
-    10**-25, 
     10**-26, 
-    10**-27, 
     10**-28, 
-    10**-29, 
-    10**-30, 
-    10**-31,
+    10**-30,
     10**-32
 ])
-omega_ax = np.array(len(m_ax)*[0.05*omega_cdm_LCDM])
+omega_ax = np.array(len(m_ax)*[0.1*omega_cdm_LCDM])
 
 sum_massive_nu = 0.
 redshift = 0.65
@@ -79,6 +80,8 @@ reading_file = open("common.h", "r")
 new_file_content = ""
 for line in reading_file:
     stripped_line = line.strip()
+    if "#define length_transfer_axioncamb " in stripped_line:
+        expected_axioncamb_output_lines = int(''.join(filter(str.isdigit, stripped_line)))
     new_line = stripped_line.replace(
             "#define boltzmann_tag  _CLASS_", "#define boltzmann_tag _AXIONCAMB_"
     ).replace(
@@ -147,9 +150,38 @@ for ax_idx, ax_val in enumerate(m_ax):
     writing_file = open("run.ini", "w")
     writing_file.write(new_file_content)
     writing_file.close()
+
+    lines_match_flag=False
+    while lines_match_flag==False:        
+        os.system('./relicfast run.ini')
+        with open(rfpath+"/Boltzmann_2/transfer_files_0/_transfer_out_z200.000", 'r') as fp:
+            ac_lines_out = sum(1 for line in fp)
+        fp.close()    
+
+        if ac_lines_out==expected_axioncamb_output_lines:
+            lines_match_flag=True
+        else:
+            print("axionCAMB output doesn't match RelicFast compile parameters. Recompiling: "
+                +str(expected_axioncamb_output_lines)+"-->"+str(ac_lines_out))
+            os.chdir(rfpath+'/include/')
+            reading_file = open("common.h", "r")
+            new_file_content = ""
+            for line in reading_file:
+                stripped_line = line.strip()
+                new_line = stripped_line.replace(
+                        "#define length_transfer_axioncamb "+str(expected_axioncamb_output_lines),
+                        "#define length_transfer_axioncamb "+str(ac_lines_out)
+                )
+                new_file_content += "    " + new_line +"\n"
+            reading_file.close()
+            writing_file = open("common.h", "w")
+            writing_file.write(new_file_content)
+            writing_file.close()
+            os.chdir(rfpath)
+            os.system('make')
     
-    os.system('./relicfast run.ini')
-    
+            expected_axioncamb_output_lines = int(ac_lines_out)
+
     # Collect axion background evolution
     axion_background.append(np.loadtxt("/Users/nicholasdeporzio/Downloads/axion_background.dat"))    
     
@@ -192,7 +224,12 @@ for ax_idx, ax_val in enumerate(m_ax):
     data_lagbias.append(
         np.loadtxt(rfpath_outputsuffix+'bias_Lagrangian_z'+f'{z_vals[pm_idx]:.2f}'+'_M13.00_Nk'+str(Nk)+'.dat', skiprows=1)
     )
-    #print(data_lagbias[-1][0])
+
+    #if data_save_level>1:
+    #    np.savetxt((rfpath+"plots/Figure_7_b1e_logmaxion"+f"{np.log10(ax_val):.3f}"
+    #        +"_omegaaxion"+f"{o_val:.6f}"+".txt"), data_eulbias)
+    #    np.savetxt((rfpath+"plots/Figure_9_b1l_logmaxion"+f"{np.log10(ax_val):.3f}"
+    #        +"_omegaaxion"+f"{o_val:.6f}"+".txt"), data_lagbias)
 
     os.system('mv ./run.ini ./run_'+str(ax_idx+8)+'.ini')
     os.system('mv ./axionCAMB_Current/params_collapse.ini ./axionCAMB_Current/params_collapse_'+str(ax_idx+8)+'.ini')  
@@ -233,8 +270,8 @@ kplot = np.geomspace(10**-3.9, 0.6, 100)
 #plt.grid(False, which='both', axis='both')
 
 # lagrangian bias plots 
-plt.figure(figsize=(15, 15))
-plt.xscale('log')
+fig, ax = plt.subplots(1,1, figsize=(15, 15))
+ax.set_xscale('log')
 for ax_idx, ax_val in enumerate(m_ax): 
     #if ((ax_idx==0) or (ax_idx==(len(m_ax)-1))):
     #    continue 
@@ -252,35 +289,39 @@ for ax_idx, ax_val in enumerate(m_ax):
     
     yplot = lagbiasplot/lagbiasplot[0]
     
-    plt.plot(
+    ax.plot(
         kplot, 
         yplot, 
-        label=r'$m_{\phi}= 10^{'+f'{np.log10(ax_val):.1f}'+r'}$ eV', 
+        label=r'$m_{\phi}= 10^{'+f'{np.log10(ax_val):.0f}'+r'}$ eV', 
         color=tuple(rgb), 
-        linewidth=5.)
-    plt.plot(
-        [kfs[ax_idx], kfs[ax_idx]], 
-        [min(yplot), max(yplot)], 
-        color=tuple(rgb), 
-        linestyle='dashed', 
-        linewidth=5.)
+        linewidth=5.,
+        zorder=2)
+    try: 
+        ax.scatter(
+            kfs[ax_idx],
+            lagbiasinterp(kfs[ax_idx])/lagbiasplot[0], 
+            facecolors='none', 
+            edgecolors=tuple(rgb),
+            marker='o', 
+            linewidth=3., 
+            s=400, 
+            zorder=3)
+    except:
+        pass 
     
-plt.plot(
+ax.plot(
     [0.70148*0.015, 0.70148*0.015], 
     [1., 1.07], 
     color='red', 
     label=r'$k_{\rm eq}$',
     linewidth=5.)
 
-plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=30)
-plt.ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$', fontsize=30)
-plt.xticks(fontsize=25)
-plt.yticks(fontsize=25)
-plt.xlim((1.0e-4, 1.0e0))
-#plt.title(r'$\omega_\chi = 0.05\times\omega_{cdm},  ~z = 0.65, ~\Sigma M_\nu = 0$ eV', fontsize=30)
-#plt.legend(lines, labels, fontsize=15)
-plt.legend(fontsize=25)
-#plt.yscale('log')
-plt.grid(False, which='both', axis='both')
+ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=40)
+ax.set_ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$', fontsize=40)
+ax.set_xticks(fontsize=30)
+ax.set_yticks(fontsize=30)
+ax.set_xlim((1.0e-4, 1.0e0))
+ax.legend(fontsize=30)
+ax.grid(False, which='both', axis='both')
 plt.savefig(rfpath+"plots/Figure_7.png") 
 

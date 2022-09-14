@@ -260,13 +260,12 @@ for kidx, kval in enumerate(krefs):
     #X, Y = np.meshgrid(xn, yn) 
     fig, ax = plt.subplots(1,1, figsize=(15, 15))
     hmap = ax.pcolormesh(X, Y, Z, vmin=np.min(Z), vmax=np.max(Z), shading="auto")
-    ax.tick_params(axis='both', labelsize=25)
+    ax.tick_params(axis='both', labelsize=30)
     ax.set_xlabel(r"$\log{M_\phi / {\rm [eV]}}$", fontsize=30)
-    ax.set_ylabel("$\Omega_\phi / \Omega_d$", fontsize=30)
+    ax.set_ylabel("$\omega_\phi / \omega_d$", fontsize=30)
     ax.set_ylim((0.,0.1)) 
     cbar = plt.colorbar(hmap)
-    cbar.set_label(label=(r"$b^1_L(k=10^{"+f"{np.log10(kval):.1f}"+r"})$"), size=30)
-    cbar.ax.tick_params(labelsize=25) 
+    cbar.ax.tick_params(labelsize=30) 
     plt.savefig(rfpath+"plots/Figure_9_b1l_logk"+f"{np.log10(kval):.3f}"+".png")
 
     Z = np.transpose(np.nan_to_num(b1l_step[kidx]))
@@ -280,18 +279,16 @@ for kidx, kval in enumerate(krefs):
     hmap = ax.pcolormesh(X, Y, Z, vmin=np.min(b1l_step), vmax=np.max(b1l_step), shading="auto")
     if (np.max(Z)>1.01):
         CS = ax.contour(X, Y, Z, np.linspace(1.01, 1.05, 5), colors='white')
-        ax.clabel(CS, CS.levels, inline=True, fmt=fmt, fontsize=20)
-    ax.tick_params(axis='both', labelsize=25)
-    ax.set_xlabel(r"$\log{\left(M_\phi / {\rm [eV]}\right)}$", fontsize=30)
-    ax.set_ylabel("$\Omega_\phi / \Omega_d$", fontsize=30)
+        ax.clabel(CS, CS.levels, inline=True, fmt=fmt, fontsize=30)
+    ax.tick_params(axis='both', labelsize=30)
+    ax.set_xlabel(r"$\log{\left(M_\phi ~/~ {\rm [eV]}\right)}$", fontsize=40)
+    ax.set_ylabel("$\omega_\phi ~/~ \omega_d$", fontsize=40)
     ax.set_ylim((0.,0.1)) 
     cbar = plt.colorbar(hmap)
     cbar.set_label(label=(
-        r"$b^1_L(k=10^{"
-        +f"{np.log10(kval):.1f}"
-        +r"})/b^1_L(k=10^{"
-        +f"{np.log10(knorm):.1f}"
-        +"})$"), size=30
+        r"$b^1_L(k)~/~b^1_L(k_*)$"), size=40
     )
-    cbar.ax.tick_params(labelsize=25) 
+    cbar.ax.tick_params(labelsize=30) 
     plt.savefig(rfpath+"plots/Figure_9_b1lstep_logk"+f"{np.log10(kval):.3f}"+".png")
+    if (kidx==(len(krefs)-1)): 
+        plt.savefig(rfpath+"plots/Figure_9.png") 

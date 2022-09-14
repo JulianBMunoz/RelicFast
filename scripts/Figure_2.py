@@ -4,15 +4,15 @@ import os
 import scipy 
 import seaborn as sns
 import subprocess
-
 from matplotlib.lines import Line2D
+from matplotlib.patches import ConnectionPatch
 
 sns.set()
 sns.set_style(style='white')
 
 axion_rho_of_a = []
 
-rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
+rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
 rfpath_outputsuffix = "output/result-0/"
 rfpath_boltzmannsuffix = "Boltzmann_2/transfer_files_0/"
 outpath = "/Users/nicholasdeporzio/Downloads/"
@@ -118,12 +118,13 @@ for o_idx, o_val in enumerate(omega_ax):
 textvars = []
 colors = sns.color_palette("magma", len(omega_ax))
 
-fig, (ax1, ax2) = plt.subplots(2, 1, 
-    sharex=True, 
-    figsize=(15, 20), 
-    gridspec_kw={'height_ratios': [3, 1]}
+fig, ax1 = plt.subplots(1, 1, 
+    #sharex=True, 
+    #gridspec_kw={'height_ratios': [3, 1]},
+    figsize=(15, 20) 
 )
-fig.subplots_adjust(hspace=0)
+#fig.subplots_adjust(hspace=0)
+ax2 = fig.add_axes([0.5, 0.3, 0.35, 0.25])
 for o_idx, o_val in enumerate(omega_ax): 
     avals = axion_rho_of_a[o_idx][:, 0] 
     rhovals = axion_rho_of_a[o_idx][:, 1] 
@@ -139,82 +140,45 @@ for o_idx, o_val in enumerate(omega_ax):
     ax1.plot(
         np.log10(avals), 
         rhovals*np.power(10., -10.), 
-        label=r'$\Omega_\phi/\Omega_{\rm d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}', 
+        label=r'$\omega_\phi/\omega_{\rm d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}', 
         linewidth=5.0, 
         color=colors[o_idx]
     )
     ax2.plot(
         np.log10(avals), 
         np.log10(rhovals/omega_cdm_LCDM), 
-        label=r'$\Omega_\phi/\Omega_{\rm d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}', 
         linewidth=5.0, 
         color=colors[o_idx]
     )
 
-    if (o_idx==(len(omega_ax)-1)):
-        ax1.plot(
-            np.linspace(np.log10(avals[0]), np.log10(avals[-1])+0.5, 10), 
-            np.array(10*[rhovals[0]])*np.power(10., -10.), 
-            color=colors[o_idx], 
-            linestyle='dashed',
-            linewidth=5.0, 
-            label="Dark Energy $\propto a^0$"
-        )   
-        ax1.plot(
-            np.log10(a_dm), 
-            rho_dm*np.power(10., -10.), 
-            color=colors[o_idx],
-            linestyle='dotted',
-            linewidth=5.0, 
-            label="Dark Matter $\propto a^{-3}$"
-        )
-        ax2.plot(
-            np.linspace(np.log10(avals[0]), np.log10(avals[-1])+0.5, 10), 
-            np.log10(10*[rhovals[0]/omega_cdm_LCDM]), 
-            color=colors[o_idx], 
-            linestyle='dashed',
-            linewidth=5.0, 
-            label="Dark Energy $\propto a^0$"
-        )   
-        ax2.plot(
-            np.log10(a_dm), 
-            np.log10(rho_dm/omega_cdm_LCDM), 
-            color=colors[o_idx],
-            linestyle='dotted',
-            linewidth=5.0, 
-            label="Dark Matter $\propto a^{-3}$"
-        )
-    else:
-        pass 
-        #ax1.plot(
-        #    np.linspace(np.log10(avals[0]), np.log10(avals[-1])+0.5, 10),
-        #    np.array(10*[rhovals[0]])*np.power(10., -10.),
-        #    color=colors[o_idx],
-        #    linestyle='dashed',
-        #    linewidth=5.0
-        #) 
-        ax1.plot(
-            np.log10(a_dm), 
-            rho_dm*np.power(10., -10.), 
-            color=colors[o_idx],
-            linewidth=5.0, 
-            linestyle='dotted'
-        )
-        #ax2.plot(
-        #    np.linspace(np.log10(avals[0]), np.log10(avals[-1])+0.5, 10),
-        #    np.log10(10*[rhovals[0]/omega_cdm_LCDM]),
-        #    color=colors[o_idx],
-        #    linewidth=5.0, 
-        #    linestyle='dashed'
-        #) 
-        ax2.plot(
-            np.log10(a_dm), 
-            np.log10(rho_dm/omega_cdm_LCDM), 
-            color=colors[o_idx],
-            linewidth=5.0, 
-            linestyle='dotted'
-        )
-
+    ax1.plot(
+        np.linspace(np.log10(avals[0]), np.log10(avals[-1])+0.5, 10), 
+        np.array(10*[rhovals[0]])*np.power(10., -10.), 
+        color=colors[o_idx], 
+        linestyle='dashed',
+        linewidth=5.0, 
+    )   
+    ax1.plot(
+        np.log10(a_dm), 
+        rho_dm*np.power(10., -10.), 
+        color=colors[o_idx],
+        linestyle='dotted',
+        linewidth=5.0, 
+    )
+    ax2.plot(
+        np.linspace(np.log10(avals[0]), np.log10(avals[-1])+0.5, 10), 
+        np.log10(10*[rhovals[0]/omega_cdm_LCDM]), 
+        color=colors[o_idx], 
+        linestyle='dashed',
+        linewidth=5.0, 
+    )   
+    ax2.plot(
+        np.log10(a_dm), 
+        np.log10(rho_dm/omega_cdm_LCDM), 
+        color=colors[o_idx],
+        linestyle='dotted',
+        linewidth=5.0, 
+    )
 
     #textvar = plt.text(10**-3, rhovals[0], r'$\omega_{\chi, 0} = $'+f'{rho_dm[-1]:.3e}')
     #textvars.append(textvar)
@@ -222,23 +186,39 @@ for o_idx, o_val in enumerate(omega_ax):
 
 ax1.set_xscale('linear')
 ax1.set_yscale('linear')
-ax1.set_xlabel(r'$\log(a)$', fontsize=30)
-ax1.set_ylabel(r'$10^{-10} \times \omega_\phi$', fontsize=30)
+ax1.set_xlabel(r'$\log({\rm a})$', fontsize=40)
+ax1.set_ylabel(r'$\omega_\phi ~/~ 10^{10}$', fontsize=40)
 ax1.set_xlim((-6, 0.1))
-ax1.tick_params(axis='both', labelsize=25)
+ax1.tick_params(axis='both', labelsize=30)
 #ax1.set_title(r'$M_\phi = 10^{-26}$ eV', fontsize=30)
-ax1.legend(fontsize=20, loc='upper right')
+ax1.legend(fontsize=30, loc='upper right')
 ax1.grid(False, which='both', axis='both')
 
 ax2.set_xscale('linear')
 ax2.set_yscale('linear')
-ax2.set_xlabel(r'$\log(a)$', fontsize=30)
-ax2.set_ylabel(r'$\log(\omega_\phi/\omega_{\rm d})$', fontsize=30)
-ax2.set_xlim((-6, 0.1))
-ax2.tick_params(axis='both', labelsize=25)
+ax2.set_xlabel(r'$\log({\rm a})$', fontsize=40)
+ax2.set_ylabel(r'$\log(\omega_\phi/\omega_{\rm d})$', fontsize=40)
+ax2.set_xlim((-1, 0.1))
+ax2.set_ylim((-2.5, 1.8))
+ax2.tick_params(axis='both', labelsize=30)
 #ax2.set_title(r'$M_\chi = $'+f'{M_ax_fixed:.3e}', fontsize=15)
 #ax2.set_legend(fontsize=15, loc='upper left')
 ax2.grid(False, which='both', axis='both')
+
+con1 = ConnectionPatch(
+    xyA=(-1., 0.1), coordsA=ax1.transData, 
+    xyB=(-1., -2.5), coordsB=ax2.transData, 
+    color = 'black', 
+    alpha = 0.5
+)
+con2 = ConnectionPatch(
+    xyA=(0., 0.1), coordsA=ax1.transData, 
+    xyB=(0.1, -2.5), coordsB=ax2.transData, 
+    color = 'black',
+    alpha = 0.5
+)
+fig.add_artist(con1)
+fig.add_artist(con2)
 
 plt.savefig(rfpath+"plots/Figure_2.png") 
 

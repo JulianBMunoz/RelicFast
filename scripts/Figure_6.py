@@ -15,7 +15,7 @@ sns.set()
 sns.set_style(style='white')
 ######################################################
 
-rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
+rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
 rfpath_outputsuffix = "output/result-0/"
 
 outpath = "/Users/nicholasdeporzio/Desktop/"
@@ -305,22 +305,30 @@ for z_idx, z_val in enumerate(redshifts):
         #plot_y = TF_b_interp(plot_x)/TF_lcdm_b_interp(plot_x)
         #plot_y = TF_cdm_interp(plot_x)/TF_lcdm_cdm_interp(plot_x)
         
+        plot_y_interp = scipy.interpolate.interp1d(np.log10(plot_x), plot_y) 
+
         z_osc = (1./axion_aosc[ax_idx])-1.
     
         ax[z_idx].plot(
             plot_x, 
             plot_y, 
-            label="$m_\chi = $"+f'{ax_val:.2e}'+", $z_{osc}=$"+f"{z_osc:.2f}", 
+            label=r"$m_\phi = 10^{"+f'{np.log10(ax_val):.0f}'+r"}$ eV",#+", $z_{osc}=$"+f"{z_osc:.2f}", 
             color=colors[ax_idx], 
             linewidth=5.
         )
-        ax[z_idx].plot(
-            [kfs, kfs], 
-            [min(plot_y), max(plot_y)], 
-            color=colors[ax_idx], 
-            linestyle='dotted', 
-            linewidth=5.
-        )
+        try: 
+            ax[z_idx].scatter(
+                kfs, 
+                plot_y_interp(np.log10(kfs)), 
+                facecolors='none',
+                edgecolors=colors[ax_idx],
+                marker='o', 
+                linewidth=3.,
+                s=400, 
+                zorder=3
+            )
+        except:
+            pass
         
     #plt.plot(
     #    [plot_x[0], plot_x[0]], 
@@ -335,29 +343,21 @@ for z_idx, z_val in enumerate(redshifts):
     #)
 
     ax[z_idx].set_xscale('log')
-    ax[z_idx].tick_params(axis='both', labelsize=25)
+    ax[z_idx].tick_params(axis='both', labelsize=30)
     ax[z_idx].grid(False)
     ax[z_idx].set_xlim(1.0e-4, 1.0e0) 
     ax[z_idx].set_ylim((0.65, 1.1))
     ax[z_idx].text(0.27, 1.05, "z = "+f"{z_val:.0f}", fontsize=30, 
         bbox=dict(facecolor='white', edgecolor='black', pad=10.0))
 
-    if z_idx==0:     
-        ax[z_idx].plot(
-            [1.0e-6, 1.0e-6], 
-            [0., 0.], 
-            color='black',
-            linestyle='dotted', 
-            label="$k_{fs}$", 
-            linewidth=5.
-        )
-
-        ax[z_idx].legend(fontsize=20, loc='lower left')
+    if z_idx==0:    
+        pass 
     elif z_idx==1: 
-        ax[z_idx].set_ylabel(r'$P_m/P_{m, ~LCDM}$',
-            fontsize=30)
+        ax[z_idx].set_ylabel(r'$P_{\rm m}/P_{\mathrm{m, }\Lambda \mathrm{CDM}}$',
+            fontsize=40)
     elif z_idx==2: 
-        ax[z_idx].set_xlabel(r"$k$ [Mpc$^{-1}$]", fontsize=30) 
+        ax[z_idx].legend(fontsize=30, loc='lower left')
+        ax[z_idx].set_xlabel(r"$k$ [Mpc$^{-1}$]", fontsize=40) 
 
 plt.savefig(rfpath+"plots/Figure_6.png")
     

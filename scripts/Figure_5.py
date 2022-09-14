@@ -343,8 +343,8 @@ elif method==3:
     axioncamb_data_pk = []
     axioncamb_data_tf = []
 
-    rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/"
-    acpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast/axionCAMB_Current/"
+    rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
+    acpath = rfpath+"axionCAMB_Current/"
     acpath_output = "Boltzmann_2/transfer_files_0/"
     outpath = "/Users/nicholasdeporzio/Downloads/"
 
@@ -501,20 +501,20 @@ elif method==3:
                 ax.plot(
                     plot_x,
                     plot_y,
-                    label=r'$\Omega_{\phi}/\Omega_{d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}',
+                    label=r'$\omega_{\phi}/\omega_{\rm d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}',
                     color=colors[o_idx],
                     linestyle=linestyles[m_idx], 
                     linewidth=5.0
                 )
 
         ax.set_xscale('log')
-        ax.set_xlabel(r'$k ~[h ~{\rm Mpc}^{-1}]$', fontsize=30)
-        ax.set_ylabel(r'$P_m/P_{m, ~LCDM}$', fontsize=30)
+        ax.set_xlabel(r'$k ~[h ~{\rm Mpc}^{-1}]$', fontsize=40)
+        ax.set_ylabel(r'$P_{\rm m}/P_{\mathrm{m, }\Lambda \mathrm{CDM}}$', fontsize=40)
         ax.grid(False, which='both', axis='both')
-        ax.tick_params(axis='both', labelsize=25)
+        ax.tick_params(axis='both', labelsize=30)
 
         if (m_idx==0):
-            ax.legend(fontsize=25)
+            ax.legend(fontsize=30)
     #        ax[m_idx].title((r'$M_\chi = 10^{'+f'{np.log10(m_val):.1f}'+r'}$ eV'), fontsize=30)
 
     plt.savefig(rfpath+"plots/Figure_5.png")
