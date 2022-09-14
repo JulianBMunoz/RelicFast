@@ -574,4 +574,4 @@ for mnu_idx, mnu_val in enumerate(Mnu):
         linewidth=5.
     )
 
-plt.savefig(rfpath+"plots/Figure_10.png")
+plt.savefig(rfpath+"plots/Figure_12.png")
