@@ -1,17 +1,41 @@
+######################################################
+####         USER INPUTS
+######################################################
+
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import scipy
+import scipy 
 import seaborn as sns
-import subprocess
-
+#import subprocess
 from matplotlib.lines import Line2D
+from matplotlib import rc
 
 sns.set()
 sns.set_style(style='white')
-from matplotlib import rc
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 110,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 30],
+    'figure.subplot.left': 0.13,
+    'figure.subplot.right': 0.98,
+    'figure.subplot.top': 0.98,
+    'figure.subplot.bottom': 0.06,
+#    "figure.constrained_layout.use" : True,
+#    "figure.subplot.hspace": 0.001,
+    "savefig.pad_inches" : 0.1
+
+})
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
 rfpath_outputsuffix = "output/result-0/"
@@ -162,7 +186,7 @@ def H(H0, Og, Om, a):
     return (H0*np.sqrt(Og*np.power(a, -4.)+Om*np.power(a, -3.)+Ol))
 
 colors = sns.color_palette("magma", 5)
-fig, (ax1, ax2) = plt.subplots(2,1, figsize=(20, 20), sharex=True)
+fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
 fig.subplots_adjust(hspace=0)
 xplot = np.array(a_vals) 
 
@@ -195,7 +219,7 @@ ax1.plot([aeq[0], aeq[0]], [min(yplot1), max(yplot1)],
 ax1.plot([aosc[0], aosc[0]], [min(yplot1), max(yplot1)], 
     linewidth=5., color='black', linestyle="dotted", label=r"$a_{\rm osc}$")
 ax1.plot([min(xplot), max(xplot)], [1., 1.], color='black', linestyle='dashdot', label=r"$m_\phi$")
-ax1.tick_params(axis='both', labelsize=30)
+ax1.tick_params(axis='both')
 ax1.set_xscale('log') 
 ax1.set_yscale('log') 
 ax1.set_xlim((min(xplot), max(xplot)))
@@ -233,17 +257,20 @@ ax2.plot([aosc[1], aosc[1]], [1.0e-5, 1.0e15], color='black',
     linestyle="dotted", linewidth=5., label=r"$a_{\rm osc}$")
 ax2.plot([min(xplot), max(xplot)], [1., 1.], color='black', linestyle='dashdot', label=r"$m_\phi$")
 #ax2.plot(xplot[0:-1], np.diff(np.log10(yplot1))/np.diff(np.log10(xplot))) 
-ax2.tick_params(axis='both', labelsize=30)
+ax2.tick_params(axis='both')
 ax2.set_xscale("log")
 ax2.set_yscale("log")
 ax2.set_xlim((min(xplot), max(xplot)))
 ax2.set_ylim((1.0e-3, 1.0e6))
 ax2.set_yticks(np.logspace(-1, 5, 4))
-ax2.legend(fontsize=30, loc="lower left")
+ax2.legend(loc="lower left")
 
-fig.text(0.01, 0.5, r"$k_{{\rm physical}}$ [$m_\phi$]", 
-    rotation='vertical', va='center', fontsize=40)
-fig.text(0.5, 0.04, r"$a$", 
-    ha='center', rotation='horizontal', fontsize=40)
+#fig.supxlabel(r"$a$") 
+#fig.supylabel(r"$k_{{\rm physical}} {\rm ~[} m_\phi {\rm ]}$")
+#fig.tight_layout()
+fig.text(0.001, 0.5, r"$k_{{\rm physical}} {\rm ~[} m_\phi {\rm ]}$", 
+    rotation='vertical', va='center')
+fig.text(0.555, 0.001, r"$a$", 
+    ha='center', rotation='horizontal')
 
 plt.savefig(rfpath+"plots/Figure_4.png")

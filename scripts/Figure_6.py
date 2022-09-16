@@ -2,21 +2,40 @@
 ####         USER INPUTS
 ######################################################
 
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy 
 import seaborn as sns
 import subprocess
-
 from matplotlib.lines import Line2D
+from matplotlib import rc
 
 sns.set()
 sns.set_style(style='white')
-from matplotlib import rc
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
-######################################################
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 110,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 30],
+    'figure.subplot.left': 0.13,
+    'figure.subplot.right': 0.98,
+    'figure.subplot.top': 0.98,
+    'figure.subplot.bottom': 0.06,
+    #"figure.constrained_layout.use" : True, 
+    "figure.constrained_layout.wspace": 0.1,
+    "savefig.pad_inches" : 0.1
+
+})
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
 rfpath_outputsuffix = "output/result-0/"
@@ -237,7 +256,7 @@ tflookup = {
 
 fig, ax = plt.subplots(len(redshifts), 1,
     sharex=True,
-    figsize=(20, 7.5*len(redshifts)),
+    figsize=(30, 20.*len(redshifts)),
     gridspec_kw={'height_ratios': [1]*len(redshifts)}
 )
 fig.subplots_adjust(hspace=0)    
@@ -315,7 +334,7 @@ for z_idx, z_val in enumerate(redshifts):
         ax[z_idx].plot(
             plot_x, 
             plot_y, 
-            label=r"$m_\phi = 10^{"+f'{np.log10(ax_val):.0f}'+r"}$ eV",#+", $z_{osc}=$"+f"{z_osc:.2f}", 
+            label=r"$m_\phi = 10^{"+f'{np.log10(ax_val):.0f}'+r"} {\rm ~eV}$",#+", $z_{osc}=$"+f"{z_osc:.2f}", 
             color=colors[ax_idx], 
             linewidth=5.
         )
@@ -346,21 +365,25 @@ for z_idx, z_val in enumerate(redshifts):
     #)
 
     ax[z_idx].set_xscale('log')
-    ax[z_idx].tick_params(axis='both', labelsize=30)
+    ax[z_idx].tick_params(axis='both')
     ax[z_idx].grid(False)
     ax[z_idx].set_xlim(1.0e-4, 1.0e0) 
     ax[z_idx].set_ylim((0.65, 1.1))
-    ax[z_idx].text(0.27, 1.05, "z = "+f"{z_val:.0f}", fontsize=30, 
+    ax[z_idx].text(0.1, 1.05, r"$z = "+f"{z_val:.0f}"+r"$", 
         bbox=dict(facecolor='white', edgecolor='black', pad=10.0))
 
-    if z_idx==0:    
-        pass 
-    elif z_idx==1: 
-        ax[z_idx].set_ylabel(r'$P_{\rm m}/P_{\mathrm{m, }\Lambda \mathrm{CDM}}$',
-            fontsize=40)
-    elif z_idx==2: 
-        ax[z_idx].legend(fontsize=30, loc='lower left')
-        ax[z_idx].set_xlabel(r"$k$ [Mpc$^{-1}$]", fontsize=40) 
+#    if z_idx==0:    
+#        pass 
+#    elif z_idx==1: 
+#        ax[z_idx].set_ylabel(r'$P_{\rm m}/P_{\mathrm{m, }\Lambda \mathrm{CDM}}$')
+#    elif z_idx==2: 
+#        ax[z_idx].legend(loc='lower left')
+#        ax[z_idx].set_xlabel(r"$k {\rm ~[Mpc}^{-1}{\rm ]}$") 
+
+fig.text(0.001, 0.5, r'$P_{\rm m}/P_{\mathrm{m, }\Lambda \mathrm{CDM}}$',
+    rotation='vertical', va='center')
+fig.text(0.555, 0.01, r"$k {\rm ~[Mpc}^{-1}{\rm ]}$",
+    ha='center', rotation='horizontal')
 
 plt.savefig(rfpath+"plots/Figure_6.png")
     

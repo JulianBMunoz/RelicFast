@@ -2,21 +2,40 @@
 ####         USER INPUTS
 ######################################################
 
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy 
 import seaborn as sns
 import subprocess
-
 from matplotlib.lines import Line2D
+from matplotlib import rc
 
 sns.set()
 sns.set_style(style='white')
-from matplotlib import rc
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 60,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 50],
+    'figure.subplot.left': 0.13,
+    'figure.subplot.right': 0.98,
+    'figure.subplot.top': 0.98,
+    'figure.subplot.bottom': 0.06,
+    #"figure.constrained_layout.use" : True, 
+    #"figure.constrained_layout.wspace": 0.1,
+    "savefig.pad_inches" : 0.1
 
+})
 use_existing_data=True
 data_save_level=2
 ######################################################
@@ -278,7 +297,6 @@ colors = sns.color_palette("icefire", 2*len(redshifts)+1)
 
 fig, ax = plt.subplots(len(m_ax), 1,
     sharex=True,
-    figsize=(20., 7.5*len(m_ax)),
     gridspec_kw={'height_ratios': [1]*len(m_ax)}
 )
 fig.subplots_adjust(hspace=0)
@@ -311,11 +329,11 @@ for m_idx, m_val in enumerate(m_ax):
             zorder=(len(m_ax)*len(redshifts)+5)
         )
         ax[m_idx].set_xscale('log')
-        ax[m_idx].tick_params(axis='y', labelsize=30)
+        ax[m_idx].tick_params(axis='both')
+        ax[m_idx].set_yticks([1.00, 1.01, 1.02, 1.03])
         ax[m_idx].text(
-            np.power(10., -1.3), 1., 
-            r"$m_\phi = 10^{"+f"{np.log10(m_val):.0f}"+r"}$ eV", 
-            fontsize=30, 
+            np.power(10., -1.2), 1., 
+            r"$m_\phi = 10^{"+f"{np.log10(m_val):.0f}"+r"} \rm{~eV}$", 
             bbox=dict(facecolor='white', edgecolor='black', pad=10.0)
         ) 
         if (z_idx==(len(redshifts)-1)):
@@ -332,20 +350,19 @@ for m_idx, m_val in enumerate(m_ax):
             pass 
             #pt.set_label(r"$k_{\rm fs}$")
         #if m_idx==0:
-        #    ax[m_idx].legend(fontsize=30, loc="upper left")
+        #    ax[m_idx].legend(loc="upper left")
         if (m_idx==(len(m_ax)-1)): 
-            ax[m_idx].set_xlabel(r"k [Mpc$^{-1}$]", fontsize=40)
+            ax[m_idx].set_xlabel(r"$k {\rm ~[Mpc}^{-1}{\rm ]}$")
         if (m_idx==int(len(m_ax)/2)): 
-            ax[m_idx].set_ylabel(r"$b_1^L(k)~/~b_1^L(k_{*})$", fontsize=40)            
+            ax[m_idx].set_ylabel(r"$b_1^L(k)~/~b_1^L(k_{\rm ref})$")            
 fig.subplots_adjust(hspace=0)
-plt.xticks(fontsize=30)
+plt.xticks()
 plt.savefig(rfpath+"plots/Figure_10.png")
 
 colors = sns.color_palette("icefire", 2*len(redshifts)+1)
 
 fig, ax = plt.subplots(len(m_ax), 1,
     sharex=True,
-    figsize=(20., 7.5*len(m_ax)),
     gridspec_kw={'height_ratios': [1]*len(m_ax)}
 )
 fig.subplots_adjust(hspace=0)
@@ -381,7 +398,6 @@ for m_idx, m_val in enumerate(m_ax):
         #ax[m_idx].text(
         #    np.power(10., -0.6), 1., 
         #    r"$m_\phi = 10^{"+f"{np.log10(m_val):.0f}"+r"}$ eV", 
-        #    fontsize=15, 
         #    bbox=dict(facecolor='white', edgecolor='black', pad=10.0)
         #)  
         #if (z_idx==(len(redshifts)-1)):
@@ -396,11 +412,11 @@ for m_idx, m_val in enumerate(m_ax):
         if ((m_idx==0) and (z_idx==0)): 
             pt.set_label(r"$k_{\rm fs}$")
         if m_idx==0:
-            ax[m_idx].legend(fontsize=8, loc="upper left")
+            ax[m_idx].legend(loc="upper left")
         if (m_idx==(len(m_ax)-1)): 
-            ax[m_idx].set_xlabel(r"k [Mpc$^{-1}$]", fontsize=15)
+            ax[m_idx].set_xlabel(r"$k {\rm ~[Mpc}^{-1}{\rm ]}$")
         if (m_idx==int(len(m_ax)/2)): 
-            ax[m_idx].set_ylabel(r"$b_1^L(k)$", fontsize=15)
+            ax[m_idx].set_ylabel(r"$b_1^L(k)$")
             
 fig.subplots_adjust(hspace=0)
 plt.savefig(rfpath+"plots/Figure_10b.png")

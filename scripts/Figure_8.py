@@ -2,20 +2,37 @@
 ####         USER INPUTS
 ######################################################
 
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy 
 import seaborn as sns
 import subprocess
-
 from matplotlib.lines import Line2D
+from matplotlib import rc
 
 sns.set()
 sns.set_style(style='white')
-from matplotlib import rc
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 110,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 30],
+    "figure.constrained_layout.use" : True, 
+    "figure.constrained_layout.wspace": 0.1,
+    "savefig.pad_inches" : 0.1
+
+})
+
 ######################################################
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
@@ -200,7 +217,6 @@ for m_idx, m_val in enumerate(m_ax):
     
         pm_idx = np.argmin(np.abs(z_vals - redshift))
         print('Requested/found redshift: ', redshift, z_vals[pm_idx])
-        print('Loading: ')
         print('\t '+rfpath_boltzmannsuffix+'_matterpower_'+str(pm_idx+1)+'.dat')
         print('\t '+rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_vals[pm_idx]:.3f}')
         
@@ -232,7 +248,7 @@ for m_idx, m_val in enumerate(m_ax):
 colors = sns.color_palette('magma', len(m_ax))
 kplot = np.geomspace(10**-4.0, 0.1, 100)
 
-fig, ax = plt.subplots(1, 1, figsize=(20., 15.))
+fig, ax = plt.subplots(1, 1)
 for m_idx, m_val in enumerate(m_ax): 
     for oax_idx, oax_val in enumerate(omega_ax): 
         k_vals = relicfast_pss[m_idx*len(omega_ax)+oax_idx][:, 0]
@@ -271,7 +287,7 @@ for m_idx, m_val in enumerate(m_ax):
             ax.plot(#Halo 
                 kplot,
                 yplot2, 
-                label=(r"$m_\phi = 10^{"+f"{np.log10(m_val):.0f}"+r"}$ eV"), 
+                label=(r"$m_\phi = 10^{"+f"{np.log10(m_val):.0f}"+r"} {\rm ~eV}$"), 
                 color=colors[m_idx], 
                 linewidth=5.,
                 linestyle='solid'
@@ -281,15 +297,15 @@ ax.set_xlim((min(kplot), max(kplot)))
 #ax.plot([0.7*0.015, 0.7*0.015], [0.999, 1.008], color='red', label=r'$k_{eq}$')
 #ax.plot([0.024, 0.024], [0.999, 1.008], color='blue', label=r'$k_{*}$')
 ax.set_xscale('log')
-ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=40)
-ax.set_ylabel(r'$R(k)/R(k_{\rm ref})$', fontsize=40)
-ax.set_ylim((0.7, 1.002))
-ax.tick_params(axis='both', labelsize=30)
-ax.legend(fontsize=30)
+ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$')
+ax.set_ylabel(r'$R(k)/R(k_{\rm ref})$')
+ax.set_ylim((0.69, 1.01))
+ax.tick_params(axis='both')
+ax.legend()
 ax.grid(False)
 plt.savefig(rfpath+"plots/Figure_8.png")
 
-#fig, ax = plt.subplots(1, 1, figsize=(20, 20))
+#fig, ax = plt.subplots(1, 1)
 #for oax_idx, oax_val in enumerate(omega_ax): 
 #    k_vals = relicfast_pss[oax_idx][:, 0]
 #    pmm_vals = relicfast_pss[oax_idx][:, 1]
@@ -325,10 +341,10 @@ plt.savefig(rfpath+"plots/Figure_8.png")
 ##ax.plot([0.7*0.015, 0.7*0.015], [0.999, 1.008], color='red', label=r'$k_{eq}$')
 ##ax.plot([0.024, 0.024], [0.999, 1.008], color='blue', label=r'$k_{*}$')
 #ax.set_xscale('log')
-#ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=40)
-#ax.set_ylabel(r'$R(k)$', fontsize=40)
-#ax.tick_params(axis='both', labelsize=30)
-#ax.legend(fontsize=30)
+#ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$')
+#ax.set_ylabel(r'$R(k)$')
+#ax.tick_params(axis='both')
+#ax.legend()
 #ax.grid(False)
-#ax.set_title(r"$m_\phi = 10^{"+f"{np.log10(m_ax):.1f}"+r"}$ eV", fontsize=40)
+#ax.set_title(r"$m_\phi = 10^{"+f"{np.log10(m_ax):.1f}"+r"}$ eV")
 #plt.savefig(rfpath+"plots/Figure_8b_logmax"+f"{np.log10(m_ax):.1f}"+".png")

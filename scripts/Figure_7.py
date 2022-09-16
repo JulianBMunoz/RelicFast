@@ -5,23 +5,36 @@
 ####         USER INPUTS
 ######################################################
 
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy 
 import seaborn as sns
 import subprocess
-
 from matplotlib.lines import Line2D
+from matplotlib import rc
 
 sns.set()
 sns.set_style(style='white')
-from matplotlib import rc
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 110,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 30],
+    "figure.constrained_layout.use" : True, 
+    "figure.constrained_layout.wspace": 0.1,
+    "savefig.pad_inches" : 0.1
 
-data_save_level = 2
-
+})
 ######################################################
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
@@ -208,8 +221,6 @@ for ax_idx, ax_val in enumerate(m_ax):
     #pm_idx = np.argmin(np.abs(z_vals - 0.0))
     print('Requested/found redshift: ', redshift, z_vals[pm_idx])
     
-    print('Loading: ')
-    
     print('\t '+rfpath_boltzmannsuffix+'_matterpower_'+str(pm_idx+1)+'.dat')
     print('\t '+rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_vals[pm_idx]:.3f}')
     
@@ -241,7 +252,7 @@ kplot = np.geomspace(10**-3.9, 0.6, 100)
 
 
 # eulerian bias plots
-#plt.figure(figsize=(15, 10))
+#plt.figure()
 #plt.xscale('log')
 #for ax_idx, ax_val in enumerate(m_ax): 
 #    if ((ax_idx==0) or (ax_idx==(len(m_ax)-1))): 
@@ -264,16 +275,16 @@ kplot = np.geomspace(10**-3.9, 0.6, 100)
 #    plt.plot([kfs[ax_idx], kfs[ax_idx]], [min(yplot), max(yplot)], color=tuple(rgb), linestyle='dashed')
 #    
 #plt.plot([0.7*0.015, 0.7*0.015], [1., 1.01], color='red', label=r'$k_{eq}$')
-#plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=30)
-#plt.ylabel(r'$b_1(k)/b_1(k_{\rm ref})$', fontsize=30)
-#plt.title(r'$\omega_\chi = 0.05\times\omega_{cdm},  ~z = 0.65, ~\Sigma M_\nu = 0$ eV', fontsize=30)
-##plt.legend(lines, labels, fontsize=15)
-#plt.legend(fontsize=25)
+#plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$')
+#plt.ylabel(r'$b_1(k)/b_1(k_{\rm ref})$')
+#plt.title(r'$\omega_\chi = 0.05\times\omega_{cdm},  ~z = 0.65, ~\Sigma M_\nu = 0$ eV')
+##plt.legend(lines, labels)
+#plt.legend()
 ##plt.yscale('log')
 #plt.grid(False, which='both', axis='both')
 
 # lagrangian bias plots 
-fig, ax = plt.subplots(1,1, figsize=(20, 15))
+fig, ax = plt.subplots(1,1)
 ax.set_xscale('log')
 for ax_idx, ax_val in enumerate(m_ax): 
     #if ((ax_idx==0) or (ax_idx==(len(m_ax)-1))):
@@ -295,7 +306,7 @@ for ax_idx, ax_val in enumerate(m_ax):
     ax.plot(
         kplot, 
         yplot, 
-        label=r'$m_{\phi}= 10^{'+f'{np.log10(ax_val):.0f}'+r'}$ eV', 
+        label=r'$m_{\phi}= 10^{'+f'{np.log10(ax_val):.0f}'+r'} {\rm ~eV}$', 
         color=tuple(rgb), 
         linewidth=5.,
         zorder=2)
@@ -314,16 +325,17 @@ for ax_idx, ax_val in enumerate(m_ax):
     
 ax.plot(
     [0.70148*0.015, 0.70148*0.015], 
-    [1., 1.07], 
+    [0.9, 1.08], 
     color='red', 
     label=r'$k_{\rm eq}$',
     linewidth=5.)
 
-ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=40)
-ax.set_ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$', fontsize=40)
-ax.tick_params(axis='both', labelsize=30)
+ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$')
+ax.set_ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$')
+ax.tick_params(axis='both')
 ax.set_xlim((1.0e-4, 1.0e0))
-ax.legend(fontsize=30)
+ax.set_ylim((0.997, 1.07))
+ax.legend()
 ax.grid(False, which='both', axis='both')
 plt.savefig(rfpath+"plots/Figure_7.png") 
 

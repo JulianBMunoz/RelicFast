@@ -1,24 +1,45 @@
+######################################################
+####         USER INPUTS
+######################################################
+
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
-from matplotlib import rc
 import numpy as np
 import os
-import scipy
+import scipy 
 import seaborn as sns
 import subprocess
-
 from matplotlib.lines import Line2D
+from matplotlib import rc
 
 sns.set()
 sns.set_style(style='white')
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 110,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 30],
+    "figure.constrained_layout.use" : True, 
+    "figure.constrained_layout.wspace": 0.1,
+    "savefig.pad_inches" : 0.1
+
+})
+use_existing_data=True
+data_save_level=2
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
 acpath = (rfpath+"axionCAMB_Current/")
 acpath_output = "Boltzmann_2/transfer_files_0/"
 
-load_data=True
-
+M_ax = np.logspace(-32.5, -22.0, 106)
 M_nu = 0. # Units: eV
 redshift = 0.7
 kmin = 5.0e-5
@@ -37,19 +58,23 @@ Omega_ax = (
     *omega_cdm_LCDM
     /np.power(h_lcdm, 2.)
 )
+
+######################################################
+####         INTERNAL
+######################################################
+
 omega_ax = Omega_ax*np.power(h_lcdm, 2.)
 omega_cdm = omega_cdm_LCDM - omega_ax
 
 f_cdm = omega_cdm/(omega_cdm + omega_b_LCDM)
 f_b = omega_b_LCDM/(omega_cdm + omega_b_LCDM)
 
-M_ax = np.logspace(-32.5, -22.0, 106)
 axion_aosc = np.zeros((len(M_ax), len(omega_ax)))
 axion_kfs = np.zeros((len(M_ax), len(omega_ax)))
 
 # Try to load data 
 data_loaded=False
-if (load_data==True): 
+if (use_existing_data==True): 
     m_path = (rfpath+"plots/Figure_1_m_ax.txt")
     omega_path = (rfpath+"plots/Figure_1_omega_ax.txt")
     aosc_path = (rfpath+"plots/Figure_1_axion_aosc.txt")
@@ -122,17 +147,18 @@ if data_loaded==False:
             axion_aosc[m_idx, o_idx] = np.loadtxt("/Users/nicholasdeporzio/Downloads/axion_aosc.dat")
     
     axion_zosc = ((1./axion_aosc)-1.)
-    
-    np.savetxt(rfpath+"plots/Figure_1_m_ax.txt", M_ax)
-    np.savetxt(rfpath+"plots/Figure_1_omega_ax.txt", omega_ax)
-    np.savetxt(rfpath+"plots/Figure_1_axion_aosc.txt", axion_aosc)
-    np.savetxt(rfpath+"plots/Figure_1_axion_zosc.txt", axion_zosc)
-    np.savetxt(rfpath+"plots/Figure_1_axion_kfs.txt", axion_kfs)
+
+    if data_save_level>0:     
+        np.savetxt(rfpath+"plots/Figure_1_m_ax.txt", M_ax)
+        np.savetxt(rfpath+"plots/Figure_1_omega_ax.txt", omega_ax)
+        np.savetxt(rfpath+"plots/Figure_1_axion_aosc.txt", axion_aosc)
+        np.savetxt(rfpath+"plots/Figure_1_axion_zosc.txt", axion_zosc)
+        np.savetxt(rfpath+"plots/Figure_1_axion_kfs.txt", axion_kfs)
 
 
 plot_x = np.geomspace(np.min(M_ax), np.max(M_ax), 100) #Units: [h Mpc^-1]
 colors = sns.color_palette("magma", len(omega_ax))
-fig, ax = plt.subplots(1, 1, figsize=(20, 15))
+fig, ax = plt.subplots(1, 1)
 for o_idx, o_val in enumerate(omega_ax[0:1]):
     osc_interp = scipy.interpolate.interp1d(np.log10(M_ax), np.log10(axion_zosc[:,o_idx]))
     plot_y = np.power(10., osc_interp(np.log10(plot_x)))
@@ -141,7 +167,7 @@ for o_idx, o_val in enumerate(omega_ax[0:1]):
         plot_y,
         #M_ax, 
         #axion_zosc[:,o_idx],
-        label=r'$\Omega_{\phi}/\Omega_{d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}',
+        label=r'$\Omega_{\phi}/\Omega_{d} = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}'+r"$",
         #color=colors[o_idx],
         color="black",
         linewidth=5.0
@@ -154,19 +180,19 @@ ax.plot(plot_x, np.power(10., np.log10(plot_x)*dlogydlogx1 + b1), linestyle='das
 ax.plot(plot_x, np.power(10., np.log10(plot_x)*dlogydlogx2 + b2), linestyle='dashed', color='tab:cyan', linewidth=5)
 ax.set_xscale('log')
 ax.set_yscale('log')
-ax.set_xlabel(r'$m_\phi$ [eV]', fontsize=40)
-ax.set_ylabel(r'$z_{\rm osc}$', fontsize=40)
+ax.set_xlabel(r'$m_\phi ~{\rm [eV]}$')
+ax.set_ylabel(r'$z_{\rm osc}$')
 ax.set_yticks(np.logspace(-1, 6, 8))
 ax.grid(False)
 ax.set_ylim((0.09, 2.0e6))
-ax.tick_params(axis='both', labelsize=25)
+ax.tick_params(axis='both')
 ax_twin = ax.twinx()
 #ax_twin.plot((plot_x), (1./(plot_y+1.)), color='cyan', linestyle='dashed')
 ax_twin.set_xscale('log')
 ax_twin.set_yscale('log')
 ax_twin.grid(False)
-ax_twin.tick_params(axis='both', labelsize=25)
-ax_twin.set_ylabel(r"${a}_{\rm osc}$", fontsize=40)
+ax_twin.tick_params(axis='both')
+ax_twin.set_ylabel(r"${a}_{\rm osc}$")
 ax_twin.set_ylim(ax.get_ylim())
 ax_twin.set_yticks(np.concatenate((
     [np.power(10., -1.*np.log10(0.9)), np.power(10., -1.*np.log10(0.5))], np.logspace(1., 6., 6)))-1.)
@@ -177,10 +203,12 @@ ax_twin.set_yticklabels(
 #ax.legend(fontsize=25)
 plt.savefig(rfpath+"plots/Figure_1.png")
 
-
+######################################################
+####         EXTRA PLOTS
+######################################################
 plot_x = np.geomspace(np.min(M_ax), np.max(M_ax), 100) #Units: [h Mpc^-1]
 colors = sns.color_palette("magma", len(omega_ax))
-fig, ax = plt.subplots(1, 1, figsize=(15, 15))
+fig, ax = plt.subplots(1, 1)
 for o_idx, o_val in enumerate(omega_ax):
     osc_interp = scipy.interpolate.interp1d(np.log10(M_ax), np.log10(axion_zosc[:,o_idx]))
     plot_y = np.power(10., osc_interp(np.log10(plot_x)))
@@ -192,19 +220,19 @@ for o_idx, o_val in enumerate(omega_ax):
         plot_y/norm-1.,
         #M_ax, 
         #axion_zosc[:,o_idx],
-        label=r'$\Omega_{\phi}/\Omega_{d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}',
+        label=r'$\Omega_{\phi}/\Omega_{d} = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}'+r"$",
         color=colors[o_idx],
         linewidth=1.0
     )
 ax.set_xscale('log')
-ax.set_xlabel(r'$M_\phi$ [eV]', fontsize=30)
-ax.set_ylabel(r'$z_{\rm osc}$', fontsize=30)
+ax.set_xlabel(r'$M_\phi {\rm ~[eV]}$')
+ax.set_ylabel(r'$z_{\rm osc}$')
 ax.grid(False)
-ax.tick_params(axis='both', labelsize=25)
+ax.tick_params(axis='both')
 plt.savefig(rfpath+"plots/Figure_1b.png")
 
 
-fig, ax = plt.subplots(1, 1, figsize=(15, 15))
+fig, ax = plt.subplots(1, 1)
 for o_idx, o_val in enumerate(omega_ax[0:1]):
     osc_interp = scipy.interpolate.interp1d(np.log10(M_ax), np.log10(axion_zosc[:,o_idx]))
     plot_y = np.diff(osc_interp(np.log10(plot_x)))/np.diff(np.log10(plot_x))
@@ -214,9 +242,9 @@ for o_idx, o_val in enumerate(omega_ax[0:1]):
         color=colors[o_idx],
         linewidth=5.0
     )
-ax.set_xlabel(r'$\Delta \log{(M_\phi/[{\rm eV}])}$', fontsize=30)
+ax.set_xlabel(r'$\Delta \log{(M_\phi/[{\rm eV}])}$')
 ax.set_xscale('log') 
-ax.set_ylabel(r'$\Delta \log{(z_{\rm osc})}$', fontsize=30)
+ax.set_ylabel(r'$\Delta \log{(z_{\rm osc})}$')
 ax.grid(True, which='both', axis='both')
-ax.tick_params(axis='both', labelsize=25)
+ax.tick_params(axis='both')
 plt.savefig(rfpath+"plots/Figure_1c.png")

@@ -14,9 +14,24 @@ from matplotlib.lines import Line2D
 sns.set()
 sns.set_style(style='white')
 from matplotlib import rc
+import matplotlib.font_manager
 rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 60,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 30],
+    "figure.constrained_layout.use" : True, 
+    "savefig.pad_inches" : 0.1
 
+})
 ######################################################
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
@@ -217,8 +232,6 @@ for mnu_idx, mnu_val in enumerate(Mnu):
     pm_idx = np.argmin(np.abs(z_vals - redshift))
     print('Requested/found redshift: ', redshift, z_vals[pm_idx])
     
-    print('Loading: ')
-    
     print('\t '+rfpath_boltzmannsuffix+'_matterpower_'+str(pm_idx+1)+'.dat')
     print('\t '+rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_vals[pm_idx]:.3f}')
     
@@ -248,7 +261,7 @@ for mnu_idx, mnu_val in enumerate(Mnu):
 
 kplot = np.geomspace(10**-3.9, 0.1, 32)
 
-fig, ax1 = plt.subplots(1, 1, figsize=(20, 20))
+fig, ax1 = plt.subplots(1, 1)
 #fig.subplots_adjust(hspace=0)
 for mnu_idx, mnu_val in enumerate(Mnu): 
     kvals = data_eulbias[mnu_idx][:, 0]
@@ -267,9 +280,9 @@ for mnu_idx, mnu_val in enumerate(Mnu):
     rgb[2] = (len(Mnu)-1-mnu_idx) * (255/(len(Mnu)-1)) / 255.
 
     if mnu_idx==0:
-        labeltxt = r"$\phi$ + Massless Neutrinos"
+        labeltxt = r"$\phi ~+~ \rm{Massless Neutrinos}$"
     elif mnu_idx==1:
-        labeltxt = r"Massive Neutrinos"
+        labeltxt = r"${\rm Massive Neutrinos}$"
  
     ax1.plot(
         kplot, 
@@ -282,10 +295,10 @@ ax1.set_xlim((min(kplot), max(kplot)))
 #ax.plot([0.7*0.015, 0.7*0.015], [0.999, 1.008], color='red', label=r'$k_{eq}$')
 #ax.plot([0.024, 0.024], [0.999, 1.008], color='blue', label=r'$k_{*}$')
 ax1.set_xscale('log')
-ax1.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=40)
-ax1.set_ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$', fontsize=40)
-ax1.tick_params(axis='both', labelsize=30)
-ax1.legend(fontsize=30)
+ax1.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$')
+ax1.set_ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$')
+ax1.tick_params(axis='both')
+ax1.legend()
 ax1.grid(False)
 #plt.savefig(rfpath+"plots/Figure_10.png")
 
@@ -515,8 +528,6 @@ for mnu_idx, mnu_val in enumerate(Mnu):
     pm_idx = np.argmin(np.abs(z_vals - redshift))
     print('Requested/found redshift: ', redshift, z_vals[pm_idx])
     
-    print('Loading: ')
-    
     print('\t '+rfpath_boltzmannsuffix+'_matterpower_'+str(pm_idx+1)+'.dat')
     print('\t '+rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_vals[pm_idx]:.3f}')
     
@@ -561,9 +572,9 @@ for mnu_idx, mnu_val in enumerate(Mnu):
     rgb[2] = (len(Mnu)-1-mnu_idx) * (255/(len(Mnu)-1)) / 255.
 
     if mnu_idx==0:
-        labeltxt = r"$\phi$ + Massless Neutrinos"
+        labeltxt = r"$\phi {\rm ~+~ Massless Neutrinos}$"
     elif mnu_idx==1:
-        labeltxt = r"Massive Neutrinos"
+        labeltxt = r"${\rm Massive Neutrinos}$"
  
     ax1.plot(
         kplot, 

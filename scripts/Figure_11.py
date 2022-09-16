@@ -10,14 +10,10 @@ rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/
 
 
 ######################################################
-####    INTERNAL - DO NOT EDIT BELOW HERE 
+####         USER INPUTS
 ######################################################
 
-# Import existing data or generate new data
-use_existing_data = True 
-data_save_level = 2
-
-# Import libraries
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -25,13 +21,30 @@ import scipy
 import seaborn as sns
 import subprocess
 from matplotlib.lines import Line2D
-
-# Plot settings
-sns.set()
-sns.set_style("white")
 from matplotlib import rc
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+
+sns.set()
+sns.set_style(style='white')
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 60,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 30],
+    "figure.constrained_layout.use" : True, 
+    "figure.constrained_layout.wspace": 0.1,
+    "savefig.pad_inches" : 0.1
+
+})
+use_existing_data=True
+data_save_level=2
 
 # Set cosmological parameters 
 omega_cdm_LCDM = 0.1127 # Units: none
@@ -245,7 +258,7 @@ print("Spontaneous failures: ", np.array(spontaneous_failures, dtype='int'))
 
 def fmt(x):
     s = f"{(x-1.)*100.:.0f}"
-    return rf"{s} \%" if plt.rcParams["text.usetex"] else f"{s} %"
+    return rf"${s} \%$" if plt.rcParams["text.usetex"] else f"{s} %"
 
 for kidx, kval in enumerate(krefs):
     if data_save_level>0:  
@@ -261,14 +274,13 @@ for kidx, kval in enumerate(krefs):
     #yn = np.arange(np.min(omega_ax/omega_cdm_LCDM), np.max(omega_ax/omega_cdm_LCDM), .001)
     #Z = interp(xn,yn)
     #X, Y = np.meshgrid(xn, yn) 
-    fig, ax = plt.subplots(1,1, figsize=(20, 15))
+    fig, ax = plt.subplots(1,1)
     hmap = ax.pcolormesh(X, Y, Z, vmin=np.min(Z), vmax=np.max(Z), shading="auto")
-    ax.tick_params(axis='both', labelsize=30)
-    ax.set_xlabel(r"$\log{M_\phi / {\rm [eV]}}$", fontsize=30)
-    ax.set_ylabel("$\omega_\phi / \omega_d$", fontsize=30)
+    ax.tick_params(axis='both')
+    ax.set_xlabel(r"$\log{M_\phi / {\rm [eV]}}$")
+    ax.set_ylabel("$\omega_\phi / \omega_d$")
     ax.set_ylim((0.,0.1)) 
     cbar = plt.colorbar(hmap)
-    cbar.ax.tick_params(labelsize=30) 
     plt.savefig(rfpath+"plots/Figure_11_b1l_logk"+f"{np.log10(kval):.3f}"+".png")
 
     Z = np.transpose(np.nan_to_num(b1l_step[kidx]))
@@ -278,20 +290,19 @@ for kidx, kval in enumerate(krefs):
     #yn = np.arange(np.min(omega_ax/omega_cdm_LCDM), np.max(omega_ax/omega_cdm_LCDM), .001)
     #Z = interp(xn,yn)
     #X, Y = np.meshgrid(xn, yn) 
-    fig, ax = plt.subplots(1,1, figsize=(20, 15))
+    fig, ax = plt.subplots(1,1)
     hmap = ax.pcolormesh(X, Y, Z, vmin=np.min(b1l_step), vmax=np.max(b1l_step), shading="auto")
     if (np.max(Z)>1.01):
         CS = ax.contour(X, Y, Z, np.linspace(1.01, 1.05, 5), colors='white')
-        ax.clabel(CS, CS.levels, inline=True, fmt=fmt, fontsize=30)
-    ax.tick_params(axis='both', labelsize=30)
-    ax.set_xlabel(r"$\log{\left(M_\phi ~/~ {\rm [eV]}\right)}$", fontsize=40)
-    ax.set_ylabel("$\omega_\phi ~/~ \omega_d$", fontsize=40)
+        ax.clabel(CS, CS.levels, inline=True, fmt=fmt)
+    ax.tick_params(axis='both')
+    ax.set_xlabel(r"$\log{\left(M_\phi ~/~ {\rm [eV]}\right)}$")
+    ax.set_ylabel("$\omega_\phi ~/~ \omega_d$")
     ax.set_ylim((0.,0.1)) 
     cbar = plt.colorbar(hmap)
     cbar.set_label(label=(
-        r"$b^1_L(k)~/~b^1_L(k_*)$"), size=40
+        r"$b^1_L(k)~/~b^1_L(k_{\rm ref})$")#, size=50
     )
-    cbar.ax.tick_params(labelsize=30) 
     plt.savefig(rfpath+"plots/Figure_11_b1lstep_logk"+f"{np.log10(kval):.3f}"+".png")
     if (kidx==(len(krefs)-1)): 
         plt.savefig(rfpath+"plots/Figure_11.png") 

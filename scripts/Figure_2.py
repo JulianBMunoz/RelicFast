@@ -1,17 +1,39 @@
+######################################################
+####         USER INPUTS
+######################################################
+
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy 
 import seaborn as sns
 import subprocess
-from matplotlib import rc 
 from matplotlib.lines import Line2D
+from matplotlib import rc
+
 from matplotlib.patches import ConnectionPatch
 
 sns.set()
 sns.set_style(style='white')
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 110,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 30],
+    "figure.constrained_layout.use" : True,
+    "figure.constrained_layout.wspace": 0.1, 
+    "savefig.pad_inches" : 0.1
+
+})
 
 axion_rho_of_a = []
 
@@ -121,10 +143,9 @@ for o_idx, o_val in enumerate(omega_ax):
 textvars = []
 colors = sns.color_palette("magma", len(omega_ax))
 
-fig, ax1 = plt.subplots(1, 1, 
+fig, ax1 = plt.subplots(1, 1 
     #sharex=True, 
     #gridspec_kw={'height_ratios': [3, 1]},
-    figsize=(20, 20) 
 )
 #fig.subplots_adjust(hspace=0)
 ax2 = fig.add_axes([0.5, 0.3, 0.35, 0.25])
@@ -143,7 +164,7 @@ for o_idx, o_val in enumerate(omega_ax):
     ax1.plot(
         np.log10(avals), 
         rhovals*np.power(10., -10.), 
-        label=r'$\omega_\phi/\omega_{\rm d}$ = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}', 
+        label=r'$\omega_\phi/\omega_{\rm d} = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}'+r"$", 
         linewidth=5.0, 
         color=colors[o_idx]
     )
@@ -189,23 +210,22 @@ for o_idx, o_val in enumerate(omega_ax):
 
 ax1.set_xscale('linear')
 ax1.set_yscale('linear')
-ax1.set_xlabel(r'$\log({a})$', fontsize=40)
-ax1.set_ylabel(r'$\omega_\phi ~/~ 10^{10}$', fontsize=40)
+ax1.set_xlabel(r'$\log({a})$')
+ax1.set_ylabel(r'$\omega_\phi ~/~ 10^{10}$')
 ax1.set_xlim((-6, 0.1))
-ax1.tick_params(axis='both', labelsize=30)
-#ax1.set_title(r'$M_\phi = 10^{-26}$ eV', fontsize=30)
-ax1.legend(fontsize=30, loc='upper right')
+ax1.tick_params(axis='both')
+ax1.legend(loc='upper right')
 ax1.grid(False, which='both', axis='both')
 
 ax2.set_xscale('linear')
 ax2.set_yscale('linear')
-ax2.set_xlabel(r'$\log({a})$', fontsize=40)
-ax2.set_ylabel(r'$\log(\omega_\phi/\omega_{\rm d})$', fontsize=40)
+ax2.set_xlabel(r'$\log({a})$')
+ax2.set_ylabel(r'$\log(\omega_\phi/\omega_{\rm d})$')
 ax2.set_xlim((-1, 0.1))
 ax2.set_ylim((-2.5, 1.8))
-ax2.tick_params(axis='both', labelsize=30)
-#ax2.set_title(r'$M_\chi = $'+f'{M_ax_fixed:.3e}', fontsize=15)
-#ax2.set_legend(fontsize=15, loc='upper left')
+ax2.tick_params(axis='both')
+#ax2.set_title(r'$M_\chi = $'+f'{M_ax_fixed:.3e}')
+#ax2.set_legend(loc='upper left')
 ax2.grid(False, which='both', axis='both')
 
 con1 = ConnectionPatch(

@@ -5,23 +5,43 @@
 ####         USER INPUTS
 ######################################################
 
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy 
 import seaborn as sns
 import subprocess
-
 from matplotlib.lines import Line2D
+from matplotlib import rc
 
 sns.set()
 sns.set_style(style='white')
-from matplotlib import rc
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 110,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 40],
+    'figure.subplot.left': 0.13,
+    'figure.subplot.right': 0.98,
+    'figure.subplot.top': 0.98,
+    'figure.subplot.bottom': 0.06,
+    #"figure.constrained_layout.use" : True, 
+    #"figure.constrained_layout.wspace": 0.1,
+    "savefig.pad_inches" : 0.1
 
-data_save_level = 2
-use_existing_data = True
+})
+use_existing_data=True
+data_save_level=2
+
 ######################################################
 
 rfpath = "/Users/nicholasdeporzio/Documents/Academic/Projects/P005_FuzzyCdmBias/RelicFast.nosync/"
@@ -232,8 +252,6 @@ for ax_idx, ax_val in enumerate(m_ax):
             #pm_idx = np.argmin(np.abs(z_vals - 0.0))
             print('Requested/found redshift: ', redshift, z_vals[pm_idx])
             
-            print('Loading: ')
-            
             print('\t '+rfpath_boltzmannsuffix+'_matterpower_'+str(pm_idx+1)+'.dat')
             print('\t '+rfpath_boltzmannsuffix+'_transfer_out_z'+f'{z_vals[pm_idx]:.3f}')
             
@@ -264,7 +282,7 @@ for ax_idx, ax_val in enumerate(m_ax):
 
 
 # eulerian bias plots
-#plt.figure(figsize=(15, 10))
+#plt.figure()
 #plt.xscale('log')
 #for ax_idx, ax_val in enumerate(m_ax): 
 #    if ((ax_idx==0) or (ax_idx==(len(m_ax)-1))): 
@@ -287,11 +305,11 @@ for ax_idx, ax_val in enumerate(m_ax):
 #    plt.plot([kfs[ax_idx], kfs[ax_idx]], [min(yplot), max(yplot)], color=tuple(rgb), linestyle='dashed')
 #    
 #plt.plot([0.7*0.015, 0.7*0.015], [1., 1.01], color='red', label=r'$k_{eq}$')
-#plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$', fontsize=30)
-#plt.ylabel(r'$b_1(k)/b_1(k_{\rm ref})$', fontsize=30)
-#plt.title(r'$\omega_\chi = 0.05\times\omega_{cdm},  ~z = 0.65, ~\Sigma M_\nu = 0$ eV', fontsize=30)
-##plt.legend(lines, labels, fontsize=15)
-#plt.legend(fontsize=25)
+#plt.xlabel(r'$k ~[{\rm Mpc}^{-1}]$')
+#plt.ylabel(r'$b_1(k)/b_1(k_{\rm ref})$')
+#plt.title(r'$\omega_\chi = 0.05\times\omega_{cdm},  ~z = 0.65, ~\Sigma M_\nu = 0$ eV')
+##plt.legend(lines, labels)
+#plt.legend()
 ##plt.yscale('log')
 #plt.grid(False, which='both', axis='both')
 
@@ -299,7 +317,7 @@ for ax_idx, ax_val in enumerate(m_ax):
 kplot = np.geomspace(10**-4.0, 0.6, 100)
 lstyles = ["solid", "dashed", "dotted"]
 colors=sns.color_palette("magma", len(m_ax))
-fig, (ax1, ax2) = plt.subplots(2,1, figsize=(20, 20), sharex=True)
+fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
 fig.subplots_adjust(hspace=0)
 for ax_idx, ax_val in enumerate(m_ax): 
     for mh_idx, mh_val in enumerate(m_halo):
@@ -323,7 +341,7 @@ for ax_idx, ax_val in enumerate(m_ax):
             ax1.plot(
                 kplot, 
                 yplot1, 
-                label=r'$m_{\phi}= 10^{'+f'{np.log10(ax_val):.0f}'+r'}$ eV', 
+                label=r'$m_{\phi}= 10^{'+f'{np.log10(ax_val):.0f}'+r'} {\rm ~eV}$', 
                 color=colors[ax_idx], 
                 linewidth=5.,
                 linestyle=lstyles[mh_idx])
@@ -368,20 +386,22 @@ for ax_idx, ax_val in enumerate(m_ax):
     #    linewidth=5.)
 
 ax1.set_xscale('log')
-ax1.set_ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$', fontsize=40)
-ax1.tick_params(axis='both', labelsize=30)
-ax1.set_xlim((1.0e-4, 1.0e0))
-ax1.legend(fontsize=30)
+ax1.set_ylabel(r'$b_1^L(k)/b_1^L(k_{\rm ref})$')
+ax1.tick_params(axis='both')
+ax1.set_xlim((1.0e-4, max(kplot)))
+ax1.set_ylim((0.997, 1.059))
+ax1.legend()
 ax1.grid(False, which='both', axis='both')
 ax2.set_xscale('log')
-ax2.set_ylabel(r'$b_1(k)/b_1(k_{\rm ref})$', fontsize=40)
-ax2.tick_params(axis='both', labelsize=30)
-ax2.set_xlim((1.0e-4, 1.0e0))
-ax2.legend(fontsize=30)
+ax2.set_ylabel(r'$b_1(k)/b_1(k_{\rm ref})$')
+ax2.tick_params(axis='both')
+ax2.set_xlim((1.0e-4, max(kplot)))
+ax2.set_ylim((0.997, 1.059))
+ax2.legend()
 ax2.grid(False, which='both', axis='both')
 
-fig.text(0.5, 0.04, r'$k ~[{\rm Mpc}^{-1}]$',
-    ha='center', rotation='horizontal', fontsize=40)
+fig.text(0.555, 0.01, r'$k ~[{\rm Mpc}^{-1}]$',
+    ha='center', rotation='horizontal')
 
 plt.savefig(rfpath+"plots/Figure_9.png") 
 

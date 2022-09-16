@@ -1,17 +1,37 @@
+######################################################
+####         USER INPUTS
+######################################################
+
+import matplotlib.font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy 
 import seaborn as sns
 import subprocess
-
 from matplotlib.lines import Line2D
+from matplotlib import rc
 
 sns.set()
 sns.set_style(style='white')
-from matplotlib import rc
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('font', **{'serif': ['Computer Modern']})
 rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+matplotlib.rcParams.update({
+    "font.weight" : "bold",
+    "font.size" : 110,
+    "axes.labelsize" : 110,
+    "axes.labelpad" : 8.0,  
+    "xtick.labelsize" : 60, 
+    "ytick.labelsize" : 60, 
+    "legend.fontsize" : 60, 
+    "figure.dpi" : 300, 
+    "figure.figsize" : [30, 30],
+    "figure.constrained_layout.use" : True, 
+    "figure.constrained_layout.wspace": 0.1,
+    "savefig.pad_inches" : 0.1
+
+})
 
 axion_rho_of_a = []
 
@@ -151,7 +171,7 @@ for m_idx, m_val in enumerate(M_ax):
 
 textvars = []
 colors = sns.color_palette("magma", len(M_ax))
-plt.figure(figsize=(20, 15))
+plt.figure()
 for m_idx, m_val in enumerate(M_ax): 
     avals = axion_rho_of_a[m_idx][:, 0] 
     rhovals = axion_rho_of_a[m_idx][:, 1] 
@@ -182,7 +202,7 @@ for m_idx, m_val in enumerate(M_ax):
     plt.plot(
         np.log10(avals), 
         np.log10(rhovals), 
-        label=(r'$M_\phi = 10^{'+f'{int(np.log10(m_val)):d}'+r'}$ eV'), 
+        label=(r'$M_\phi = 10^{'+f'{int(np.log10(m_val)):d}'+r'} {\rm ~eV}$'), 
         linewidth=5.0, 
         color=colors[m_idx]
     )
@@ -190,13 +210,13 @@ for m_idx, m_val in enumerate(M_ax):
 
 plt.xscale('linear')
 plt.yscale('linear')
-plt.xlabel(r'$\log({a})$', fontsize=40)
-plt.ylabel(r'$\log(\omega_\phi)$', fontsize=40)
+plt.xlabel(r'$\log({a})$')
+plt.ylabel(r'$\log(\omega_\phi)$')
 plt.xlim((-7, 0.1))
-plt.xticks(fontsize=30)
-plt.yticks(fontsize=30)
-#plt.title(r'$M_\chi = $'+f'{M_ax_fixed:.3e}', fontsize=15)
-plt.legend(fontsize=30, loc='upper right')
+plt.xticks()
+plt.yticks()
+#plt.title(r'$M_\chi = $'+f'{M_ax_fixed:.3e}')
+plt.legend(loc='upper right')
 plt.grid(False, which='both', axis='both')
 plt.savefig(rfpath+"plots/Figure_3.png") 
 
