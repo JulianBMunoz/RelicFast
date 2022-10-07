@@ -25,7 +25,7 @@ matplotlib.rcParams.update({
     "xtick.labelsize" : 60, 
     "ytick.labelsize" : 60, 
     "legend.fontsize" : 60, 
-    "figure.dpi" : 300, 
+    "figure.dpi" : 100, 
     "figure.figsize" : [30, 30],
     "figure.constrained_layout.use" : True, 
     "figure.constrained_layout.wspace": 0.1,

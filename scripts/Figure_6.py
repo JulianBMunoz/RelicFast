@@ -19,13 +19,13 @@ rc('text', usetex=True)
 matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
 matplotlib.rcParams.update({
     "font.weight" : "bold",
-    "font.size" : 110,
+    "font.size" : 60,
     "axes.labelsize" : 110,
     "axes.labelpad" : 8.0,  
     "xtick.labelsize" : 60, 
     "ytick.labelsize" : 60, 
     "legend.fontsize" : 60, 
-    "figure.dpi" : 300, 
+    "figure.dpi" : 100, 
     "figure.figsize" : [30, 30],
     'figure.subplot.left': 0.13,
     'figure.subplot.right': 0.98,
@@ -381,9 +381,9 @@ for z_idx, z_val in enumerate(redshifts):
 #        ax[z_idx].set_xlabel(r"$k {\rm ~[Mpc}^{-1}{\rm ]}$") 
 
 fig.text(0.001, 0.5, r'$P_{\rm m}/P_{\mathrm{m, }\Lambda \mathrm{CDM}}$',
-    rotation='vertical', va='center')
+    rotation='vertical', va='center', fontsize=110)
 fig.text(0.555, 0.01, r"$k {\rm ~[Mpc}^{-1}{\rm ]}$",
-    ha='center', rotation='horizontal')
+    ha='center', rotation='horizontal', fontsize=110)
 
 plt.savefig(rfpath+"plots/Figure_6.png")
     

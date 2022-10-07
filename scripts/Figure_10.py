@@ -25,7 +25,7 @@ matplotlib.rcParams.update({
     "xtick.labelsize" : 60, 
     "ytick.labelsize" : 60, 
     "legend.fontsize" : 60, 
-    "figure.dpi" : 300, 
+    "figure.dpi" : 100, 
     "figure.figsize" : [30, 50],
     'figure.subplot.left': 0.13,
     'figure.subplot.right': 0.98,
@@ -340,9 +340,10 @@ for m_idx, m_val in enumerate(m_ax):
             ax[m_idx].plot(
                 [0.70148*0.015, 0.70148*0.015],
                 [0.9, 1.1],
-                color='red',
+                color='black',
                 label=r'$k_{\rm eq}$',
-                linewidth=2.
+                linestyle='dashed',
+                linewidth=3.
             )
         ax[m_idx].set_xlim((kmin, kmax))
         ax[m_idx].set_ylim((0.997, 1.04))

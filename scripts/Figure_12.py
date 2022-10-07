@@ -26,7 +26,7 @@ matplotlib.rcParams.update({
     "xtick.labelsize" : 60, 
     "ytick.labelsize" : 60, 
     "legend.fontsize" : 60, 
-    "figure.dpi" : 300, 
+    "figure.dpi" : 100, 
     "figure.figsize" : [30, 30],
     "figure.constrained_layout.use" : True, 
     "savefig.pad_inches" : 0.1
@@ -280,9 +280,9 @@ for mnu_idx, mnu_val in enumerate(Mnu):
     rgb[2] = (len(Mnu)-1-mnu_idx) * (255/(len(Mnu)-1)) / 255.
 
     if mnu_idx==0:
-        labeltxt = r"$\phi ~+~ \rm{Massless Neutrinos}$"
+        labeltxt = r"$\phi ~+~ \rm{Massless ~Neutrinos}$"
     elif mnu_idx==1:
-        labeltxt = r"${\rm Massive Neutrinos}$"
+        labeltxt = r"${\rm Massive ~Neutrinos}$"
  
     ax1.plot(
         kplot, 
@@ -572,9 +572,9 @@ for mnu_idx, mnu_val in enumerate(Mnu):
     rgb[2] = (len(Mnu)-1-mnu_idx) * (255/(len(Mnu)-1)) / 255.
 
     if mnu_idx==0:
-        labeltxt = r"$\phi {\rm ~+~ Massless Neutrinos}$"
+        labeltxt = r"$\phi {\rm ~+~ Massless ~Neutrinos}$"
     elif mnu_idx==1:
-        labeltxt = r"${\rm Massive Neutrinos}$"
+        labeltxt = r"${\rm Massive ~Neutrinos}$"
  
     ax1.plot(
         kplot, 

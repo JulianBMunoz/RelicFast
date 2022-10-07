@@ -28,7 +28,7 @@ matplotlib.rcParams.update({
     "xtick.labelsize" : 60, 
     "ytick.labelsize" : 60, 
     "legend.fontsize" : 60, 
-    "figure.dpi" : 300, 
+    "figure.dpi" : 100, 
     "figure.figsize" : [30, 40],
     'figure.subplot.left': 0.13,
     'figure.subplot.right': 0.98,
@@ -336,7 +336,16 @@ for ax_idx, ax_val in enumerate(m_ax):
         
         yplot1 = lagbiasplot/lagbiasplot[0]
         yplot2 = eulbiasplot/eulbiasplot[0]
-        
+
+#        aeq = 3.0988218673675137E-004
+#        mosc = np.loadtxt(rfpath+"plots/Figure_1_m_ax.txt")
+#        aosc = np.loadtxt(rfpath+"plots/Figure_1_axion_aosc.txt")[:,0]
+#        logaosc_interp = scipy.interpolate.interp1d(np.log10(mosc), np.log10(aosc))
+#        aoscval = np.power(10., logaosc_interp(np.log10(ax_val)))
+#        RLCDM = 1. + 0.0048*np.tanh(4.*kplot/(0.70148*0.015)) #LCDM bias step 
+#        RPHI = 1.+1.*np.tanh(np.power((aeq/aoscval)*(1.-aoscval), 1.))*(omega_ax[ax_idx]/(omega_cdm_LCDM+omega_b_LCDM))*np.tanh(kplot/kfs[ax_idx])  
+#        yplot3 = RLCDM*RPHI        
+
         if mh_idx==0:         
             ax1.plot(
                 kplot, 
@@ -365,6 +374,13 @@ for ax_idx, ax_val in enumerate(m_ax):
             color=colors[ax_idx], 
             linewidth=5.,
             linestyle=lstyles[mh_idx])
+#        ax1.plot(
+#            kplot, 
+#            yplot3, 
+#            color=colors[ax_idx], 
+#            linewidth=3., 
+#            linestyle='dotted'
+#        ) 
         #try: 
         #    ax.scatter(
         #        kfs[ax_idx],

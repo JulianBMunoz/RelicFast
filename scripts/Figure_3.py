@@ -19,13 +19,13 @@ rc('text', usetex=True)
 matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
 matplotlib.rcParams.update({
     "font.weight" : "bold",
-    "font.size" : 110,
+    "font.size" : 60,
     "axes.labelsize" : 110,
     "axes.labelpad" : 8.0,  
     "xtick.labelsize" : 60, 
     "ytick.labelsize" : 60, 
     "legend.fontsize" : 60, 
-    "figure.dpi" : 300, 
+    "figure.dpi" : 100, 
     "figure.figsize" : [30, 30],
     "figure.constrained_layout.use" : True, 
     "figure.constrained_layout.wspace": 0.1,
@@ -202,7 +202,7 @@ for m_idx, m_val in enumerate(M_ax):
     plt.plot(
         np.log10(avals), 
         np.log10(rhovals), 
-        label=(r'$M_\phi = 10^{'+f'{int(np.log10(m_val)):d}'+r'} {\rm ~eV}$'), 
+        label=(r'$m_\phi = 10^{'+f'{int(np.log10(m_val)):d}'+r'} {\rm ~eV}$'), 
         linewidth=5.0, 
         color=colors[m_idx]
     )

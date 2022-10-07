@@ -27,7 +27,7 @@ matplotlib.rcParams.update({
     "xtick.labelsize" : 60, 
     "ytick.labelsize" : 60, 
     "legend.fontsize" : 60, 
-    "figure.dpi" : 300, 
+    "figure.dpi" : 100, 
     "figure.figsize" : [30, 30],
     "figure.constrained_layout.use" : True,
     "figure.constrained_layout.wspace": 0.1, 
@@ -164,7 +164,7 @@ for o_idx, o_val in enumerate(omega_ax):
     ax1.plot(
         np.log10(avals), 
         rhovals*np.power(10., -10.), 
-        label=r'$\omega_\phi/\omega_{\rm d} = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}'+r"$", 
+        label=r'$\omega_{\phi,0}/\omega_{{\rm d},0} = '+f'{omega_ax[o_idx]/omega_cdm_LCDM:.2f}'+r"$", 
         linewidth=5.0, 
         color=colors[o_idx]
     )

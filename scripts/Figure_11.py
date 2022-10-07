@@ -36,7 +36,7 @@ matplotlib.rcParams.update({
     "xtick.labelsize" : 60, 
     "ytick.labelsize" : 60, 
     "legend.fontsize" : 60, 
-    "figure.dpi" : 300, 
+    "figure.dpi" : 100, 
     "figure.figsize" : [30, 30],
     "figure.constrained_layout.use" : True, 
     "figure.constrained_layout.wspace": 0.1,
@@ -51,6 +51,58 @@ omega_cdm_LCDM = 0.1127 # Units: none
 omega_b_LCDM = 0.02226 # Units: none
 h_LCDM = 0.70148 # Units: none 
 m_ax = np.logspace(-32., -22., 41) # Units: eV
+m_ax = np.array([
+    np.power(10., -32.00),
+    np.power(10., -31.75),
+    np.power(10., -31.50),
+    np.power(10., -31.25),
+    np.power(10., -31.00),
+    np.power(10., -30.75),
+    np.power(10., -30.50),
+    np.power(10., -30.25),
+    np.power(10., -30.00),
+    np.power(10., -29.75),
+
+    np.power(10., -29.70),
+    np.power(10., -29.60),
+    np.power(10., -29.50),
+    np.power(10., -29.40),
+    np.power(10., -29.30),
+    np.power(10., -29.25),
+    np.power(10., -29.20),
+    np.power(10., -29.10),
+
+    np.power(10., -29.00),
+    np.power(10., -28.75),
+    np.power(10., -28.50),
+    np.power(10., -28.25),
+    np.power(10., -28.00),
+    np.power(10., -27.75),
+    np.power(10., -27.50),
+    np.power(10., -27.25),
+    np.power(10., -27.00),
+    np.power(10., -26.75),
+    np.power(10., -26.50),
+    np.power(10., -26.25),
+    np.power(10., -26.00),
+    np.power(10., -25.75),
+    np.power(10., -25.50),
+    np.power(10., -25.25),
+    np.power(10., -25.00),
+    np.power(10., -24.75),
+    np.power(10., -24.50),
+    np.power(10., -24.25),
+    np.power(10., -24.00),
+    np.power(10., -23.75),
+    np.power(10., -23.50),
+    np.power(10., -23.25),
+    np.power(10., -23.00),
+    np.power(10., -22.75),
+    np.power(10., -22.50),
+    np.power(10., -22.25),
+    np.power(10., -22.00),
+])
+
 omega_ax = np.concatenate(( # Units: none
     np.array([1.0e-9*omega_cdm_LCDM]), 
     np.linspace(0.010, 0.100, 37)*omega_cdm_LCDM 
@@ -277,7 +329,7 @@ for kidx, kval in enumerate(krefs):
     fig, ax = plt.subplots(1,1)
     hmap = ax.pcolormesh(X, Y, Z, vmin=np.min(Z), vmax=np.max(Z), shading="auto")
     ax.tick_params(axis='both')
-    ax.set_xlabel(r"$\log{M_\phi / {\rm [eV]}}$")
+    ax.set_xlabel(r"$\log{m_\phi / {\rm [eV]}}$")
     ax.set_ylabel("$\omega_\phi / \omega_d$")
     ax.set_ylim((0.,0.1)) 
     cbar = plt.colorbar(hmap)
@@ -294,10 +346,10 @@ for kidx, kval in enumerate(krefs):
     hmap = ax.pcolormesh(X, Y, Z, vmin=np.min(b1l_step), vmax=np.max(b1l_step), shading="auto")
     if (np.max(Z)>1.01):
         CS = ax.contour(X, Y, Z, np.linspace(1.01, 1.05, 5), colors='white')
-        ax.clabel(CS, CS.levels, inline=True, fmt=fmt)
+        ax.clabel(CS, CS.levels, inline=False, fmt=fmt)
     ax.tick_params(axis='both')
-    ax.set_xlabel(r"$\log{\left(M_\phi ~/~ {\rm [eV]}\right)}$")
-    ax.set_ylabel("$\omega_\phi ~/~ \omega_d$")
+    ax.set_xlabel(r"$\log{\left(m_\phi ~/~ {\rm [eV]}\right)}$")
+    ax.set_ylabel(r"$\omega_{\phi,0} ~/~ \omega_{{\rm d}, 0}$")
     ax.set_ylim((0.,0.1)) 
     cbar = plt.colorbar(hmap)
     cbar.set_label(label=(

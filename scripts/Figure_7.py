@@ -28,7 +28,7 @@ matplotlib.rcParams.update({
     "xtick.labelsize" : 60, 
     "ytick.labelsize" : 60, 
     "legend.fontsize" : 60, 
-    "figure.dpi" : 300, 
+    "figure.dpi" : 100, 
     "figure.figsize" : [30, 30],
     "figure.constrained_layout.use" : True, 
     "figure.constrained_layout.wspace": 0.1,
@@ -56,8 +56,8 @@ omega_ax = np.array(len(m_ax)*[0.1*omega_cdm_LCDM])
 
 sum_massive_nu = 0.
 redshift = 0.65
-kmin = 1.0e-4
-kmax = 0.5
+kmin = 5.0e-5
+kmax = 1.5
 Nk = 50
 
 ######################################################
@@ -78,6 +78,7 @@ h = (0.70148)*np.sqrt((omega_b_LCDM+omega_cdm_LCDM+omega_nu+omega_ax)/(omega_b_L
 #h = (0.70148)*np.sqrt((omega_b_LCDM+omega_cdm+omega_nu+omega_ax)/(omega_b_LCDM+omega_cdm_LCDM))
 
 kfs = np.pi * np.sqrt(m_ax*1.56*np.power(10., 29)) * np.power((h/2997.)*np.power(1.+redshift, 3.), 0.5)
+keq = 0.70148*0.015
 
 ######################################################
 ####         INTERNAL 
@@ -143,6 +144,10 @@ for ax_idx, ax_val in enumerate(m_ax):
             "z_collapse_top = 1.4", "z_collapse_top = 1.65"
         ).replace(
             "N_zcoll = 1", "N_zcoll = 1"
+        ).replace(
+            "kbot = 1e-4", "kbot = "+f'{kmin:.3e}'
+        ).replace(
+            "ktop = 0.7", "ktop = "+f'{kmax:.3e}'
         ).replace(
             "hubble = 0.701", "hubble = "+f'{h[ax_idx]:.6f}'
         ).replace(
@@ -248,7 +253,7 @@ for ax_idx, ax_val in enumerate(m_ax):
     os.system('mv ./run.ini ./run_'+str(ax_idx+8)+'.ini')
     os.system('mv ./axionCAMB_Current/params_collapse.ini ./axionCAMB_Current/params_collapse_'+str(ax_idx+8)+'.ini')  
 
-kplot = np.geomspace(10**-3.9, 0.6, 100)
+kplot = np.geomspace(10**-4.0, 1., 100)
 
 
 # eulerian bias plots
@@ -326,8 +331,9 @@ for ax_idx, ax_val in enumerate(m_ax):
 ax.plot(
     [0.70148*0.015, 0.70148*0.015], 
     [0.9, 1.08], 
-    color='red', 
+    color='black', 
     label=r'$k_{\rm eq}$',
+    linestyle='dashed',
     linewidth=5.)
 
 ax.set_xlabel(r'$k ~[{\rm Mpc}^{-1}]$')
